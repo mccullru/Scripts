@@ -1,0 +1,675 @@
+(base) C:\Users\mccullru>ls
+'ls' is not recognized as an internal or external command,
+operable program or batch file.
+
+(base) C:\Users\mccullru>conda install m2-base
+Collecting package metadata (current_repodata.json): done
+Solving environment: done
+
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 23.5.0
+  latest version: 24.11.3
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+Or to minimize the number of packages updated during conda update use
+
+     conda install conda=24.11.3
+
+
+
+## Package Plan ##
+
+  environment location: C:\ProgramData\anaconda3
+
+  added / updated specs:
+    - m2-base
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    ca-certificates-2024.12.31 |       haa95532_0         129 KB
+    certifi-2024.12.14         |  py311haa95532_0         163 KB
+    m2-base-1.0.0              |                3         178 KB
+    m2-bash-4.3.042            |                5         3.5 MB
+    m2-bash-completion-2.3     |                2         187 KB
+    m2-catgets-1.1             |                3          26 KB
+    m2-coreutils-8.25          |              102         4.7 MB
+    m2-dash-0.5.8              |                2          94 KB
+    m2-file-5.25               |                2         792 KB
+    m2-filesystem-2016.04      |                4          26 KB
+    m2-findutils-4.6.0         |                2         635 KB
+    m2-gawk-4.1.3              |                2         1.5 MB
+    m2-gcc-libs-5.3.0          |                4        1021 KB
+    m2-gettext-0.19.7          |                4         2.0 MB
+    m2-gmp-6.1.0               |                3         407 KB
+    m2-grep-2.22               |                4         259 KB
+    m2-gzip-1.7                |                2         102 KB
+    m2-inetutils-1.9.2         |                2         309 KB
+    m2-info-6.0                |                2         237 KB
+    m2-less-481                |                2         105 KB
+    m2-libasprintf-0.19.7      |                4           6 KB
+    m2-libcatgets-1.1          |                3           7 KB
+    m2-libcrypt-1.3            |                2           7 KB
+    m2-libgettextpo-0.19.7     |                4         124 KB
+    m2-libiconv-1.14           |                3         716 KB
+    m2-libintl-0.19.7          |                4          22 KB
+    m2-liblzma-5.2.2           |                2          78 KB
+    m2-libpcre-8.38            |                2          98 KB
+    m2-libreadline-6.3.008     |                8         275 KB
+    m2-libutil-linux-2.26.2    |                2         224 KB
+    m2-libxml2-2.9.2           |                3         562 KB
+    m2-mintty-1!2.2.3          |                2         170 KB
+    m2-mpfr-3.1.4              |                2         254 KB
+    m2-msys2-launcher-git-0.3.28.860c495|                2          27 KB
+    m2-ncurses-6.0.20160220    |                2         1.4 MB
+    m2-sed-4.2.2               |                3         846 KB
+    m2-tftp-hpa-5.2            |                2          21 KB
+    m2-time-1.7                |                2          18 KB
+    m2-ttyrec-1.0.8            |                2          13 KB
+    m2-tzcode-2015.e           |                2         379 KB
+    m2-util-linux-2.26.2       |                2         1.7 MB
+    m2-which-2.21              |                3          21 KB
+    m2-zlib-1.2.8              |                4          51 KB
+    openssl-1.1.1w             |       h2bbff1b_0         5.5 MB
+    ------------------------------------------------------------
+                                           Total:        28.7 MB
+
+The following NEW packages will be INSTALLED:
+
+  m2-base            pkgs/msys2/win-64::m2-base-1.0.0-3
+  m2-bash            pkgs/msys2/win-64::m2-bash-4.3.042-5
+  m2-bash-completion pkgs/msys2/win-64::m2-bash-completion-2.3-2
+  m2-catgets         pkgs/msys2/win-64::m2-catgets-1.1-3
+  m2-coreutils       pkgs/msys2/win-64::m2-coreutils-8.25-102
+  m2-dash            pkgs/msys2/win-64::m2-dash-0.5.8-2
+  m2-file            pkgs/msys2/win-64::m2-file-5.25-2
+  m2-filesystem      pkgs/msys2/win-64::m2-filesystem-2016.04-4
+  m2-findutils       pkgs/msys2/win-64::m2-findutils-4.6.0-2
+  m2-gawk            pkgs/msys2/win-64::m2-gawk-4.1.3-2
+  m2-gcc-libs        pkgs/msys2/win-64::m2-gcc-libs-5.3.0-4
+  m2-gettext         pkgs/msys2/win-64::m2-gettext-0.19.7-4
+  m2-gmp             pkgs/msys2/win-64::m2-gmp-6.1.0-3
+  m2-grep            pkgs/msys2/win-64::m2-grep-2.22-4
+  m2-gzip            pkgs/msys2/win-64::m2-gzip-1.7-2
+  m2-inetutils       pkgs/msys2/win-64::m2-inetutils-1.9.2-2
+  m2-info            pkgs/msys2/win-64::m2-info-6.0-2
+  m2-less            pkgs/msys2/win-64::m2-less-481-2
+  m2-libasprintf     pkgs/msys2/win-64::m2-libasprintf-0.19.7-4
+  m2-libcatgets      pkgs/msys2/win-64::m2-libcatgets-1.1-3
+  m2-libcrypt        pkgs/msys2/win-64::m2-libcrypt-1.3-2
+  m2-libgettextpo    pkgs/msys2/win-64::m2-libgettextpo-0.19.7-4
+  m2-libiconv        pkgs/msys2/win-64::m2-libiconv-1.14-3
+  m2-libintl         pkgs/msys2/win-64::m2-libintl-0.19.7-4
+  m2-liblzma         pkgs/msys2/win-64::m2-liblzma-5.2.2-2
+  m2-libpcre         pkgs/msys2/win-64::m2-libpcre-8.38-2
+  m2-libreadline     pkgs/msys2/win-64::m2-libreadline-6.3.008-8
+  m2-libutil-linux   pkgs/msys2/win-64::m2-libutil-linux-2.26.2-2
+  m2-libxml2         pkgs/msys2/win-64::m2-libxml2-2.9.2-3
+  m2-mintty          pkgs/msys2/win-64::m2-mintty-1!2.2.3-2
+  m2-mpfr            pkgs/msys2/win-64::m2-mpfr-3.1.4-2
+  m2-msys2-launcher~ pkgs/msys2/win-64::m2-msys2-launcher-git-0.3.28.860c495-2
+  m2-ncurses         pkgs/msys2/win-64::m2-ncurses-6.0.20160220-2
+  m2-sed             pkgs/msys2/win-64::m2-sed-4.2.2-3
+  m2-tftp-hpa        pkgs/msys2/win-64::m2-tftp-hpa-5.2-2
+  m2-time            pkgs/msys2/win-64::m2-time-1.7-2
+  m2-ttyrec          pkgs/msys2/win-64::m2-ttyrec-1.0.8-2
+  m2-tzcode          pkgs/msys2/win-64::m2-tzcode-2015.e-2
+  m2-util-linux      pkgs/msys2/win-64::m2-util-linux-2.26.2-2
+  m2-which           pkgs/msys2/win-64::m2-which-2.21-3
+  m2-zlib            pkgs/msys2/win-64::m2-zlib-1.2.8-4
+
+The following packages will be UPDATED:
+
+  ca-certificates                     2023.05.30-haa95532_0 --> 2024.12.31-haa95532_0
+  certifi                          2023.5.7-py311haa95532_0 --> 2024.12.14-py311haa95532_0
+  openssl                                 1.1.1u-h2bbff1b_0 --> 1.1.1w-h2bbff1b_0
+
+
+Proceed ([y]/n)? y
+
+
+Downloading and Extracting Packages
+
+Preparing transaction: done
+Verifying transaction: done
+Executing transaction: done
+
+(base) C:\Users\mccullru>ls
+AppData
+'Application Data'
+Box
+Contacts
+Cookies
+Desktop
+Documents
+Downloads
+Favorites
+IntelGraphicsProfiles
+Jedi
+Links
+'Local Settings'
+Music
+'My Documents'
+NTUSER.DAT
+NTUSER.DAT{a9ffbfa3-d041-11ef-9aea-d326cfe28601}.TM.blf
+NTUSER.DAT{a9ffbfa3-d041-11ef-9aea-d326cfe28601}.TMContainer00000000000000000001.regtrans-ms
+NTUSER.DAT{a9ffbfa3-d041-11ef-9aea-d326cfe28601}.TMContainer00000000000000000002.regtrans-ms
+NetHood
+OneDrive
+'OneDrive - Oregon State University'
+Pictures
+PrintHood
+Recent
+'Saved Games'
+Searches
+SendTo
+'Start Menu'
+Templates
+Videos
+ntuser.dat.LOG1
+ntuser.dat.LOG2
+ntuser.ini
+
+(base) C:\Users\mccullru>cd downloads
+
+(base) C:\Users\mccullru\Downloads>ls
+08_Acquisition_V5.pdf
+1117021.acsm
+175445507359.JPEG
+'2022-Health-Plan-Comparison-PS (1).pdf'
+20241007_GroupA_FieldNotes.jpg
+20241009_GroupA_FieldNotes.jpg
+5000004370866.zip
+ANAT00USA_R_20230010000_01D_60S_MO.rnx
+All_ETOPO2022_15s_IceSurf_EXT_01_m100_LZW.tif
+Application_jonahnicholas_signed.pdf
+'Assignment_Week3 (1).docx'
+Assignment_Week3.docx
+'CE 507_ Professional Development Activity #1.pdf'
+'CE 507_ Professional Development Activity #2 (1).pdf'
+'CE 507_ Professional Development Activity #2.pdf'
+'CE 507_ Professional Development_ Diversity Activity #3.pdf'
+'CE 563_ Final Project.pdf'
+'CE 565_ Case Presentation Wales vs Lester (1) (1).pptx'
+'CE 565_ Case Presentation Wales vs Lester (1).pptx'
+'CE 565_ Case Presentation Wales vs Lester.pptx'
+CE463_563_Syllabus.pdf
+'CamScanner 10-05-2023 16.00n_1.jpg'
+'CamScanner 10-05-2023 16.00n_2.jpg'
+'CamScanner 10-05-2023 16.00n_3 (1).jpg'
+'CamScanner 10-05-2023 16.00n_3.jpg'
+'CamScanner 10-05-2023 16.00n_4 (1).jpg'
+'CamScanner 10-05-2023 16.00n_4.jpg'
+'CamScanner 10-05-2023 16.18n_1.jpg'
+'CamScanner 10-16-2023 17.48n_1.jpg'
+CamScanner231005160515617.zip
+CamScanner241009160733246.zip
+'Cayo M'$'\303\251''gano Grande.png'
+'Copy of Least Squares Worksheet.xlsx'
+'Crooked Island.png'
+Data_Modelling_Assignment_III_1.doc
+'Deepest diver ticket.pdf'
+'EchoBoat 240 Manual V1.3.pdf'
+Ep-147-Christopher-Plummer-Transcript.docx
+Ex_Ch11_Nonlinear_LS.m
+'Field Notes.zip'
+'GEOG566_ Final presentation.pptx'
+'GeoWeek Abstract Ruth Draft.docx'
+GitHubDesktopSetup-x64.exe
+Graduate_Appointment_Offer_Letter_for_Ruth_Mc.pdf
+'Gretchen'\''s email. Text her when I'\''v.txt'
+'Group 2 Lab Report 1.pdf'
+Guideline-for-Control-Surveys-by-Differential-Levelling_v2.1.docx
+HW1_CE463-563.pdf
+'HYPACK 2022 User Manual.pdf'
+'Homework 2.pdf'
+IMG_4484.JPG
+IMG_4895.JPG
+IMG_5398.JPG
+IMG_5969.JPG
+IMG_5974.jpg
+IMG_6219.JPG
+IMG_6220.JPG
+IMG_6345.JPG
+IMG_8052.JPG
+Icevis.py
+Icevis_to_granule_recombine.ipynb
+'KPN Final Report.pdf'
+'KPN Presentation.pptx'
+KellumKoryE2017.pdf
+LICENSE
+'Leica Infinity User Guide v3.1.1 (1).pdf'
+'Leica Infinity User Guide v3.1.1.pdf'
+MANIFEST.in
+'MASTER BROADLEAF KEY.docx'
+McCulloughNasonJ2004.pdf
+McCullough_Ruth_Presentation.pptx
+'OMSI Info Sheets.pdf'
+PKG-INFO
+Project1_VectorMatrix.pdf
+README.rst
+'Renters Insurance Policy.pdf'
+SCuBA_17R_FL_2023_5.zip
+SatBathy.yml
+'Sentinel-2 Imagery.png'
+SilviaandOlsen_ASCE_JSE_InclinationSensors.pdf
+'Spanish guitar guy ticket.pdf'
+Spyder_64bit_full.exe
+SteamSetup.exe
+'SuperDove Imagery (1).png'
+'SuperDove Imagery.png'
+TS15_student_guide_V0_DTM.pdf
+'The Cricket King.pdf'
+'UHC ID Cards.pdf'
+'USA Jobs Resume.pdf'
+'WavesAudio.WavesMaxxAudioProforDell_fh4rh281wavaa!App'
+Week7HW.m
+_temp_matlab_R2023a_win64
+acolite_settings_planet.txt
+api_gen.py
+asv.conf.json
+bechevin.cpg
+bechevin.dbf
+bechevin.prj
+bechevin.sbn
+bechevin.sbx
+bechevin.shp
+bechevin.shp.xml
+bechevin.shx
+bechevin.zip
+benchmarks
+ca_prn_code.txt
+correct_images_acolite_planet.py
+desktop.ini
+dev-install.sh
+docs
+docs_api
+drive-download-20231102T155552Z-001
+drive-download-20231102T155552Z-001.zip
+drive-download-20240223T012603Z-001.zip
+drive-download-20250115T170827Z-001.zip
+dxwebsetup.exe
+eTicketXKWNNB.pdf
+environment.yml
+examples
+gitignore
+h5py
+h5py-3.9.0
+h5py-3.9.0.tar
+h5py-3.9.0.tar.gz
+h5py.egg-info
+hw05_04_madore.m
+hw9.docx
+icevis-20230726T183618Z-001.zip
+introToGnss.zip
+licenses
+lzf
+matlab_R2023a_win64.exe
+photo.jpg
+pylintrc
+pyproject.toml
+pytest.ini
+setup.cfg
+setup.py
+setup_build.py
+setup_configure.py
+sherlock-nosound-r4-s880324.z5
+tox.ini
+untitled.m
+
+(base) C:\Users\mccullru\Downloads>conda env create -f SatBathy.yml
+Collecting package metadata (repodata.json): done
+Solving environment: done
+
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 23.5.0
+  latest version: 24.11.3
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+Or to minimize the number of packages updated during conda update use
+
+     conda install conda=24.11.3
+
+
+
+Downloading and Extracting Packages
+
+Preparing transaction: done
+Verifying transaction: done
+Executing transaction: |
+
+    Windows 64-bit packages of scikit-learn can be accelerated using scikit-learn-intelex.
+    More details are available here: https://intel.github.io/scikit-learn-intelex
+
+    For example:
+
+        $ conda install scikit-learn-intelex
+        $ python -m sklearnex my_application.py
+
+
+done
+Installing pip dependencies: / Ran pip subprocess with arguments:
+['C:\\ProgramData\\anaconda3\\envs\\SatBathy\\python.exe', '-m', 'pip', 'install', '-U', '-r', 'C:\\Users\\mccullru\\Downloads\\condaenv.dz4d2bky.requirements.txt', '--exists-action=b']
+Pip subprocess output:
+Collecting aenum==3.1.15 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 1))
+  Obtaining dependency information for aenum==3.1.15 from https://files.pythonhosted.org/packages/d0/fa/ca0c66b388624ba9dbbf35aab3a9f326bfdf5e56a7237fe8f1b600da6864/aenum-3.1.15-py3-none-any.whl.metadata
+  Downloading aenum-3.1.15-py3-none-any.whl.metadata (3.7 kB)
+Collecting altgraph==0.17.3 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 2))
+  Obtaining dependency information for altgraph==0.17.3 from https://files.pythonhosted.org/packages/cc/ff/88d277ba936d226b0f6dbd6711145f90fcfeed3aa9455c1c2f62c8ffec5b/altgraph-0.17.3-py2.py3-none-any.whl.metadata
+  Downloading altgraph-0.17.3-py2.py3-none-any.whl.metadata (7.4 kB)
+Collecting dataclasses-json==0.5.14 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 3))
+  Obtaining dependency information for dataclasses-json==0.5.14 from https://files.pythonhosted.org/packages/97/5f/e7cc90f36152810cab08b6c9c1125e8bcb9d76f8b3018d101b5f877b386c/dataclasses_json-0.5.14-py3-none-any.whl.metadata
+  Downloading dataclasses_json-0.5.14-py3-none-any.whl.metadata (22 kB)
+Collecting eccodes==1.6.0 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 4))
+  Downloading eccodes-1.6.0.tar.gz (2.3 MB)
+     ---------------------------------------- 2.3/2.3 MB 8.0 MB/s eta 0:00:00
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting findlibs==0.0.5 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 5))
+  Downloading findlibs-0.0.5.tar.gz (6.6 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting imageio==2.31.1 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 6))
+  Obtaining dependency information for imageio==2.31.1 from https://files.pythonhosted.org/packages/c7/b0/7b6c35b8636ed773325cdb6f5ac3cd36afba63d99e20ed59c521cf5018b4/imageio-2.31.1-py3-none-any.whl.metadata
+  Downloading imageio-2.31.1-py3-none-any.whl.metadata (4.7 kB)
+Collecting jsonschema==4.17.3 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 7))
+  Obtaining dependency information for jsonschema==4.17.3 from https://files.pythonhosted.org/packages/c1/97/c698bd9350f307daad79dd740806e1a59becd693bd11443a0f531e3229b3/jsonschema-4.17.3-py3-none-any.whl.metadata
+  Downloading jsonschema-4.17.3-py3-none-any.whl.metadata (7.9 kB)
+Collecting lazy-loader==0.3 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 8))
+  Obtaining dependency information for lazy-loader==0.3 from https://files.pythonhosted.org/packages/a1/c3/65b3814e155836acacf720e5be3b5757130346670ac454fee29d3eda1381/lazy_loader-0.3-py3-none-any.whl.metadata
+  Downloading lazy_loader-0.3-py3-none-any.whl.metadata (4.3 kB)
+Collecting marshmallow==3.20.1 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 9))
+  Obtaining dependency information for marshmallow==3.20.1 from https://files.pythonhosted.org/packages/ed/3c/cebfdcad015240014ff08b883d1c0c427f2ba45ae8c6572851b6ef136cad/marshmallow-3.20.1-py3-none-any.whl.metadata
+  Downloading marshmallow-3.20.1-py3-none-any.whl.metadata (7.8 kB)
+Collecting mypy-extensions==1.0.0 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 10))
+  Obtaining dependency information for mypy-extensions==1.0.0 from https://files.pythonhosted.org/packages/2a/e2/5d3f6ada4297caebe1a2add3b126fe800c96f56dbe5d1988a2cbe0b267aa/mypy_extensions-1.0.0-py3-none-any.whl.metadata
+  Downloading mypy_extensions-1.0.0-py3-none-any.whl.metadata (1.1 kB)
+Collecting oauthlib==3.2.2 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 11))
+  Obtaining dependency information for oauthlib==3.2.2 from https://files.pythonhosted.org/packages/7e/80/cab10959dc1faead58dc8384a781dfbf93cb4d33d50988f7a69f1b7c9bbe/oauthlib-3.2.2-py3-none-any.whl.metadata
+  Downloading oauthlib-3.2.2-py3-none-any.whl.metadata (7.5 kB)
+Collecting pefile==2023.2.7 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 12))
+  Obtaining dependency information for pefile==2023.2.7 from https://files.pythonhosted.org/packages/55/26/d0ad8b448476d0a1e8d3ea5622dc77b916db84c6aa3cb1e1c0965af948fc/pefile-2023.2.7-py3-none-any.whl.metadata
+  Downloading pefile-2023.2.7-py3-none-any.whl.metadata (1.4 kB)
+Collecting pyinstaller==6.11.1 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 13))
+  Obtaining dependency information for pyinstaller==6.11.1 from https://files.pythonhosted.org/packages/7d/08/f43080614b3e8bce481d4dfd580e579497c7dcdaf87656d9d2ad912e5796/pyinstaller-6.11.1-py3-none-win_amd64.whl.metadata
+  Downloading pyinstaller-6.11.1-py3-none-win_amd64.whl.metadata (8.3 kB)
+Collecting pyrsistent==0.20.0 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 14))
+  Obtaining dependency information for pyrsistent==0.20.0 from https://files.pythonhosted.org/packages/37/8a/23e2193f7adea6901262e3cf39c7fe18ac0c446176c0ff0e19aeb2e9681e/pyrsistent-0.20.0-cp310-cp310-win_amd64.whl.metadata
+  Downloading pyrsistent-0.20.0-cp310-cp310-win_amd64.whl.metadata (976 bytes)
+Collecting pywavelets==1.4.1 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 15))
+  Obtaining dependency information for pywavelets==1.4.1 from https://files.pythonhosted.org/packages/35/12/f1a4f72b5d71497e4200e71e253cc747077d8570b55693faaa7b81fb6dff/PyWavelets-1.4.1-cp310-cp310-win_amd64.whl.metadata
+  Downloading PyWavelets-1.4.1-cp310-cp310-win_amd64.whl.metadata (1.9 kB)
+Collecting pywin32-ctypes==0.2.2 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 16))
+  Obtaining dependency information for pywin32-ctypes==0.2.2 from https://files.pythonhosted.org/packages/a4/bc/78b2c00cc64c31dbb3be42a0e8600bcebc123ad338c3b714754d668c7c2d/pywin32_ctypes-0.2.2-py3-none-any.whl.metadata
+  Downloading pywin32_ctypes-0.2.2-py3-none-any.whl.metadata (3.8 kB)
+Collecting requests-oauthlib==1.3.1 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 17))
+  Obtaining dependency information for requests-oauthlib==1.3.1 from https://files.pythonhosted.org/packages/6f/bb/5deac77a9af870143c684ab46a7934038a53eb4aa975bc0687ed6ca2c610/requests_oauthlib-1.3.1-py2.py3-none-any.whl.metadata
+  Downloading requests_oauthlib-1.3.1-py2.py3-none-any.whl.metadata (10 kB)
+Collecting scikit-image==0.21.0 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 18))
+  Obtaining dependency information for scikit-image==0.21.0 from https://files.pythonhosted.org/packages/f3/93/65601f7577d6fd49ec23bf8fb58c04d8170b06a1544452ae2ea9f59bf11f/scikit_image-0.21.0-cp310-cp310-win_amd64.whl.metadata
+  Downloading scikit_image-0.21.0-cp310-cp310-win_amd64.whl.metadata (14 kB)
+Collecting sentinelhub==3.9.1 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 19))
+  Obtaining dependency information for sentinelhub==3.9.1 from https://files.pythonhosted.org/packages/c4/ae/5121651440852c09744950db979d68afe187b7479446290e295eee6bfd54/sentinelhub-3.9.1-py3-none-any.whl.metadata
+  Downloading sentinelhub-3.9.1-py3-none-any.whl.metadata (10 kB)
+Collecting tifffile==2023.8.12 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 20))
+  Obtaining dependency information for tifffile==2023.8.12 from https://files.pythonhosted.org/packages/74/68/19989a1009f68ed777ea5d2624c2996bab0890a31ce7d4b2a7ae4e1c0cfe/tifffile-2023.8.12-py3-none-any.whl.metadata
+  Downloading tifffile-2023.8.12-py3-none-any.whl.metadata (30 kB)
+Collecting tomli==2.0.1 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 21))
+  Obtaining dependency information for tomli==2.0.1 from https://files.pythonhosted.org/packages/97/75/10a9ebee3fd790d20926a90a2547f0bf78f371b2f13aa822c759680ca7b9/tomli-2.0.1-py3-none-any.whl.metadata
+  Downloading tomli-2.0.1-py3-none-any.whl.metadata (8.9 kB)
+Collecting tomli-w==1.0.0 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 22))
+  Obtaining dependency information for tomli-w==1.0.0 from https://files.pythonhosted.org/packages/bb/01/1da9c66ecb20f31ed5aa5316a957e0b1a5e786a0d9689616ece4ceaf1321/tomli_w-1.0.0-py3-none-any.whl.metadata
+  Downloading tomli_w-1.0.0-py3-none-any.whl.metadata (4.9 kB)
+Collecting tqdm==4.66.1 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 23))
+  Obtaining dependency information for tqdm==4.66.1 from https://files.pythonhosted.org/packages/00/e5/f12a80907d0884e6dff9c16d0c0114d81b8cd07dc3ae54c5e962cc83037e/tqdm-4.66.1-py3-none-any.whl.metadata
+  Downloading tqdm-4.66.1-py3-none-any.whl.metadata (57 kB)
+     ---------------------------------------- 57.6/57.6 kB ? eta 0:00:00
+Collecting typing-inspect==0.9.0 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 24))
+  Obtaining dependency information for typing-inspect==0.9.0 from https://files.pythonhosted.org/packages/65/f3/107a22063bf27bdccf2024833d3445f4eea42b2e598abfbd46f6a63b6cb0/typing_inspect-0.9.0-py3-none-any.whl.metadata
+  Downloading typing_inspect-0.9.0-py3-none-any.whl.metadata (1.5 kB)
+Collecting utm==0.7.0 (from -r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 25))
+  Downloading utm-0.7.0.tar.gz (8.7 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Requirement already satisfied: numpy in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from eccodes==1.6.0->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 4)) (1.25.2)
+Requirement already satisfied: attrs in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from eccodes==1.6.0->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 4)) (23.1.0)
+Requirement already satisfied: cffi in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from eccodes==1.6.0->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 4)) (1.15.1)
+Requirement already satisfied: pillow>=8.3.2 in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from imageio==2.31.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 6)) (9.2.0)
+Requirement already satisfied: packaging>=17.0 in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from marshmallow==3.20.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 9)) (23.1)
+Requirement already satisfied: setuptools>=42.0.0 in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from pyinstaller==6.11.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 13)) (68.1.2)
+Collecting pyinstaller-hooks-contrib>=2024.9 (from pyinstaller==6.11.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 13))
+  Obtaining dependency information for pyinstaller-hooks-contrib>=2024.9 from https://files.pythonhosted.org/packages/64/af/965f81a65f4d9bcb337dd0e87845fd2e081c4ab5a1c0b3e0cf20abeac423/pyinstaller_hooks_contrib-2024.11-py3-none-any.whl.metadata
+  Downloading pyinstaller_hooks_contrib-2024.11-py3-none-any.whl.metadata (16 kB)
+Requirement already satisfied: requests>=2.0.0 in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from requests-oauthlib==1.3.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 17)) (2.31.0)
+Requirement already satisfied: scipy>=1.8 in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from scikit-image==0.21.0->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 18)) (1.11.2)
+Requirement already satisfied: networkx>=2.8 in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from scikit-image==0.21.0->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 18)) (3.1)
+Requirement already satisfied: click in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from sentinelhub==3.9.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 19)) (8.1.3)
+Requirement already satisfied: pyproj>=2.2.0 in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from sentinelhub==3.9.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 19)) (3.4.0)
+Requirement already satisfied: python-dateutil in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from sentinelhub==3.9.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 19)) (2.8.2)
+Requirement already satisfied: shapely in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from sentinelhub==3.9.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 19)) (1.8.2)
+Requirement already satisfied: typing-extensions in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from sentinelhub==3.9.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 19)) (4.7.1)
+Requirement already satisfied: colorama in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from tqdm==4.66.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 23)) (0.4.6)
+Requirement already satisfied: certifi in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from pyproj>=2.2.0->sentinelhub==3.9.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 19)) (2024.8.30)
+Requirement already satisfied: charset-normalizer<4,>=2 in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from requests>=2.0.0->requests-oauthlib==1.3.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 17)) (2.0.4)
+Requirement already satisfied: idna<4,>=2.5 in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from requests>=2.0.0->requests-oauthlib==1.3.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 17)) (3.4)
+Requirement already satisfied: urllib3<3,>=1.21.1 in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from requests>=2.0.0->requests-oauthlib==1.3.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 17)) (1.26.15)
+Requirement already satisfied: pycparser in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from cffi->eccodes==1.6.0->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 4)) (2.21)
+Requirement already satisfied: six>=1.5 in c:\programdata\anaconda3\envs\satbathy\lib\site-packages (from python-dateutil->sentinelhub==3.9.1->-r C:\Users\mccullru\Downloads\condaenv.dz4d2bky.requirements.txt (line 19)) (1.16.0)
+Downloading aenum-3.1.15-py3-none-any.whl (137 kB)
+   ---------------------------------------- 137.6/137.6 kB 8.0 MB/s eta 0:00:00
+Downloading altgraph-0.17.3-py2.py3-none-any.whl (21 kB)
+Downloading dataclasses_json-0.5.14-py3-none-any.whl (26 kB)
+Downloading imageio-2.31.1-py3-none-any.whl (313 kB)
+   ---------------------------------------- 313.2/313.2 kB 9.5 MB/s eta 0:00:00
+Downloading jsonschema-4.17.3-py3-none-any.whl (90 kB)
+   ---------------------------------------- 90.4/90.4 kB 5.3 MB/s eta 0:00:00
+Downloading lazy_loader-0.3-py3-none-any.whl (9.1 kB)
+Downloading marshmallow-3.20.1-py3-none-any.whl (49 kB)
+   ---------------------------------------- 49.4/49.4 kB 2.4 MB/s eta 0:00:00
+Downloading mypy_extensions-1.0.0-py3-none-any.whl (4.7 kB)
+Downloading oauthlib-3.2.2-py3-none-any.whl (151 kB)
+   ---------------------------------------- 151.7/151.7 kB 4.4 MB/s eta 0:00:00
+Downloading pefile-2023.2.7-py3-none-any.whl (71 kB)
+   ---------------------------------------- 71.8/71.8 kB 3.8 MB/s eta 0:00:00
+Downloading pyinstaller-6.11.1-py3-none-win_amd64.whl (1.3 MB)
+   ---------------------------------------- 1.3/1.3 MB 7.7 MB/s eta 0:00:00
+Downloading pyrsistent-0.20.0-cp310-cp310-win_amd64.whl (63 kB)
+   ---------------------------------------- 63.3/63.3 kB 3.3 MB/s eta 0:00:00
+Downloading PyWavelets-1.4.1-cp310-cp310-win_amd64.whl (4.2 MB)
+   ---------------------------------------- 4.2/4.2 MB 7.6 MB/s eta 0:00:00
+Downloading pywin32_ctypes-0.2.2-py3-none-any.whl (30 kB)
+Downloading requests_oauthlib-1.3.1-py2.py3-none-any.whl (23 kB)
+Downloading scikit_image-0.21.0-cp310-cp310-win_amd64.whl (22.8 MB)
+   ---------------------------------------- 22.8/22.8 MB 7.5 MB/s eta 0:00:00
+Downloading sentinelhub-3.9.1-py3-none-any.whl (244 kB)
+   ---------------------------------------- 244.4/244.4 kB 7.6 MB/s eta 0:00:00
+Downloading tifffile-2023.8.12-py3-none-any.whl (220 kB)
+   ---------------------------------------- 221.0/221.0 kB 6.8 MB/s eta 0:00:00
+Downloading tomli-2.0.1-py3-none-any.whl (12 kB)
+Downloading tomli_w-1.0.0-py3-none-any.whl (6.0 kB)
+Downloading tqdm-4.66.1-py3-none-any.whl (78 kB)
+   ---------------------------------------- 78.3/78.3 kB 4.5 MB/s eta 0:00:00
+Downloading typing_inspect-0.9.0-py3-none-any.whl (8.8 kB)
+Downloading pyinstaller_hooks_contrib-2024.11-py3-none-any.whl (339 kB)
+   --------------------------------------- 339.5/339.5 kB 10.6 MB/s eta 0:00:00
+Building wheels for collected packages: eccodes, findlibs, utm
+  Building wheel for eccodes (setup.py): started
+  Building wheel for eccodes (setup.py): finished with status 'done'
+  Created wheel for eccodes: filename=eccodes-1.6.0-py3-none-any.whl size=41018 sha256=bfd7b4b70ce528bcc52f083e5b2a776864ba06d8397d1ea121d6f1eba86f8381
+  Stored in directory: c:\users\mccullru\appdata\local\pip\cache\wheels\4e\c2\01\779f6bbee8f7aeaa40b9070ac75bf0c9d9b810776bf2790a5c
+  Building wheel for findlibs (setup.py): started
+  Building wheel for findlibs (setup.py): finished with status 'done'
+  Created wheel for findlibs: filename=findlibs-0.0.5-py3-none-any.whl size=6953 sha256=0e5516ca0ada2ae93f99bcf514a9298d29429a1e3e6439ba377b96dd3fa4586d
+  Stored in directory: c:\users\mccullru\appdata\local\pip\cache\wheels\2e\67\14\22fa5b9fd9c41be520b37e908597d6a262803c0fcf2ba7c2c3
+  Building wheel for utm (setup.py): started
+  Building wheel for utm (setup.py): finished with status 'done'
+  Created wheel for utm: filename=utm-0.7.0-py3-none-any.whl size=6104 sha256=3fbd2bbe10ca4c369257a0dde926a4d43f3750a9cae2cde1b3de10829847d9df
+  Stored in directory: c:\users\mccullru\appdata\local\pip\cache\wheels\2f\a1\c8\543df0e8f5e824c3e92a432e32deb9cd89ae686095ee8cfcbe
+Successfully built eccodes findlibs utm
+Installing collected packages: utm, findlibs, altgraph, aenum, tqdm, tomli-w, tomli, tifffile, pywin32-ctypes, pywavelets, pyrsistent, pyinstaller-hooks-contrib, pefile, oauthlib, mypy-extensions, marshmallow, lazy-loader, imageio, typing-inspect, scikit-image, requests-oauthlib, pyinstaller, jsonschema, eccodes, dataclasses-json, sentinelhub
+Successfully installed aenum-3.1.15 altgraph-0.17.3 dataclasses-json-0.5.14 eccodes-1.6.0 findlibs-0.0.5 imageio-2.31.1 jsonschema-4.17.3 lazy-loader-0.3 marshmallow-3.20.1 mypy-extensions-1.0.0 oauthlib-3.2.2 pefile-2023.2.7 pyinstaller-6.11.1 pyinstaller-hooks-contrib-2024.11 pyrsistent-0.20.0 pywavelets-1.4.1 pywin32-ctypes-0.2.2 requests-oauthlib-1.3.1 scikit-image-0.21.0 sentinelhub-3.9.1 tifffile-2023.8.12 tomli-2.0.1 tomli-w-1.0.0 tqdm-4.66.1 typing-inspect-0.9.0 utm-0.7.0
+
+done
+#
+# To activate this environment, use
+#
+#     $ conda activate SatBathy
+#
+# To deactivate an active environment, use
+#
+#     $ conda deactivate
+
+
+(base) C:\Users\mccullru\Downloads>conda info
+
+     active environment : base
+    active env location : C:\ProgramData\anaconda3
+            shell level : 1
+       user config file : C:\Users\mccullru\.condarc
+ populated config files : C:\Users\mccullru\.condarc
+          conda version : 23.5.0
+    conda-build version : 3.25.0
+         python version : 3.11.3.final.0
+       virtual packages : __archspec=1=x86_64
+                          __cuda=12.0=0
+                          __win=0=0
+       base environment : C:\ProgramData\anaconda3  (writable)
+      conda av data dir : C:\ProgramData\anaconda3\etc\conda
+  conda av metadata url : None
+           channel URLs : https://repo.anaconda.com/pkgs/main/win-64
+                          https://repo.anaconda.com/pkgs/main/noarch
+                          https://repo.anaconda.com/pkgs/r/win-64
+                          https://repo.anaconda.com/pkgs/r/noarch
+                          https://repo.anaconda.com/pkgs/msys2/win-64
+                          https://repo.anaconda.com/pkgs/msys2/noarch
+          package cache : C:\ProgramData\anaconda3\pkgs
+                          C:\Users\mccullru\.conda\pkgs
+                          C:\Users\mccullru\AppData\Local\conda\conda\pkgs
+       envs directories : C:\ProgramData\anaconda3\envs
+                          C:\Users\mccullru\.conda\envs
+                          C:\Users\mccullru\AppData\Local\conda\conda\envs
+               platform : win-64
+             user-agent : conda/23.5.0 requests/2.29.0 CPython/3.11.3 Windows/10 Windows/10.0.26100
+          administrator : True
+             netrc file : None
+           offline mode : False
+
+
+
+(base) C:\Users\mccullru\Downloads>conda activate SatBathy
+
+(SatBathy) C:\Users\mccullru\Downloads>conda install spyder-kernels=2.4
+Collecting package metadata (current_repodata.json): done
+Solving environment: unsuccessful initial attempt using frozen solve. Retrying with flexible solve.
+Collecting package metadata (repodata.json): done
+Solving environment: done
+
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 23.5.0
+  latest version: 24.11.3
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+Or to minimize the number of packages updated during conda update use
+
+     conda install conda=24.11.3
+
+
+
+## Package Plan ##
+
+  environment location: C:\ProgramData\anaconda3\envs\SatBathy
+
+  added / updated specs:
+    - spyder-kernels=2.4
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    certifi-2024.12.14         |  py310haa95532_0         162 KB
+    comm-0.2.1                 |  py310haa95532_0          15 KB
+    debugpy-1.8.11             |  py310h5da7b33_0         3.2 MB
+    exceptiongroup-1.2.0       |  py310haa95532_0          31 KB
+    ipykernel-6.29.5           |  py310haa95532_0         205 KB
+    ipython-8.30.0             |  py310haa95532_0         1.2 MB
+    jedi-0.19.2                |  py310haa95532_0         1.1 MB
+    jupyter_client-8.6.0       |  py310haa95532_0         204 KB
+    jupyter_core-5.7.2         |  py310haa95532_0         110 KB
+    matplotlib-inline-0.1.6    |  py310haa95532_0          17 KB
+    nest-asyncio-1.6.0         |  py310haa95532_0          15 KB
+    parso-0.8.4                |  py310haa95532_0         195 KB
+    prompt-toolkit-3.0.43      |  py310haa95532_0         592 KB
+    prompt_toolkit-3.0.43      |       hd3eb1b0_0           5 KB
+    psutil-5.9.0               |  py310h827c3e9_1         388 KB
+    pygments-2.15.1            |  py310haa95532_1         1.7 MB
+    pywin32-308                |  py310h5da7b33_0        10.5 MB
+    pyzmq-26.2.0               |  py310h5da7b33_0         334 KB
+    spyder-kernels-2.4.4       |  py310haa95532_0         156 KB
+    tornado-6.4.2              |  py310h827c3e9_0         680 KB
+    traitlets-5.14.3           |  py310haa95532_0         182 KB
+    zeromq-4.3.5               |       hd77b12b_0         5.2 MB
+    ------------------------------------------------------------
+                                           Total:        26.0 MB
+
+The following NEW packages will be INSTALLED:
+
+  asttokens          pkgs/main/noarch::asttokens-2.0.5-pyhd3eb1b0_0
+  comm               pkgs/main/win-64::comm-0.2.1-py310haa95532_0
+  debugpy            pkgs/main/win-64::debugpy-1.8.11-py310h5da7b33_0
+  decorator          pkgs/main/noarch::decorator-5.1.1-pyhd3eb1b0_0
+  exceptiongroup     pkgs/main/win-64::exceptiongroup-1.2.0-py310haa95532_0
+  executing          pkgs/main/noarch::executing-0.8.3-pyhd3eb1b0_0
+  ipykernel          pkgs/main/win-64::ipykernel-6.29.5-py310haa95532_0
+  ipython            pkgs/main/win-64::ipython-8.30.0-py310haa95532_0
+  jedi               pkgs/main/win-64::jedi-0.19.2-py310haa95532_0
+  jupyter_client     pkgs/main/win-64::jupyter_client-8.6.0-py310haa95532_0
+  jupyter_core       pkgs/main/win-64::jupyter_core-5.7.2-py310haa95532_0
+  libsodium          pkgs/main/win-64::libsodium-1.0.18-h62dcd97_0
+  matplotlib-inline  pkgs/main/win-64::matplotlib-inline-0.1.6-py310haa95532_0
+  nest-asyncio       pkgs/main/win-64::nest-asyncio-1.6.0-py310haa95532_0
+  parso              pkgs/main/win-64::parso-0.8.4-py310haa95532_0
+  prompt-toolkit     pkgs/main/win-64::prompt-toolkit-3.0.43-py310haa95532_0
+  prompt_toolkit     pkgs/main/noarch::prompt_toolkit-3.0.43-hd3eb1b0_0
+  psutil             pkgs/main/win-64::psutil-5.9.0-py310h827c3e9_1
+  pure_eval          pkgs/main/noarch::pure_eval-0.2.2-pyhd3eb1b0_0
+  pygments           pkgs/main/win-64::pygments-2.15.1-py310haa95532_1
+  pywin32            pkgs/main/win-64::pywin32-308-py310h5da7b33_0
+  pyzmq              pkgs/main/win-64::pyzmq-26.2.0-py310h5da7b33_0
+  spyder-kernels     pkgs/main/win-64::spyder-kernels-2.4.4-py310haa95532_0
+  stack_data         pkgs/main/noarch::stack_data-0.2.0-pyhd3eb1b0_0
+  tornado            pkgs/main/win-64::tornado-6.4.2-py310h827c3e9_0
+  traitlets          pkgs/main/win-64::traitlets-5.14.3-py310haa95532_0
+  wcwidth            pkgs/main/noarch::wcwidth-0.2.5-pyhd3eb1b0_0
+  zeromq             pkgs/main/win-64::zeromq-4.3.5-hd77b12b_0
+
+The following packages will be UPDATED:
+
+  ca-certificates    conda-forge::ca-certificates-2024.8.3~ --> pkgs/main::ca-certificates-2024.12.31-haa95532_0
+  certifi            conda-forge/noarch::certifi-2024.8.30~ --> pkgs/main/win-64::certifi-2024.12.14-py310haa95532_0
+
+
+Proceed ([y]/n)? y
+
+
+Downloading and Extracting Packages
+
+Preparing transaction: done
+Verifying transaction: done
+Executing transaction: done
+
+(SatBathy) C:\Users\mccullru\Downloads>

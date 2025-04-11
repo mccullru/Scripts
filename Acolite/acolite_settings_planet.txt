@@ -1,0 +1,23 @@
+## ACOLITE settings
+
+inputfile=
+output=
+dsf_aot_estimate=fixed
+l2w_parameters = Rrs_492, Rrs_493,Rrs_518,Rrs_505,Rrs_559,Rrs_560,Rrs_542,Rrs_552,Rrs_546,Rrs_566,Rrs_665,Rrs_622,Rrs_621,Rrs_633,Rrs_625,Rrs_666
+l2w_mask_threshold = 0.075 	## Threshold for the non-water masking. Pixels with toar values in the masking band above this threshold will be masked
+dsf_write_tiled_parameters = False
+map_l2w = True
+l2w_export_geotiff = True
+l1r_delete_netcdf = True
+l2t_delete_netcdf = True
+l2r_delete_netcdf = True
+l2r_pans_delete_netcdf = True
+l2w_delete_netcdf = True
+dsf_residual_glint_correction=False
+polygon=
+limit=
+rgb_rhot=False
+rgb_rhos=False
+rgb_rhorc=False
+rgb_rhow=False
+map_l2w=False

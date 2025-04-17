@@ -1,1 +1,1 @@
-All scripts that were used to work on my end thesis goal of comparing SDB between Sentinel-2 imagery and SuperDove imagery. Includes codes for preparing imagery and reference data, creating SDB, and any other things that popped up along the way.
+All scripts that were used to work on my end thesis goal of comparing SDB between Sentinel-2 imagery and SuperDove imagery. Includes codes for preparing imagery and reference data, creating SDB, error statistics, and anything else that popped up along the way.

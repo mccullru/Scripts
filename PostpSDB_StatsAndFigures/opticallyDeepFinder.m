@@ -1,7 +1,7 @@
 clc; clear; close all
 
 % Load data
-data_name = "E:\Thesis Stuff\Results\Marathon\Condition1_dsSD\Extracted Pts\pSDB\Marathon_PlanetScope_24c0_2023_02_14_15_07_01_L2W__RGB_ds_pSDBred_extracted.csv";
+data_name = "B:\Thesis Project\SDB_Time\Results\Marathon\Condition1_dsSD\Extracted Pts\pSDB\Marathon_PlanetScope_24c0_2023_02_14_15_07_01_L2W__RGB_ds_pSDBgreen_extracted.csv";
 data = readmatrix(data_name);
 y = data(:,3);  % Reference data
 x = data(:,5);  % pSDB data
@@ -81,6 +81,9 @@ if contains(lower(data_name), "green")
 elseif contains(lower(data_name), "red")
     y_min_limit = 0;
     y_max_limits = -0.5:-0.25:-10;
+else
+    y_min_limit = 0;
+    y_max_limits = -0.5:-0.25:-15;
 end
 
 

@@ -8,7 +8,9 @@ Created on Thu Jan 16 20:32:54 2025
 """
 The first part of this code uses an API to download S2 safe files from copernicus sentinel hub. Have to first create a token in 
 the Sentinel hub dashboard (current one will expire June 24, 2025), that it calls to. Also need to find a 
-unique identifier UUID for each file that can be called instead of the file ID name
+unique identifier UUID for each file that can be called instead of the file ID name. It technically works, but
+it is sooo slow and times out after 1-3 images are downloaded so kind of useless for bulk download which was 
+fun to learn
 
 The second part creates a list of all image ids that will be used to determine the total amount of imagery at each 
 location in a year
@@ -19,15 +21,18 @@ import requests
 import pandas as pd
 import os
 import time
+import json
+import csv
 
+
+
+# Your Copernicus Open Access Hub credentials
+username = "mccullru@oregonstate.edu"
+password = "Hurt0226917!"
 
 ##############################################################################################################
 ##############################################################################################################
 
-
-# # Your Copernicus Open Access Hub credentials
-# username = "mccullru@oregonstate.edu"
-# password = "Hurt0226917!"
 
 # # Directory to input file name
 # file_path = r"B:\Thesis Project\Raw Imagery\ImageIDs\Individual_AOI_Lists\Sentinel2\Bombah_Libya_S2.xlsx"
@@ -139,23 +144,53 @@ import time
 
 ##############################################################################################################
 ##############################################################################################################
-        
 
 
 
+# Load your GeoJSON file
+with open(r"B:\Thesis Project\AOIs\Final_AOIs\Gyali.geojson") as f:
+    geojson = json.load(f)
 
+# Extract the coordinates of the bounding box
+coordinates = geojson['features'][0]['geometry']['coordinates'][0]
 
+# Find the minimum and maximum latitude and longitude
+min_lon = min([coord[0] for coord in coordinates])
+max_lon = max([coord[0] for coord in coordinates])
+min_lat = min([coord[1] for coord in coordinates])
+max_lat = max([coord[1] for coord in coordinates])
 
+# Construct the query URL
+url = "https://catalogue.dataspace.copernicus.eu/resto/api/collections/Sentinel2/search.json"
+params = {
+    "cloudCover": "[0,100]",
+    "startDate": "2023-01-01T00:00:00Z",
+    "completionDate": "2023-12-31T23:59:59Z",
+    "productType": "L1C",
+    "maxRecords": "500",
+    "box": f"{min_lon},{min_lat},{max_lon},{max_lat}"  # Use the bounding box coordinates
+}
 
+# Send the GET request
+response = requests.get(url, params=params)
 
-
-
-
-
-
-
-
-
+# Check if the request was successful
+if response.status_code == 200:
+    # Parse the response JSON
+    data = response.json()
+    
+    # Output the count of images
+    image_count = len(data['features'])
+    print(f"Total number of images found: {image_count}")
+    
+    # Output image IDs and their acquisition dates
+    print("\nImage IDs and Acquisition Dates:")
+    for item in data['features']:
+        image_id = item['id']
+        acquisition_date = item['properties']['startDate']
+        print(f"ID: {image_id}, Date: {acquisition_date}")
+else:
+    print(f"Error: {response.status_code}")
 
 
 

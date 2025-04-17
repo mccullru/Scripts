@@ -1,0 +1,1 @@
+All scripts that were used to work on my end thesis goal of comparing SDB between Sentinel-2 imagery and SuperDove imagery. Includes preparing imagery and reference data, creating SDB, and other things along the way.

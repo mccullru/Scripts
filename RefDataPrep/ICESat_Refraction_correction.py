@@ -72,99 +72,101 @@ import pyproj
 ##############################################################################################################
 ##############################################################################################################
 
-# Project itrf14 geodetic coordinates to a UTM projection
+# Project the original itrf14 geodetic coordinates to a UTM projection
 # Takes in both orig and new icesat tracks, and a csv with the track name and its corresponding UTM zones
 
-# import numpy as np
-# import h5py
-# import os
-# import pandas as pd
-# import geopandas as gpd
-# from shapely.geometry import Point
-# import pyproj
+import numpy as np
+import h5py
+import os
+import pandas as pd
+import geopandas as gpd
+from shapely.geometry import Point
+import pyproj
 
-# def find_matching_file(file_name, folder):
-#     # Extract the common part of the file name (between ATL03_ and the next underscore)
-#     suffix = file_name.split("ATL03_")[-1].split("_")[0]
+def find_matching_file(file_name, folder):
+    # Extract the common part of the file name (between ATL03_ and the next underscore)
+    suffix = file_name.split("ATL03_")[-1].split("_")[0]
     
-#     for f in os.listdir(folder):
-#         # Check if the common part (suffix) matches any file
-#         if f.split("ATL03_")[-1].split("_")[0] == suffix:
-#             return os.path.join(folder, f)
-#     return None
+    for f in os.listdir(folder):
+        # Check if the common part (suffix) matches any file
+        if f.split("ATL03_")[-1].split("_")[0] == suffix:
+            return os.path.join(folder, f)
+    return None
 
     
 
-# def project_to_utm(df, EPSG_code):
-#     """Project lat/lon (ITRF2014) to UTM coordinates."""
-#     itrf = pyproj.CRS("EPSG:7912")  # ITRF2014
-#     utm_crs = pyproj.CRS(f"EPSG:{EPSG_code}")  # EPSG code
+def project_to_utm(df, EPSG_code):
+    """Project lat/lon (ITRF2014) to UTM coordinates."""
     
-#     print(utm_crs)
+    itrf = pyproj.CRS("EPSG:7912")  # ITRF2014
+    utm_crs = pyproj.CRS(f"EPSG:{EPSG_code}")  # EPSG code
     
-#     transformer = pyproj.Transformer.from_crs(itrf, utm_crs, always_xy=True)
+    print(utm_crs)
     
-#     print("Dataframe columns:", df.columns)
+    transformer = pyproj.Transformer.from_crs(itrf, utm_crs, always_xy=True)
     
-#     # Check if the columns exist and select the right ones
-#     if 'Longitude' in df.columns and 'Latitude' in df.columns:
-#         lon_col = 'Longitude'
-#         lat_col = 'Latitude'
-#     elif 'reference_photon_lon' in df.columns and 'reference_photon_lat' in df.columns:
-#         lon_col = 'reference_photon_lon'
-#         lat_col = 'reference_photon_lat'
-#     else:
-#         raise ValueError("Neither 'Longitude'/'Latitude' nor 'reference_photon_lon'/'reference_photon_lat' columns found.")
+    print("Dataframe columns:", df.columns)
     
-#     # Perform the transformation
-#     df['Easting'], df['Northing'] = transformer.transform(df[lon_col], df[lat_col])
-#     return df
+    # Check if the columns exist and select the right ones
+    if 'Longitude' in df.columns and 'Latitude' in df.columns:
+        lon_col = 'Longitude'
+        lat_col = 'Latitude'
+    elif 'reference_photon_lon' in df.columns and 'reference_photon_lat' in df.columns:
+        lon_col = 'reference_photon_lon'
+        lat_col = 'reference_photon_lat'
+    else:
+        raise ValueError("Neither 'Longitude'/'Latitude' nor 'reference_photon_lon'/'reference_photon_lat' columns found.")
+    
+    # Perform the transformation
+    df['Easting'], df['Northing'] = transformer.transform(df[lon_col], df[lat_col])
+    return df
 
 
-# def process_files(folder1, folder2, utm_csv):
-#     """Process CSVs, project coordinates, and save outputs."""
-#     utm_zones = pd.read_csv(utm_csv, dtype={'Name': str, 'UTM Zone': int, 'EPSG code': int})
+def process_files(folder1, folder2, utm_csv):
+    """Process CSVs, project coordinates, and save outputs."""
     
-#     for file1 in os.listdir(folder1):
-#         if file1.endswith(".csv"):
-#             file1_path = os.path.join(folder1, file1)
-#             file2_path = find_matching_file(file1, folder2)
+    utm_zones = pd.read_csv(utm_csv, dtype={'Name': str, 'UTM Zone': int, 'EPSG code': int})
+    
+    for file1 in os.listdir(folder1):
+        if file1.endswith(".csv"):
+            file1_path = os.path.join(folder1, file1)
+            file2_path = find_matching_file(file1, folder2)
             
-#             if file2_path is None:
-#                 print(f"No matching file found for {file1}")
-#                 continue
+            if file2_path is None:
+                print(f"No matching file found for {file1}")
+                continue
             
-#             # Directly search for the full file name (without modification)
-#             file_name = file1.split(".")[0]  # Remove extension if needed
-#             epsg_code = utm_zones.loc[utm_zones['Name'] == file_name, 'EPSG code'].values
+            # Directly search for the full file name (without modification)
+            file_name = file1.split(".")[0]  # Remove extension if needed
+            epsg_code = utm_zones.loc[utm_zones['Name'] == file_name, 'EPSG code'].values
              
             
-#             if len(epsg_code) == 0:
-#                 print(f"No EPSG code found for {file_name}")
-#                 continue
-#             epsg_code = epsg_code[0]
+            if len(epsg_code) == 0:
+                print(f"No EPSG code found for {file_name}")
+                continue
+            epsg_code = epsg_code[0]
             
            
-#             df1 = pd.read_csv(file1_path)
-#             df2 = pd.read_csv(file2_path)
+            df1 = pd.read_csv(file1_path)
+            df2 = pd.read_csv(file2_path)
             
-#             df1 = project_to_utm(df1, epsg_code)
-#             df2 = project_to_utm(df2, epsg_code)
+            df1 = project_to_utm(df1, epsg_code)
+            df2 = project_to_utm(df2, epsg_code)
             
-#             output1 = file1_path.replace(".csv", "_utm.csv")
-#             output2 = file2_path.replace(".csv", "_utm.csv")
-#             df1.to_csv(output1, index=False)
-#             df2.to_csv(output2, index=False)
-#             print(f"Saved: \n{output1}\n{output2}")
-#         else:
-#             # Skip non-CSV files (e.g., .h5)
-#             print(f"Skipping non-CSV file: {file1}")
+            output1 = file1_path.replace(".csv", "_utm.csv")
+            output2 = file2_path.replace(".csv", "_utm.csv")
+            df1.to_csv(output1, index=False)
+            df2.to_csv(output2, index=False)
+            print(f"Saved: \n{output1}\n{output2}")
+        else:
+            # Skip non-CSV files (e.g., .h5)
+            print(f"Skipping non-CSV file: {file1}")
 
-# # Example usage
-# folder1 = r"E:\Thesis Stuff\ReferenceData\Refraction Correction\orig_icesat\other"    # original IceSat track
-# folder2 = r"E:\Thesis Stuff\ReferenceData\Refraction Correction\new_icesat\other"    # new Icesat track
-# utm_csv = r"E:\Thesis Stuff\ReferenceData\Refraction Correction\UTM_epsg_codes.csv"
-# process_files(folder1, folder2, utm_csv)
+# Example usage
+folder1 = r"E:\Thesis Stuff\ReferenceData\Refraction Correction\orig_icesat\other"    # original IceSat track
+folder2 = r"E:\Thesis Stuff\ReferenceData\Refraction Correction\new_icesat\other"    # new Icesat track
+utm_csv = r"E:\Thesis Stuff\ReferenceData\Refraction Correction\UTM_epsg_codes.csv"
+process_files(folder1, folder2, utm_csv)
 
 
 ##############################################################################################################

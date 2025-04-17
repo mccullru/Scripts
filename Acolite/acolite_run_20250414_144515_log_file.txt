@@ -1,0 +1,836 @@
+2025-04-14 14:45:15: Running ACOLITE processing - Generic GitHub Clone
+2025-04-14 14:45:15: Python - win32 - 3.10.12 | packaged by conda-forge | (main, Jun 23 2023, 22:34:57) [MSC v.1936 64 bit (AMD64)]
+2025-04-14 14:45:15: Platform - Windows 10 - AMD64 - 10.0.22621
+2025-04-14 14:45:15: Run ID - 20250414_144515
+2025-04-14 14:45:15: Nothing to do. Did you provide a settings file or inputfile? Exiting.
+2025-04-14 14:45:15: Running ACOLITE processing - Generic GitHub Clone
+2025-04-14 14:45:15: Python - win32 - 3.10.12 | packaged by conda-forge | (main, Jun 23 2023, 22:34:57) [MSC v.1936 64 bit (AMD64)]
+2025-04-14 14:45:15: Platform - Windows 10 - AMD64 - 10.0.22621
+2025-04-14 14:45:15: Run ID - 20250414_143452
+2025-04-14 14:45:15: E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230210_095129_02_2475\20230210_095129_02_2475_3B_AnalyticMS_8b_metadata.xml
+2025-04-14 14:45:34: Deleting E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L1R.nc
+2025-04-14 14:45:34: Deleting E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2R.nc
+2025-04-14 14:45:34: Deleting E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2W.nc
+2025-04-14 14:45:34: Running ACOLITE processing - Generic GitHub Clone
+2025-04-14 14:45:34: Python - win32 - 3.10.12 | packaged by conda-forge | (main, Jun 23 2023, 22:34:57) [MSC v.1936 64 bit (AMD64)]
+2025-04-14 14:45:34: Platform - Windows 10 - AMD64 - 10.0.22621
+2025-04-14 14:45:34: Run ID - 20250414_143452
+2025-04-14 14:45:34: E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230210_095129_02_2475\20230210_095129_02_2475_3B_AnalyticMS_8b_metadata.xml
+2025-04-14 14:45:35: Identified E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230210_095129_02_2475 as Planet type
+2025-04-14 14:45:35: Starting conversion of 1 scenes
+2025-04-14 14:45:35: Found 1 scenes in E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230210_095129_02_2475
+2025-04-14 14:45:35: Image file E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230210_095129_02_2475\20230210_095129_02_2475_3B_AnalyticMS_8b.tif, metadata file E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230210_095129_02_2475\20230210_095129_02_2475_3B_AnalyticMS_8b_metadata.xml
+2025-04-14 14:45:35: Importing metadata from E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230210_095129_02_2475
+2025-04-14 14:45:35: Using limit from polygon envelope: [39.13987664900003, 8.393068597000024, 39.17134892400003, 8.41527788600007]
+2025-04-14 14:45:35: Writing geolocation lon/lat
+2025-04-14 14:45:35: Wrote lon ((1169, 650))
+2025-04-14 14:45:35: Wrote lat ((1169, 650))
+2025-04-14 14:45:35: (1169, 650)
+2025-04-14 14:45:36: Converting bands: Wrote rhot_444 ((1169, 650))
+2025-04-14 14:45:36: (1169, 650)
+2025-04-14 14:45:36: Converting bands: Wrote rhot_492 ((1169, 650))
+2025-04-14 14:45:36: (1169, 650)
+2025-04-14 14:45:36: Converting bands: Wrote rhot_533 ((1169, 650))
+2025-04-14 14:45:36: (1169, 650)
+2025-04-14 14:45:37: Converting bands: Wrote rhot_566 ((1169, 650))
+2025-04-14 14:45:37: (1169, 650)
+2025-04-14 14:45:37: Converting bands: Wrote rhot_612 ((1169, 650))
+2025-04-14 14:45:37: (1169, 650)
+2025-04-14 14:45:37: Converting bands: Wrote rhot_666 ((1169, 650))
+2025-04-14 14:45:37: (1169, 650)
+2025-04-14 14:45:37: Converting bands: Wrote rhot_707 ((1169, 650))
+2025-04-14 14:45:38: (1169, 650)
+2025-04-14 14:45:38: Converting bands: Wrote rhot_866 ((1169, 650))
+2025-04-14 14:45:38: Conversion took 3.2 seconds
+2025-04-14 14:45:38: Created E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L1R.nc
+2025-04-14 14:45:38: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L1R_rgb_rhot.png
+2025-04-14 14:45:38: Running acolite for E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L1R.nc
+2025-04-14 14:45:39: Getting ancillary data for 2023-02-10T09:51:29+00:00 8.404E 39.156N
+2025-04-14 14:45:39: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304100_MET_NCEPR2_6h.hdf.bz2
+2025-04-14 14:45:39: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304106_MET_NCEPR2_6h.hdf.bz2
+2025-04-14 14:45:39: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304112_MET_NCEPR2_6h.hdf.bz2
+2025-04-14 14:45:39: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304118_MET_NCEPR2_6h.hdf.bz2
+2025-04-14 14:45:39: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304200_MET_NCEPR2_6h.hdf.bz2
+2025-04-14 14:45:39: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304100_O3_AURAOMI_24h.hdf
+2025-04-14 14:45:39: default uoz: 0.30 uwv: 1.50 pressure: 1013.25
+2025-04-14 14:45:39: current uoz: 0.30 uwv: 1.50 pressure: 1013.25
+2025-04-14 14:45:39: Using DSF atmospheric correction
+2025-04-14 14:45:39: Writing lon
+2025-04-14 14:45:39: Wrote lon
+2025-04-14 14:45:39: Writing lat
+2025-04-14 14:45:39: Wrote lat
+2025-04-14 14:45:39: Loading LUTs ['ACOLITE-LUT-202110-MOD1', 'ACOLITE-LUT-202110-MOD2']
+2025-04-14 14:45:40: romix+rsky_t
+2025-04-14 14:45:40: True
+2025-04-14 14:45:41: Loading LUTs took 1.2 s
+2025-04-14 14:45:41: Coastal-Blue
+2025-04-14 14:45:41: rhot_444
+2025-04-14 14:45:41: Coastal-Blue
+2025-04-14 14:45:41: darkest
+2025-04-14 14:45:41: 0.117
+2025-04-14 14:45:41: PlanetScope_SD8/BCoastal-Blue ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:45:41: PlanetScope_SD8/BCoastal-Blue ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:45:41: Blue
+2025-04-14 14:45:41: rhot_492
+2025-04-14 14:45:41: Blue
+2025-04-14 14:45:41: darkest
+2025-04-14 14:45:41: 0.089
+2025-04-14 14:45:42: PlanetScope_SD8/BBlue ACOLITE-LUT-202110-MOD1 took 0.016s (StdLUT)
+2025-04-14 14:45:42: PlanetScope_SD8/BBlue ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:45:42: Green_i
+2025-04-14 14:45:42: rhot_533
+2025-04-14 14:45:42: Green_i
+2025-04-14 14:45:42: darkest
+2025-04-14 14:45:42: 0.063
+2025-04-14 14:45:42: PlanetScope_SD8/BGreen_i ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:45:42: PlanetScope_SD8/BGreen_i ACOLITE-LUT-202110-MOD2 took 0.001s (StdLUT)
+2025-04-14 14:45:42: Green_ii
+2025-04-14 14:45:42: rhot_566
+2025-04-14 14:45:42: Green_ii
+2025-04-14 14:45:42: darkest
+2025-04-14 14:45:42: 0.048
+2025-04-14 14:45:42: PlanetScope_SD8/BGreen_ii ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:45:42: PlanetScope_SD8/BGreen_ii ACOLITE-LUT-202110-MOD2 took 0.011s (StdLUT)
+2025-04-14 14:45:42: Yellow
+2025-04-14 14:45:42: rhot_612
+2025-04-14 14:45:43: Yellow
+2025-04-14 14:45:43: darkest
+2025-04-14 14:45:43: 0.032
+2025-04-14 14:45:43: PlanetScope_SD8/BYellow ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:45:43: PlanetScope_SD8/BYellow ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:45:43: Red
+2025-04-14 14:45:43: rhot_666
+2025-04-14 14:45:43: Red
+2025-04-14 14:45:43: darkest
+2025-04-14 14:45:43: 0.028
+2025-04-14 14:45:43: PlanetScope_SD8/BRed ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:45:43: PlanetScope_SD8/BRed ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:45:43: Red-edge
+2025-04-14 14:45:43: rhot_707
+2025-04-14 14:45:43: Red-edge
+2025-04-14 14:45:43: darkest
+2025-04-14 14:45:43: 0.007
+2025-04-14 14:45:44: PlanetScope_SD8/BRed-edge ACOLITE-LUT-202110-MOD1 took 0.016s (StdLUT)
+2025-04-14 14:45:44: PlanetScope_SD8/BRed-edge ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:45:44: NIR
+2025-04-14 14:45:44: rhot_866
+2025-04-14 14:45:44: NIR
+2025-04-14 14:45:44: darkest
+2025-04-14 14:45:44: 0.000
+2025-04-14 14:45:44: PlanetScope_SD8/BNIR ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:45:44: PlanetScope_SD8/BNIR ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:45:44: Choosing best fitting model: min_drmsd (2 bands)
+2025-04-14 14:45:44: Computing RMSD for model ACOLITE-LUT-202110-MOD1
+2025-04-14 14:45:44: Computing RMSD for model ACOLITE-LUT-202110-MOD1: 2.0544e-03
+2025-04-14 14:45:44: Computing RMSD for model ACOLITE-LUT-202110-MOD2
+2025-04-14 14:45:44: Computing RMSD for model ACOLITE-LUT-202110-MOD2: 2.4795e-03
+2025-04-14 14:45:44: Selected model ACOLITE-LUT-202110-MOD1: aot 0.068, RMSD 2.05e-03
+2025-04-14 14:45:44: use_revlut
+2025-04-14 14:45:45: False
+2025-04-14 14:45:45: Wrote rhot_444
+2025-04-14 14:45:45: Computing surface reflectance
+2025-04-14 14:45:45: Coastal-Blue
+2025-04-14 14:45:45: 444
+2025-04-14 14:45:45: 0.997
+2025-04-14 14:45:45: Wrote rhos_444
+2025-04-14 14:45:45: PlanetScope_SD8/BCoastal-Blue took 0.4s (StdLUT)
+2025-04-14 14:45:45: Wrote rhot_492
+2025-04-14 14:45:45: Computing surface reflectance
+2025-04-14 14:45:45: Blue
+2025-04-14 14:45:46: 492
+2025-04-14 14:45:46: 0.978
+2025-04-14 14:45:46: Wrote rhos_492
+2025-04-14 14:45:46: PlanetScope_SD8/BBlue took 0.3s (StdLUT)
+2025-04-14 14:45:46: Wrote rhot_533
+2025-04-14 14:45:46: Computing surface reflectance
+2025-04-14 14:45:46: Green_i
+2025-04-14 14:45:46: 533
+2025-04-14 14:45:46: 0.941
+2025-04-14 14:45:46: Wrote rhos_533
+2025-04-14 14:45:46: PlanetScope_SD8/BGreen_i took 0.4s (StdLUT)
+2025-04-14 14:45:47: Wrote rhot_566
+2025-04-14 14:45:47: Computing surface reflectance
+2025-04-14 14:45:47: Green_ii
+2025-04-14 14:45:47: 566
+2025-04-14 14:45:47: 0.903
+2025-04-14 14:45:47: Wrote rhos_566
+2025-04-14 14:45:47: PlanetScope_SD8/BGreen_ii took 0.5s (StdLUT)
+2025-04-14 14:45:47: Wrote rhot_612
+2025-04-14 14:45:47: Computing surface reflectance
+2025-04-14 14:45:47: Yellow
+2025-04-14 14:45:48: 612
+2025-04-14 14:45:48: 0.896
+2025-04-14 14:45:48: Wrote rhos_612
+2025-04-14 14:45:48: PlanetScope_SD8/BYellow took 0.4s (StdLUT)
+2025-04-14 14:45:48: Wrote rhot_666
+2025-04-14 14:45:48: Computing surface reflectance
+2025-04-14 14:45:48: Red
+2025-04-14 14:45:48: 666
+2025-04-14 14:45:48: 0.948
+2025-04-14 14:45:48: Wrote rhos_666
+2025-04-14 14:45:49: PlanetScope_SD8/BRed took 0.4s (StdLUT)
+2025-04-14 14:45:49: Wrote rhot_707
+2025-04-14 14:45:49: Computing surface reflectance
+2025-04-14 14:45:49: Red-edge
+2025-04-14 14:45:49: 707
+2025-04-14 14:45:49: 0.938
+2025-04-14 14:45:49: Wrote rhos_707
+2025-04-14 14:45:49: PlanetScope_SD8/BRed-edge took 0.5s (StdLUT)
+2025-04-14 14:45:50: Wrote rhot_866
+2025-04-14 14:45:50: Computing surface reflectance
+2025-04-14 14:45:50: NIR
+2025-04-14 14:45:50: 866
+2025-04-14 14:45:50: 0.994
+2025-04-14 14:45:50: Wrote rhos_866
+2025-04-14 14:45:50: PlanetScope_SD8/BNIR took 0.3s (StdLUT)
+2025-04-14 14:45:50: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2R.nc
+2025-04-14 14:45:50: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2R_rgb_rhos.png
+2025-04-14 14:45:51: L2W keeping data in memory: False
+2025-04-14 14:45:51: ['rhot_444', 'rhot_492', 'rhot_533', 'rhot_566', 'rhot_612', 'rhot_666', 'rhot_707', 'rhot_866']
+2025-04-14 14:45:51: [444, 492, 533, 566, 612, 666, 707, 866]
+2025-04-14 14:45:51: ['rhos_444', 'rhos_492', 'rhos_533', 'rhos_566', 'rhos_612', 'rhos_666', 'rhos_707', 'rhos_866']
+2025-04-14 14:45:51: [444, 492, 533, 566, 612, 666, 707, 866]
+2025-04-14 14:45:51: Computing non water threshold mask.
+2025-04-14 14:45:51: Computing non water threshold mask from rhot_866 > 0.1.
+2025-04-14 14:45:51: Computing cirrus mask.
+2025-04-14 14:45:51: No suitable band found for cirrus masking.
+2025-04-14 14:45:51: Computing TOA limit mask.
+2025-04-14 14:45:51: Computing TOA limit mask from rhot_444 > 0.3.
+2025-04-14 14:45:51: Computing TOA limit mask from rhot_492 > 0.3.
+2025-04-14 14:45:51: Computing TOA limit mask from rhot_533 > 0.3.
+2025-04-14 14:45:52: Computing TOA limit mask from rhot_566 > 0.3.
+2025-04-14 14:45:52: Computing TOA limit mask from rhot_612 > 0.3.
+2025-04-14 14:45:52: Computing TOA limit mask from rhot_666 > 0.3.
+2025-04-14 14:45:52: Computing TOA limit mask from rhot_707 > 0.3.
+2025-04-14 14:45:52: Computing TOA limit mask from rhot_866 > 0.3.
+2025-04-14 14:45:52: Computing negative reflectance mask.
+2025-04-14 14:45:52: Computing negative reflectance mask from rhos_444.
+2025-04-14 14:45:52: Computing negative reflectance mask from rhos_492.
+2025-04-14 14:45:52: Computing negative reflectance mask from rhos_533.
+2025-04-14 14:45:52: Computing negative reflectance mask from rhos_566.
+2025-04-14 14:45:52: Computing negative reflectance mask from rhos_612.
+2025-04-14 14:45:52: Computing negative reflectance mask from rhos_666.
+2025-04-14 14:45:52: Computing negative reflectance mask from rhos_707.
+2025-04-14 14:45:53: Copying datasets from L2R.
+2025-04-14 14:45:53: Copying lon, base dataset lon
+2025-04-14 14:45:53: Writing lon
+2025-04-14 14:45:53: Copying lat, base dataset lat
+2025-04-14 14:45:53: Writing lat
+2025-04-14 14:45:53: Copying Rrs_492, base dataset rhos_492
+2025-04-14 14:45:53: Writing Rrs_492
+2025-04-14 14:45:53: Copying Rrs_566, base dataset rhos_566
+2025-04-14 14:45:53: Writing Rrs_566
+2025-04-14 14:45:53: Copying Rrs_666, base dataset rhos_666
+2025-04-14 14:45:53: Writing Rrs_666
+2025-04-14 14:45:54: Parameter Rrs_493 not computed
+2025-04-14 14:45:54: Parameter Rrs_518 not computed
+2025-04-14 14:45:54: Parameter Rrs_505 not computed
+2025-04-14 14:45:54: Parameter Rrs_559 not computed
+2025-04-14 14:45:54: Parameter Rrs_560 not computed
+2025-04-14 14:45:54: Parameter Rrs_542 not computed
+2025-04-14 14:45:54: Parameter Rrs_552 not computed
+2025-04-14 14:45:54: Parameter Rrs_546 not computed
+2025-04-14 14:45:54: Parameter Rrs_665 not computed
+2025-04-14 14:45:54: Parameter Rrs_622 not computed
+2025-04-14 14:45:54: Parameter Rrs_621 not computed
+2025-04-14 14:45:54: Parameter Rrs_633 not computed
+2025-04-14 14:45:54: Parameter Rrs_625 not computed
+2025-04-14 14:45:55: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2W.nc
+2025-04-14 14:45:55: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2W_Rrs_492.tif
+2025-04-14 14:45:55: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2W_Rrs_566.tif
+2025-04-14 14:45:55: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2W_Rrs_666.tif
+2025-04-14 14:45:55: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2W_l2_flags.tif
+2025-04-14 14:45:55: Deleting E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L1R.nc
+2025-04-14 14:45:55: Deleting E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2R.nc
+2025-04-14 14:45:55: Deleting E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2W.nc
+2025-04-14 14:45:55: Running ACOLITE processing - Generic GitHub Clone
+2025-04-14 14:45:56: Python - win32 - 3.10.12 | packaged by conda-forge | (main, Jun 23 2023, 22:34:57) [MSC v.1936 64 bit (AMD64)]
+2025-04-14 14:45:56: Platform - Windows 10 - AMD64 - 10.0.22621
+2025-04-14 14:45:56: Run ID - 20250414_143452
+2025-04-14 14:45:56: E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230210_095129_02_2475\20230210_095129_02_2475_3B_AnalyticMS_8b_metadata.xml
+2025-04-14 14:45:56: Identified E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230210_095129_02_2475 as Planet type
+2025-04-14 14:45:56: Starting conversion of 1 scenes
+2025-04-14 14:45:56: Found 1 scenes in E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230210_095129_02_2475
+2025-04-14 14:45:56: Image file E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230210_095129_02_2475\20230210_095129_02_2475_3B_AnalyticMS_8b.tif, metadata file E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230210_095129_02_2475\20230210_095129_02_2475_3B_AnalyticMS_8b_metadata.xml
+2025-04-14 14:45:56: Importing metadata from E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230210_095129_02_2475
+2025-04-14 14:45:56: Using limit from polygon envelope: [39.13987664900003, 8.393068597000024, 39.17134892400003, 8.41527788600007]
+2025-04-14 14:45:56: Writing geolocation lon/lat
+2025-04-14 14:45:56: Wrote lon ((1169, 650))
+2025-04-14 14:45:56: Wrote lat ((1169, 650))
+2025-04-14 14:45:57: (1169, 650)
+2025-04-14 14:45:57: Converting bands: Wrote rhot_444 ((1169, 650))
+2025-04-14 14:45:57: (1169, 650)
+2025-04-14 14:45:57: Converting bands: Wrote rhot_492 ((1169, 650))
+2025-04-14 14:45:57: (1169, 650)
+2025-04-14 14:45:57: Converting bands: Wrote rhot_533 ((1169, 650))
+2025-04-14 14:45:57: (1169, 650)
+2025-04-14 14:45:58: Converting bands: Wrote rhot_566 ((1169, 650))
+2025-04-14 14:45:58: (1169, 650)
+2025-04-14 14:45:58: Converting bands: Wrote rhot_612 ((1169, 650))
+2025-04-14 14:45:58: (1169, 650)
+2025-04-14 14:45:58: Converting bands: Wrote rhot_666 ((1169, 650))
+2025-04-14 14:45:58: (1169, 650)
+2025-04-14 14:45:58: Converting bands: Wrote rhot_707 ((1169, 650))
+2025-04-14 14:45:59: (1169, 650)
+2025-04-14 14:45:59: Converting bands: Wrote rhot_866 ((1169, 650))
+2025-04-14 14:45:59: Conversion took 2.8 seconds
+2025-04-14 14:45:59: Created E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L1R.nc
+2025-04-14 14:45:59: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L1R_rgb_rhot.png
+2025-04-14 14:45:59: Running acolite for E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L1R.nc
+2025-04-14 14:45:59: Getting ancillary data for 2023-02-10T09:51:29+00:00 8.404E 39.156N
+2025-04-14 14:45:59: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304100_MET_NCEPR2_6h.hdf.bz2
+2025-04-14 14:45:59: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304106_MET_NCEPR2_6h.hdf.bz2
+2025-04-14 14:45:59: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304112_MET_NCEPR2_6h.hdf.bz2
+2025-04-14 14:46:00: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304118_MET_NCEPR2_6h.hdf.bz2
+2025-04-14 14:46:00: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304200_MET_NCEPR2_6h.hdf.bz2
+2025-04-14 14:46:00: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304100_O3_AURAOMI_24h.hdf
+2025-04-14 14:46:00: default uoz: 0.30 uwv: 1.50 pressure: 1013.25
+2025-04-14 14:46:00: current uoz: 0.30 uwv: 1.50 pressure: 1013.25
+2025-04-14 14:46:00: Using DSF atmospheric correction
+2025-04-14 14:46:00: Writing lon
+2025-04-14 14:46:00: Wrote lon
+2025-04-14 14:46:00: Writing lat
+2025-04-14 14:46:00: Wrote lat
+2025-04-14 14:46:00: Loading LUTs ['ACOLITE-LUT-202110-MOD1', 'ACOLITE-LUT-202110-MOD2']
+2025-04-14 14:46:00: romix+rsky_t
+2025-04-14 14:46:00: True
+2025-04-14 14:46:01: Loading LUTs took 1.2 s
+2025-04-14 14:46:02: Coastal-Blue
+2025-04-14 14:46:02: rhot_444
+2025-04-14 14:46:02: Coastal-Blue
+2025-04-14 14:46:02: darkest
+2025-04-14 14:46:02: 0.117
+2025-04-14 14:46:02: PlanetScope_SD8/BCoastal-Blue ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:46:02: PlanetScope_SD8/BCoastal-Blue ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:46:02: Blue
+2025-04-14 14:46:02: rhot_492
+2025-04-14 14:46:02: Blue
+2025-04-14 14:46:02: darkest
+2025-04-14 14:46:02: 0.089
+2025-04-14 14:46:02: PlanetScope_SD8/BBlue ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:46:02: PlanetScope_SD8/BBlue ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:46:02: Green_i
+2025-04-14 14:46:02: rhot_533
+2025-04-14 14:46:02: Green_i
+2025-04-14 14:46:03: darkest
+2025-04-14 14:46:03: 0.063
+2025-04-14 14:46:03: PlanetScope_SD8/BGreen_i ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:46:03: PlanetScope_SD8/BGreen_i ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:46:03: Green_ii
+2025-04-14 14:46:03: rhot_566
+2025-04-14 14:46:03: Green_ii
+2025-04-14 14:46:03: darkest
+2025-04-14 14:46:03: 0.048
+2025-04-14 14:46:03: PlanetScope_SD8/BGreen_ii ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:46:03: PlanetScope_SD8/BGreen_ii ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:46:03: Yellow
+2025-04-14 14:46:03: rhot_612
+2025-04-14 14:46:03: Yellow
+2025-04-14 14:46:03: darkest
+2025-04-14 14:46:03: 0.032
+2025-04-14 14:46:03: PlanetScope_SD8/BYellow ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:46:03: PlanetScope_SD8/BYellow ACOLITE-LUT-202110-MOD2 took 0.006s (StdLUT)
+2025-04-14 14:46:03: Red
+2025-04-14 14:46:04: rhot_666
+2025-04-14 14:46:04: Red
+2025-04-14 14:46:04: darkest
+2025-04-14 14:46:04: 0.028
+2025-04-14 14:46:04: PlanetScope_SD8/BRed ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:46:04: PlanetScope_SD8/BRed ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:46:04: Red-edge
+2025-04-14 14:46:04: rhot_707
+2025-04-14 14:46:04: Red-edge
+2025-04-14 14:46:04: darkest
+2025-04-14 14:46:04: 0.007
+2025-04-14 14:46:04: PlanetScope_SD8/BRed-edge ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:46:04: PlanetScope_SD8/BRed-edge ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:46:04: NIR
+2025-04-14 14:46:04: rhot_866
+2025-04-14 14:46:04: NIR
+2025-04-14 14:46:05: darkest
+2025-04-14 14:46:05: 0.000
+2025-04-14 14:46:05: PlanetScope_SD8/BNIR ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:46:05: PlanetScope_SD8/BNIR ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:46:05: Choosing best fitting model: min_drmsd (2 bands)
+2025-04-14 14:46:05: Computing RMSD for model ACOLITE-LUT-202110-MOD1
+2025-04-14 14:46:05: Computing RMSD for model ACOLITE-LUT-202110-MOD1: 2.0544e-03
+2025-04-14 14:46:05: Computing RMSD for model ACOLITE-LUT-202110-MOD2
+2025-04-14 14:46:05: Computing RMSD for model ACOLITE-LUT-202110-MOD2: 2.4795e-03
+2025-04-14 14:46:05: Selected model ACOLITE-LUT-202110-MOD1: aot 0.068, RMSD 2.05e-03
+2025-04-14 14:46:05: use_revlut
+2025-04-14 14:46:05: False
+2025-04-14 14:46:05: Wrote rhot_444
+2025-04-14 14:46:06: Computing surface reflectance
+2025-04-14 14:46:06: Coastal-Blue
+2025-04-14 14:46:06: 444
+2025-04-14 14:46:06: 0.997
+2025-04-14 14:46:06: Wrote rhos_444
+2025-04-14 14:46:06: PlanetScope_SD8/BCoastal-Blue took 0.3s (StdLUT)
+2025-04-14 14:46:06: Wrote rhot_492
+2025-04-14 14:46:06: Computing surface reflectance
+2025-04-14 14:46:06: Blue
+2025-04-14 14:46:06: 492
+2025-04-14 14:46:06: 0.978
+2025-04-14 14:46:06: Wrote rhos_492
+2025-04-14 14:46:06: PlanetScope_SD8/BBlue took 0.5s (StdLUT)
+2025-04-14 14:46:07: Wrote rhot_533
+2025-04-14 14:46:07: Computing surface reflectance
+2025-04-14 14:46:07: Green_i
+2025-04-14 14:46:07: 533
+2025-04-14 14:46:07: 0.941
+2025-04-14 14:46:07: Wrote rhos_533
+2025-04-14 14:46:07: PlanetScope_SD8/BGreen_i took 0.4s (StdLUT)
+2025-04-14 14:46:07: Wrote rhot_566
+2025-04-14 14:46:07: Computing surface reflectance
+2025-04-14 14:46:07: Green_ii
+2025-04-14 14:46:07: 566
+2025-04-14 14:46:07: 0.903
+2025-04-14 14:46:08: Wrote rhos_566
+2025-04-14 14:46:08: PlanetScope_SD8/BGreen_ii took 0.4s (StdLUT)
+2025-04-14 14:46:08: Wrote rhot_612
+2025-04-14 14:46:08: Computing surface reflectance
+2025-04-14 14:46:08: Yellow
+2025-04-14 14:46:08: 612
+2025-04-14 14:46:08: 0.896
+2025-04-14 14:46:08: Wrote rhos_612
+2025-04-14 14:46:08: PlanetScope_SD8/BYellow took 0.3s (StdLUT)
+2025-04-14 14:46:08: Wrote rhot_666
+2025-04-14 14:46:08: Computing surface reflectance
+2025-04-14 14:46:08: Red
+2025-04-14 14:46:09: 666
+2025-04-14 14:46:09: 0.948
+2025-04-14 14:46:09: Wrote rhos_666
+2025-04-14 14:46:09: PlanetScope_SD8/BRed took 0.4s (StdLUT)
+2025-04-14 14:46:09: Wrote rhot_707
+2025-04-14 14:46:09: Computing surface reflectance
+2025-04-14 14:46:10: Red-edge
+2025-04-14 14:46:10: 707
+2025-04-14 14:46:10: 0.938
+2025-04-14 14:46:10: Wrote rhos_707
+2025-04-14 14:46:10: PlanetScope_SD8/BRed-edge took 0.4s (StdLUT)
+2025-04-14 14:46:10: Wrote rhot_866
+2025-04-14 14:46:10: Computing surface reflectance
+2025-04-14 14:46:10: NIR
+2025-04-14 14:46:10: 866
+2025-04-14 14:46:10: 0.994
+2025-04-14 14:46:10: Wrote rhos_866
+2025-04-14 14:46:10: PlanetScope_SD8/BNIR took 0.3s (StdLUT)
+2025-04-14 14:46:10: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2R.nc
+2025-04-14 14:46:11: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2R_rgb_rhos.png
+2025-04-14 14:46:11: L2W keeping data in memory: False
+2025-04-14 14:46:11: ['rhot_444', 'rhot_492', 'rhot_533', 'rhot_566', 'rhot_612', 'rhot_666', 'rhot_707', 'rhot_866']
+2025-04-14 14:46:11: [444, 492, 533, 566, 612, 666, 707, 866]
+2025-04-14 14:46:11: ['rhos_444', 'rhos_492', 'rhos_533', 'rhos_566', 'rhos_612', 'rhos_666', 'rhos_707', 'rhos_866']
+2025-04-14 14:46:11: [444, 492, 533, 566, 612, 666, 707, 866]
+2025-04-14 14:46:11: Computing non water threshold mask.
+2025-04-14 14:46:11: Computing non water threshold mask from rhot_866 > 0.1.
+2025-04-14 14:46:11: Computing cirrus mask.
+2025-04-14 14:46:12: No suitable band found for cirrus masking.
+2025-04-14 14:46:12: Computing TOA limit mask.
+2025-04-14 14:46:12: Computing TOA limit mask from rhot_444 > 0.3.
+2025-04-14 14:46:12: Computing TOA limit mask from rhot_492 > 0.3.
+2025-04-14 14:46:12: Computing TOA limit mask from rhot_533 > 0.3.
+2025-04-14 14:46:12: Computing TOA limit mask from rhot_566 > 0.3.
+2025-04-14 14:46:12: Computing TOA limit mask from rhot_612 > 0.3.
+2025-04-14 14:46:12: Computing TOA limit mask from rhot_666 > 0.3.
+2025-04-14 14:46:12: Computing TOA limit mask from rhot_707 > 0.3.
+2025-04-14 14:46:12: Computing TOA limit mask from rhot_866 > 0.3.
+2025-04-14 14:46:12: Computing negative reflectance mask.
+2025-04-14 14:46:12: Computing negative reflectance mask from rhos_444.
+2025-04-14 14:46:13: Computing negative reflectance mask from rhos_492.
+2025-04-14 14:46:13: Computing negative reflectance mask from rhos_533.
+2025-04-14 14:46:13: Computing negative reflectance mask from rhos_566.
+2025-04-14 14:46:13: Computing negative reflectance mask from rhos_612.
+2025-04-14 14:46:13: Computing negative reflectance mask from rhos_666.
+2025-04-14 14:46:13: Computing negative reflectance mask from rhos_707.
+2025-04-14 14:46:13: Copying datasets from L2R.
+2025-04-14 14:46:13: Copying lon, base dataset lon
+2025-04-14 14:46:13: Writing lon
+2025-04-14 14:46:13: Copying lat, base dataset lat
+2025-04-14 14:46:13: Writing lat
+2025-04-14 14:46:13: Copying Rrs_492, base dataset rhos_492
+2025-04-14 14:46:13: Writing Rrs_492
+2025-04-14 14:46:13: Copying Rrs_566, base dataset rhos_566
+2025-04-14 14:46:14: Writing Rrs_566
+2025-04-14 14:46:14: Copying Rrs_666, base dataset rhos_666
+2025-04-14 14:46:14: Writing Rrs_666
+2025-04-14 14:46:14: Parameter Rrs_493 not computed
+2025-04-14 14:46:14: Parameter Rrs_518 not computed
+2025-04-14 14:46:14: Parameter Rrs_505 not computed
+2025-04-14 14:46:14: Parameter Rrs_559 not computed
+2025-04-14 14:46:14: Parameter Rrs_560 not computed
+2025-04-14 14:46:14: Parameter Rrs_542 not computed
+2025-04-14 14:46:14: Parameter Rrs_552 not computed
+2025-04-14 14:46:14: Parameter Rrs_546 not computed
+2025-04-14 14:46:14: Parameter Rrs_665 not computed
+2025-04-14 14:46:15: Parameter Rrs_622 not computed
+2025-04-14 14:46:15: Parameter Rrs_621 not computed
+2025-04-14 14:46:15: Parameter Rrs_633 not computed
+2025-04-14 14:46:15: Parameter Rrs_625 not computed
+2025-04-14 14:46:15: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2W.nc
+2025-04-14 14:46:15: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2W_Rrs_492.tif
+2025-04-14 14:46:15: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2W_Rrs_566.tif
+2025-04-14 14:46:15: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2W_Rrs_666.tif
+2025-04-14 14:46:15: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2W_l2_flags.tif
+2025-04-14 14:46:15: Deleting E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L1R.nc
+2025-04-14 14:46:16: Deleting E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2R.nc
+2025-04-14 14:46:16: Deleting E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230210_095129_02_2475/PlanetScope_2475_2023_02_10_09_51_29_L2W.nc
+2025-04-14 14:46:16: Running ACOLITE processing - Generic GitHub Clone
+2025-04-14 14:46:16: Python - win32 - 3.10.12 | packaged by conda-forge | (main, Jun 23 2023, 22:34:57) [MSC v.1936 64 bit (AMD64)]
+2025-04-14 14:46:16: Platform - Windows 10 - AMD64 - 10.0.22621
+2025-04-14 14:46:16: Run ID - 20250414_144616
+2025-04-14 14:46:16: Nothing to do. Did you provide a settings file or inputfile? Exiting.
+2025-04-14 14:46:16: Running ACOLITE processing - Generic GitHub Clone
+2025-04-14 14:46:16: Python - win32 - 3.10.12 | packaged by conda-forge | (main, Jun 23 2023, 22:34:57) [MSC v.1936 64 bit (AMD64)]
+2025-04-14 14:46:16: Platform - Windows 10 - AMD64 - 10.0.22621
+2025-04-14 14:46:16: Run ID - 20250414_143501
+2025-04-14 14:46:16: E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230212_094926_60_2482\20230212_094926_60_2482_3B_AnalyticMS_8b_metadata.xml
+2025-04-14 14:46:16: Identified E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230212_094926_60_2482 as Planet type
+2025-04-14 14:46:16: Starting conversion of 1 scenes
+2025-04-14 14:46:17: Found 1 scenes in E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230212_094926_60_2482
+2025-04-14 14:46:17: Image file E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230212_094926_60_2482\20230212_094926_60_2482_3B_AnalyticMS_8b.tif, metadata file E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230212_094926_60_2482\20230212_094926_60_2482_3B_AnalyticMS_8b_metadata.xml
+2025-04-14 14:46:17: Importing metadata from E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_SouthPort\PSScene-20230212_094926_60_2482
+2025-04-14 14:46:17: Using limit from polygon envelope: [39.13987664900003, 8.393068597000024, 39.17134892400003, 8.41527788600007]
+2025-04-14 14:46:17: Writing geolocation lon/lat
+2025-04-14 14:46:17: Wrote lon ((1169, 650))
+2025-04-14 14:46:17: Wrote lat ((1169, 650))
+2025-04-14 14:46:17: (1169, 650)
+2025-04-14 14:46:17: Converting bands: Wrote rhot_444 ((1169, 650))
+2025-04-14 14:46:18: (1169, 650)
+2025-04-14 14:46:18: Converting bands: Wrote rhot_492 ((1169, 650))
+2025-04-14 14:46:18: (1169, 650)
+2025-04-14 14:46:18: Converting bands: Wrote rhot_533 ((1169, 650))
+2025-04-14 14:46:18: (1169, 650)
+2025-04-14 14:46:18: Converting bands: Wrote rhot_566 ((1169, 650))
+2025-04-14 14:46:18: (1169, 650)
+2025-04-14 14:46:19: Converting bands: Wrote rhot_612 ((1169, 650))
+2025-04-14 14:46:19: (1169, 650)
+2025-04-14 14:46:19: Converting bands: Wrote rhot_666 ((1169, 650))
+2025-04-14 14:46:19: (1169, 650)
+2025-04-14 14:46:19: Converting bands: Wrote rhot_707 ((1169, 650))
+2025-04-14 14:46:19: (1169, 650)
+2025-04-14 14:46:20: Converting bands: Wrote rhot_866 ((1169, 650))
+2025-04-14 14:46:20: Conversion took 3.1 seconds
+2025-04-14 14:46:20: Created E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230212_094926_60_2482/PlanetScope_2482_2023_02_12_09_49_26_L1R.nc
+2025-04-14 14:46:20: Wrote E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230212_094926_60_2482/PlanetScope_2482_2023_02_12_09_49_26_L1R_rgb_rhot.png
+2025-04-14 14:46:20: Running acolite for E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output\PSScene-20230212_094926_60_2482/PlanetScope_2482_2023_02_12_09_49_26_L1R.nc
+2025-04-14 14:46:20: Getting ancillary data for 2023-02-12T09:49:26+00:00 8.404E 39.156N
+2025-04-14 14:46:20: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304300_MET_NCEPR2_6h.hdf.bz2
+2025-04-14 14:46:20: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304306_MET_NCEPR2_6h.hdf.bz2
+2025-04-14 14:46:20: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304312_MET_NCEPR2_6h.hdf.bz2
+2025-04-14 14:46:21: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304318_MET_NCEPR2_6h.hdf.bz2
+2025-04-14 14:46:21: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304400_MET_NCEPR2_6h.hdf.bz2
+2025-04-14 14:46:21: EARTHDATA user name and password required for download of https://oceandata.sci.gsfc.nasa.gov/ob/getfile/N202304300_O3_AURAOMI_24h.hdf
+2025-04-14 14:46:21: default uoz: 0.30 uwv: 1.50 pressure: 1013.25
+2025-04-14 14:46:21: current uoz: 0.30 uwv: 1.50 pressure: 1013.25
+2025-04-14 14:46:21: Using DSF atmospheric correction
+2025-04-14 14:46:21: Writing lon
+2025-04-14 14:46:21: Wrote lon
+2025-04-14 14:46:21: Writing lat
+2025-04-14 14:46:21: Wrote lat
+2025-04-14 14:46:21: Loading LUTs ['ACOLITE-LUT-202110-MOD1', 'ACOLITE-LUT-202110-MOD2']
+2025-04-14 14:46:21: romix+rsky_t
+2025-04-14 14:46:21: True
+2025-04-14 14:46:23: Loading LUTs took 1.3 s
+2025-04-14 14:46:23: Coastal-Blue
+2025-04-14 14:46:23: rhot_444
+2025-04-14 14:46:23: Coastal-Blue
+2025-04-14 14:46:23: darkest
+2025-04-14 14:46:23: 0.131
+2025-04-14 14:46:23: PlanetScope_SD8/BCoastal-Blue ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:46:23: PlanetScope_SD8/BCoastal-Blue ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:46:23: Blue
+2025-04-14 14:46:23: rhot_492
+2025-04-14 14:46:23: Blue
+2025-04-14 14:46:23: darkest
+2025-04-14 14:46:23: 0.097
+2025-04-14 14:46:24: PlanetScope_SD8/BBlue ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:46:24: PlanetScope_SD8/BBlue ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:46:24: Green_i
+2025-04-14 14:46:24: rhot_533
+2025-04-14 14:46:24: Green_i
+2025-04-14 14:46:24: darkest
+2025-04-14 14:46:24: 0.067
+2025-04-14 14:46:24: PlanetScope_SD8/BGreen_i ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:46:24: PlanetScope_SD8/BGreen_i ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:46:24: Green_ii
+2025-04-14 14:46:24: rhot_566
+2025-04-14 14:46:24: Green_ii
+2025-04-14 14:46:24: darkest
+2025-04-14 14:46:24: 0.053
+2025-04-14 14:46:24: PlanetScope_SD8/BGreen_ii ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:46:25: PlanetScope_SD8/BGreen_ii ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:46:25: Yellow
+2025-04-14 14:46:25: rhot_612
+2025-04-14 14:46:25: Yellow
+2025-04-14 14:46:25: darkest
+2025-04-14 14:46:25: 0.037
+2025-04-14 14:46:25: PlanetScope_SD8/BYellow ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:46:25: PlanetScope_SD8/BYellow ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:46:25: Red
+2025-04-14 14:46:25: rhot_666
+2025-04-14 14:46:25: Red
+2025-04-14 14:46:25: darkest
+2025-04-14 14:46:25: 0.028
+2025-04-14 14:46:25: PlanetScope_SD8/BRed ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:46:26: PlanetScope_SD8/BRed ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:46:26: Red-edge
+2025-04-14 14:46:26: rhot_707
+2025-04-14 14:46:26: Red-edge
+2025-04-14 14:46:26: darkest
+2025-04-14 14:46:26: 0.016
+2025-04-14 14:46:26: PlanetScope_SD8/BRed-edge ACOLITE-LUT-202110-MOD1 took 0.000s (StdLUT)
+2025-04-14 14:46:26: PlanetScope_SD8/BRed-edge ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:46:26: NIR
+2025-04-14 14:46:26: rhot_866
+2025-04-14 14:46:26: NIR
+2025-04-14 14:46:26: darkest
+2025-04-14 14:46:26: 0.001
+2025-04-14 14:46:27: PlanetScope_SD8/BNIR ACOLITE-LUT-202110-MOD1 took 0.004s (StdLUT)
+2025-04-14 14:46:27: PlanetScope_SD8/BNIR ACOLITE-LUT-202110-MOD2 took 0.000s (StdLUT)
+2025-04-14 14:46:27: Choosing best fitting model: min_drmsd (2 bands)
+2025-04-14 14:46:27: Computing RMSD for model ACOLITE-LUT-202110-MOD1
+2025-04-14 14:46:27: Computing RMSD for model ACOLITE-LUT-202110-MOD1: 6.3638e-03
+2025-04-14 14:46:27: Computing RMSD for model ACOLITE-LUT-202110-MOD2
+2025-04-14 14:46:27: Computing RMSD for model ACOLITE-LUT-202110-MOD2: 6.3906e-03
+2025-04-14 14:46:27: Selected model ACOLITE-LUT-202110-MOD1: aot 0.013, RMSD 6.36e-03
+2025-04-14 14:46:27: use_revlut
+2025-04-14 14:46:27: False
+2025-04-14 14:46:27: Wrote rhot_444
+2025-04-14 14:46:27: Computing surface reflectance
+2025-04-14 14:46:27: Coastal-Blue
+2025-04-14 14:46:28: 444
+2025-04-14 14:46:28: 0.997
+2025-04-14 14:46:28: Wrote rhos_444
+2025-04-14 14:46:28: PlanetScope_SD8/BCoastal-Blue took 0.4s (StdLUT)
+2025-04-14 14:46:28: Wrote rhot_492
+2025-04-14 14:46:28: Computing surface reflectance
+2025-04-14 14:46:28: Blue
+2025-04-14 14:46:28: 492
+2025-04-14 14:46:28: 0.978
+2025-04-14 14:46:28: Wrote rhos_492
+2025-04-14 14:46:28: PlanetScope_SD8/BBlue took 0.4s (StdLUT)
+2025-04-14 14:46:29: Wrote rhot_533
+2025-04-14 14:46:29: Computing surface reflectance
+2025-04-14 14:46:29: Green_i
+2025-04-14 14:46:29: 533
+2025-04-14 14:46:29: 0.942
+2025-04-14 14:46:29: Wrote rhos_533
+2025-04-14 14:46:29: PlanetScope_SD8/BGreen_i took 0.4s (StdLUT)
+2025-04-14 14:46:29: Wrote rhot_566
+2025-04-14 14:46:30: Computing surface reflectance
+2025-04-14 14:46:30: Green_ii
+2025-04-14 14:46:30: 566
+2025-04-14 14:46:30: 0.904
+2025-04-14 14:46:30: Wrote rhos_566
+2025-04-14 14:46:30: PlanetScope_SD8/BGreen_ii took 0.4s (StdLUT)
+2025-04-14 14:46:30: Wrote rhot_612
+2025-04-14 14:46:30: Computing surface reflectance
+2025-04-14 14:46:30: Yellow
+2025-04-14 14:46:30: 612
+2025-04-14 14:46:30: 0.897
+2025-04-14 14:46:31: Wrote rhos_612
+2025-04-14 14:46:31: PlanetScope_SD8/BYellow took 0.4s (StdLUT)
+2025-04-14 14:46:31: Wrote rhot_666
+2025-04-14 15:47:20: [4;33mReloaded modules[24m: acolite.landsat.metadata_bands, acolite.landsat.metadata_read, acolite.landsat.metadata_ali, acolite.landsat.read_band, acolite.landsat.read_toa, acolite.landsat.projection, acolite.landsat.image_corners, acolite.landsat.l1_convert, acolite.landsat, acolite.sentinel2.grid_geom, acolite.sentinel2.grid_extend, acolite.sentinel2.detector_footprint, acolite.sentinel2.safe_test, acolite.sentinel2.projection, acolite.sentinel2.metadata_granule, acolite.sentinel2.metadata_scene, acolite.sentinel2.l1_convert, acolite.sentinel2.gpt_geometry, acolite.sentinel2.auxillary, acolite.sentinel2, acolite.sentinel3.olci_sub, acolite.sentinel3.olci_band_info, acolite.sentinel3.meris_band_info, acolite.sentinel3.l1_convert, acolite.sentinel3.metadata_parse, acolite.sentinel3, acolite.planet.bundle_test, acolite.planet.metadata_parse, acolite.planet.l1_convert, acolite.planet, acolite.pleiades.bundle_test, acolite.pleiades.metadata_parse, acolite.pleiades.l1_convert, acolite.pleiades.geo.crop, acolite.pleiades.geo.init, acolite.pleiades.geo.ll, acolite.pleiades.geo.test_coverage, acolite.pleiades.geo, acolite.pleiades, acolite.worldview.metadata_parse, acolite.worldview.l1_convert, acolite.worldview, acolite.venus.metadata_parse, acolite.venus.l1_convert, acolite.venus, acolite.ikonos.bundle_test, acolite.ikonos.metadata_parse, acolite.ikonos.l1_convert, acolite.ikonos, acolite.viirs.bundle_test, acolite.viirs.l1_convert, acolite.viirs.viirs_l1a_to_l1b, acolite.viirs, acolite.chris.interband_calibration, acolite.chris.vdata, acolite.chris.view_geometry, acolite.chris.l1_convert, acolite.chris.noise_reduction, acolite.chris, acolite.prisma.attributes, acolite.prisma.l1_convert, acolite.prisma, acolite.hico.attributes, acolite.hico.read, acolite.hico.l1_convert, acolite.hico, acolite.hyperion.metadata, acolite.hyperion.l1_convert, acolite.hyperion.projection, acolite.hyperion, acolite.desis.metadata, acolite.desis.bundle_test, acolite.desis.l1_convert, acolite.desis, acolite.enmap.bundle_test, acolite.enmap.metadata_parse, acolite.enmap.l1_convert, acolite.enmap.rpcs, acolite.enmap, acolite.emit.l1_convert, acolite.emit, acolite.hypso.l1_convert, acolite.hypso, acolite.gf.metadata, acolite.gf.bundle_test, acolite.gf.l1_convert, acolite.gf, acolite.amazonia.metadata, acolite.amazonia.bundle_test, acolite.amazonia.l1_convert, acolite.amazonia, acolite.formosat.metadata, acolite.formosat.bundle_test, acolite.formosat.l1_convert, acolite.formosat, acolite.ecostress.attributes, acolite.ecostress.bt_lut, acolite.ecostress.l1_convert, acolite.ecostress, acolite.sdgsat.bundle_test, acolite.sdgsat.calibration, acolite.sdgsat.l1_convert, acolite.sdgsat.metadata, acolite.sdgsat, acolite.dimap.bundle_test, acolite.dimap.metadata, acolite.dimap.l1_convert, acolite.dimap, acolite.s2resampling.bundle_test, acolite.s2resampling.l1_convert, acolite.s2resampling, acolite.ac.gas_transmittance, acolite.ac.ko3_read, acolite.ac.wvlut_interp, acolite.ac.gaslut_interp, acolite.ac.tto3_interp, acolite.ac.rayleigh, acolite.ac.refri, acolite.ac.pressure_elevation, acolite.ac.ancillary.download, acolite.ac.ancillary.get, acolite.ac.ancillary.interp_met, acolite.ac.ancillary.interp_ozone, acolite.ac.ancillary.list_files, acolite.ac.ancillary, acolite.ac, acolite.aerlut.import_lut, acolite.aerlut.import_luts, acolite.aerlut.reverse_lut, acolite.aerlut.import_rsky_lut, acolite.aerlut.import_rsky_luts, acolite.aerlut, acolite.output.nc_to_geotiff, acolite.output.nc_to_geotiff_rgb, acolite.output.nc_write, acolite.output.project_acolite_netcdf, acolite.output.reproject_acolite_netcdf, acolite.output.crop_acolite_netcdf, acolite.output.convert_l2gen_netcdf, acolite.output, acolite.shared.f0_get, acolite.shared.rsr_read, acolite.shared.rsr_dict, acolite.shared.rsr_convolute_dict, acolite.shared.rsr_convolute_nd, acolite.shared.projection_sub, acolite.shared.projection_sub_dct, acolite.shared.projection_geo, acolite.shared.projection_limit, acolite.shared.projection_read, acolite.shared.projection_netcdf, acolite.shared.projection_setup, acolite.shared.utm_epsg, acolite.shared.geolocation_sub, acolite.shared.nc_read, acolite.shared.nc_write, acolite.shared.nc_read_projection, acolite.shared.nc_extract_point, acolite.shared.read_band, acolite.shared.read_gdal_meta, acolite.shared.read_points, acolite.shared.lutnc_import, acolite.shared.lutnc_write, acolite.shared.datascl, acolite.shared.closest_idx, acolite.shared.isodate_to_yday, acolite.shared.download_file, acolite.shared.hdr, acolite.shared.region_box, acolite.shared.region_find, acolite.shared.azimuth_two_points, acolite.shared.distance_in_ll, acolite.shared.distance_se, acolite.shared.fillnan, acolite.shared.tiles_interp, acolite.shared.intercept, acolite.shared.import_config, acolite.shared.common_dir, acolite.shared.extract_bundle, acolite.shared.image_extent, acolite.shared.image_resolution, acolite.shared.warp_and_merge, acolite.shared.warp_from_source, acolite.shared.warp_inputfile, acolite.shared.polygon_crop, acolite.shared.polygon_from_wkt, acolite.shared.polygon_limit, acolite.shared.reproject2, acolite.shared.similarity_read, acolite.shared.gauss_response, acolite.shared.sun_position, acolite.shared.rsr_hyper, acolite.shared.polylakes, acolite.shared.rgb_stretch, acolite.shared.scale_dist, acolite.shared, acolite.dem.hgt_find, acolite.dem.hgt_geolocation, acolite.dem.hgt_lonlat, acolite.dem.hgt_read, acolite.dem.hgt_download, acolite.dem.srtm15plus, acolite.dem.srtm15plus_reproject, acolite.dem.srtm15plus_lonlat, acolite.dem.dem_lonlat, acolite.dem.copernicus_dem_download, acolite.dem.copernicus_dem_find, acolite.dem.copernicus_dem_lonlat, acolite.dem.copernicus_dem_rpc, acolite.dem.hillshade_nc, acolite.dem, acolite.ged.ged_download, acolite.ged.ged_find, acolite.ged.ged_lonlat, acolite.ged, acolite.tact.tact_limit, acolite.tact.tact_simulations, acolite.tact.libradtran_cfg, acolite.tact.libradtran_run, acolite.tact.read_out, acolite.tact.read_sim, acolite.tact.tact_profiles_era5, acolite.tact.tact_profiles_gdas1, acolite.tact.tact_profiles_merra2, acolite.tact.tact_profiles_ncep, acolite.tact.tact_gem, acolite.tact.tact_eminet, acolite.tact.ndvi_emissivity, acolite.tact, acolite.acolite.acolite_l1r, acolite.acolite.acolite_l2r, acolite.acolite.acolite_l2w, acolite.acolite.acolite_pans, acolite.acolite.acolite_run, acolite.acolite.acolite_map, acolite.acolite.acolite_gui, acolite.acolite.acolite_luts, acolite.acolite.identify_bundle, acolite.acolite.inputfile_test, acolite.acolite.parameter_scaling, acolite.acolite.parameter_discretisation, acolite.acolite.settings.load, acolite.acolite.settings.read, acolite.acolite.settings.read_list, acolite.acolite.settings.write, acolite.acolite.settings.parse, acolite.acolite.settings, acolite.acolite.logging.logtee, acolite.acolite.logging, acolite.acolite, acolite.adjacency.acstar3.read_apsfs_fits, acolite.adjacency.acstar3.pred_annular_cdf, acolite.adjacency.acstar3.w_kernel, acolite.adjacency.acstar3.extend, acolite.adjacency.acstar3.psf_otf, acolite.adjacency.acstar3.acstar3, acolite.adjacency.acstar3, acolite.adjacency.glad.glad_l2r, acolite.adjacency.glad, acolite.adjacency.radcor.calc_tdifs, acolite.adjacency.radcor.extend.mirror, acolite.adjacency.radcor.extend, acolite.adjacency.radcor.read_6sv_coef, acolite.adjacency.radcor.read_6sv_ph, acolite.adjacency.radcor.w_kernel, acolite.adjacency.radcor, acolite.adjacency, acolite.gem.write, acolite.gem.extract, acolite.gem.read, acolite.gem.scene_download, acolite.gem.scene_find, acolite.gem.gem, acolite.gem, acolite.parameters.castagna.contraband, acolite.parameters.castagna, acolite.parameters.chl_oc.coef, acolite.parameters.chl_oc, acolite.parameters.chl_re.coef_gons, acolite.parameters.chl_re, acolite.parameters.nechad.coef_2016, acolite.parameters.nechad.coef_hyper, acolite.parameters.nechad.coef_band, acolite.parameters.nechad, acolite.parameters.dogliotti.coef, acolite.parameters.dogliotti.coef_hyper, acolite.parameters.dogliotti, acolite.parameters.pitarch.p3qaa_coef, acolite.parameters.pitarch.p3qaa_compute, acolite.parameters.pitarch, acolite.parameters.qaa.qaa_coef, acolite.parameters.qaa.qaa_compute, acolite.parameters.qaa, acolite.parameters.vanderwoerd.coef_hue_angle, acolite.parameters.vanderwoerd, acolite.parameters, acolite[0m
+2025-04-14 15:47:21: Best Image IDs
+2025-04-14 15:47:21: 0     S2A_MSIL1C_20230213T145721_N0510_R039_T20QLF_2...
+1                                                   NaN
+2     S2B_MSIL1C_20230228T145729_N0509_R039_T20QLF_2...
+3     S2A_MSIL1C_20230305T145721_N0509_R039_T20QLF_2...
+4     S2B_MSIL1C_20230310T145729_N0509_R039_T20QLF_2...
+5                                                   NaN
+6                                                   NaN
+7                                                   NaN
+8                                                   NaN
+9                                                   NaN
+10                                                  NaN
+11                                                  NaN
+12    S2A_MSIL1C_20230424T145721_N0509_R039_T20QLF_2...
+13    S2B_MSIL1C_20230429T145729_N0509_R039_T20QLF_2...
+14                                                  NaN
+15                                                  NaN
+16                                                  NaN
+17                                                  NaN
+18                                                  NaN
+19                                                  NaN
+20                                                  NaN
+21                                                  NaN
+22                                                  NaN
+23    S2B_MSIL1C_20230628T145729_N0509_R039_T20QLF_2...
+24                                                  NaN
+25                                                  NaN
+26                                                  NaN
+27                                                  NaN
+28                                                  NaN
+29    S2B_MSIL1C_20230827T145729_N0510_R039_T20QLF_2...
+30                                                  NaN
+31    S2B_MSIL1C_20230906T145729_N0509_R039_T20QLF_2...
+32                                                  NaN
+33                                                  NaN
+34                                                  NaN
+35                                                  NaN
+36                                                  NaN
+37    S2B_MSIL1C_20231006T145729_N0509_R039_T20QLF_2...
+38                                                  NaN
+39    S2B_MSIL1C_20231016T145729_N0510_R039_T20QLF_2...
+40                                                  NaN
+41    S2B_MSIL1C_20231026T145729_N0509_R039_T20QLF_2...
+Name: 0, dtype: object
+2025-04-14 15:47:22: Downloading: S2A_MSIL1C_20230213T145721_N0510_R039_T20QLF_20240816T010855.SAFE
+2025-04-14 15:49:49: Downloading: S2A_MSIL1C_20230213T145721_N0510_R039_T20QLF_20240816T010855.SAFE
+2025-04-14 15:52:10: Successfully Downloaded: S2A_MSIL1C_20230213T145721_N0510_R039_T20QLF_20240816T010855.SAFE
+2025-04-14 15:52:10: Downloading: nan
+2025-04-14 15:52:11: Product nan not found.
+2025-04-14 15:52:11: Downloading: S2B_MSIL1C_20230228T145729_N0509_R039_T20QLF_20230228T180116.SAFE
+2025-04-14 15:54:05: Downloading: S2B_MSIL1C_20230228T145729_N0509_R039_T20QLF_20230228T180116.SAFE
+2025-04-14 15:59:52: Successfully Downloaded: S2B_MSIL1C_20230228T145729_N0509_R039_T20QLF_20230228T180116.SAFE
+2025-04-14 15:59:52: Downloading: S2A_MSIL1C_20230305T145721_N0509_R039_T20QLF_20230305T181856.SAFE
+2025-04-14 15:59:53: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:53: Downloading: S2B_MSIL1C_20230310T145729_N0509_R039_T20QLF_20230310T181923.SAFE
+2025-04-14 15:59:53: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:53: Downloading: nan
+2025-04-14 15:59:54: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:54: Downloading: nan
+2025-04-14 15:59:54: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:54: Downloading: nan
+2025-04-14 15:59:54: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:54: Downloading: nan
+2025-04-14 15:59:55: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:55: Downloading: nan
+2025-04-14 15:59:55: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:55: Downloading: nan
+2025-04-14 15:59:55: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:55: Downloading: nan
+2025-04-14 15:59:56: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:56: Downloading: S2A_MSIL1C_20230424T145721_N0509_R039_T20QLF_20230424T181926.SAFE
+2025-04-14 15:59:56: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:56: Downloading: S2B_MSIL1C_20230429T145729_N0509_R039_T20QLF_20230429T163913.SAFE
+2025-04-14 15:59:56: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:56: Downloading: nan
+2025-04-14 15:59:56: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:56: Downloading: nan
+2025-04-14 15:59:57: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:57: Downloading: nan
+2025-04-14 15:59:57: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:57: Downloading: nan
+2025-04-14 15:59:57: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:57: Downloading: nan
+2025-04-14 15:59:58: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:58: Downloading: nan
+2025-04-14 15:59:58: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:58: Downloading: nan
+2025-04-14 15:59:58: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:58: Downloading: nan
+2025-04-14 15:59:59: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:59: Downloading: nan
+2025-04-14 15:59:59: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:59: Downloading: S2B_MSIL1C_20230628T145729_N0509_R039_T20QLF_20230628T164133.SAFE
+2025-04-14 15:59:59: Error retrieving product UUID (Status 403):
+2025-04-14 15:59:59: Downloading: nan
+2025-04-14 15:59:59: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:00: Downloading: nan
+2025-04-14 16:00:00: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:00: Downloading: nan
+2025-04-14 16:00:00: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:00: Downloading: nan
+2025-04-14 16:00:00: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:00: Downloading: nan
+2025-04-14 16:00:01: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:01: Downloading: S2B_MSIL1C_20230827T145729_N0510_R039_T20QLF_20240823T070356.SAFE
+2025-04-14 16:00:01: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:01: Downloading: nan
+2025-04-14 16:00:01: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:01: Downloading: S2B_MSIL1C_20230906T145729_N0509_R039_T20QLF_20230906T175934.SAFE
+2025-04-14 16:00:02: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:02: Downloading: nan
+2025-04-14 16:00:02: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:02: Downloading: nan
+2025-04-14 16:00:02: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:02: Downloading: nan
+2025-04-14 16:00:03: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:03: Downloading: nan
+2025-04-14 16:00:03: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:03: Downloading: nan
+2025-04-14 16:00:03: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:03: Downloading: S2B_MSIL1C_20231006T145729_N0509_R039_T20QLF_20231006T182417.SAFE
+2025-04-14 16:00:03: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:04: Downloading: nan
+2025-04-14 16:00:04: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:04: Downloading: S2B_MSIL1C_20231016T145729_N0510_R039_T20QLF_20241108T075523.SAFE
+2025-04-14 16:00:04: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:04: Downloading: nan
+2025-04-14 16:00:05: Error retrieving product UUID (Status 403):
+2025-04-14 16:00:05: Downloading: S2B_MSIL1C_20231026T145729_N0509_R039_T20QLF_20231026T193137.SAFE
+2025-04-14 16:00:05: Error retrieving product UUID (Status 403):
+2025-04-14 16:08:41: Best Image IDs
+2025-04-14 16:08:41: 0                                                   NaN
+1                                                   NaN
+2     S2A_MSIL1C_20230305T145721_N0509_R039_T20QLF_2...
+3     S2B_MSIL1C_20230310T145729_N0509_R039_T20QLF_2...
+4     S2A_MSIL1C_20230424T145721_N0509_R039_T20QLF_2...
+5     S2B_MSIL1C_20230429T145729_N0509_R039_T20QLF_2...
+6     S2B_MSIL1C_20230628T145729_N0509_R039_T20QLF_2...
+7     S2B_MSIL1C_20230827T145729_N0510_R039_T20QLF_2...
+8     S2B_MSIL1C_20230906T145729_N0509_R039_T20QLF_2...
+9     S2B_MSIL1C_20231006T145729_N0509_R039_T20QLF_2...
+10    S2B_MSIL1C_20231016T145729_N0510_R039_T20QLF_2...
+11    S2B_MSIL1C_20231026T145729_N0509_R039_T20QLF_2...
+Name: 0, dtype: object
+2025-04-14 16:08:43: Downloading: nan
+2025-04-14 16:08:44: Product nan not found.
+2025-04-14 16:08:44: Downloading: nan
+2025-04-14 16:08:44: Product nan not found.
+2025-04-14 16:08:44: Downloading: S2A_MSIL1C_20230305T145721_N0509_R039_T20QLF_20230305T181856.SAFE
+2025-04-14 16:09:29: Downloading: S2A_MSIL1C_20230305T145721_N0509_R039_T20QLF_20230305T181856.SAFE
+2025-04-14 16:12:35: Successfully Downloaded: S2A_MSIL1C_20230305T145721_N0509_R039_T20QLF_20230305T181856.SAFE
+2025-04-14 16:12:35: Downloading: S2B_MSIL1C_20230310T145729_N0509_R039_T20QLF_20230310T181923.SAFE
+2025-04-14 16:15:58: Downloading: S2B_MSIL1C_20230310T145729_N0509_R039_T20QLF_20230310T181923.SAFE
+2025-04-14 16:18:56: Successfully Downloaded: S2B_MSIL1C_20230310T145729_N0509_R039_T20QLF_20230310T181923.SAFE
+2025-04-14 16:18:56: Downloading: S2A_MSIL1C_20230424T145721_N0509_R039_T20QLF_20230424T181926.SAFE
+2025-04-14 16:18:57: Error retrieving product UUID (Status 403):
+2025-04-14 16:18:57: Downloading: S2B_MSIL1C_20230429T145729_N0509_R039_T20QLF_20230429T163913.SAFE
+2025-04-14 16:18:57: Error retrieving product UUID (Status 403):
+2025-04-14 16:18:57: Downloading: S2B_MSIL1C_20230628T145729_N0509_R039_T20QLF_20230628T164133.SAFE
+2025-04-14 16:18:58: Error retrieving product UUID (Status 403):
+2025-04-14 16:18:58: Downloading: S2B_MSIL1C_20230827T145729_N0510_R039_T20QLF_20240823T070356.SAFE
+2025-04-14 16:18:58: Error retrieving product UUID (Status 403):
+2025-04-14 16:18:58: Downloading: S2B_MSIL1C_20230906T145729_N0509_R039_T20QLF_20230906T175934.SAFE
+2025-04-14 16:18:58: Error retrieving product UUID (Status 403):
+2025-04-14 16:18:58: Downloading: S2B_MSIL1C_20231006T145729_N0509_R039_T20QLF_20231006T182417.SAFE
+2025-04-14 16:18:58: Error retrieving product UUID (Status 403):
+2025-04-14 16:18:59: Downloading: S2B_MSIL1C_20231016T145729_N0510_R039_T20QLF_20241108T075523.SAFE
+2025-04-14 16:18:59: Error retrieving product UUID (Status 403):
+2025-04-14 16:18:59: Downloading: S2B_MSIL1C_20231026T145729_N0509_R039_T20QLF_20231026T193137.SAFE
+2025-04-14 16:18:59: Error retrieving product UUID (Status 403):
+2025-04-14 16:22:44: Best Image IDs
+2025-04-14 16:22:44: 0                                                   NaN
+1                                                   NaN
+2                                                   NaN
+3                                                   NaN
+4     S2A_MSIL1C_20230424T145721_N0509_R039_T20QLF_2...
+5     S2B_MSIL1C_20230429T145729_N0509_R039_T20QLF_2...
+6     S2B_MSIL1C_20230628T145729_N0509_R039_T20QLF_2...
+7     S2B_MSIL1C_20230827T145729_N0510_R039_T20QLF_2...
+8     S2B_MSIL1C_20230906T145729_N0509_R039_T20QLF_2...
+9     S2B_MSIL1C_20231006T145729_N0509_R039_T20QLF_2...
+10    S2B_MSIL1C_20231016T145729_N0510_R039_T20QLF_2...
+11    S2B_MSIL1C_20231026T145729_N0509_R039_T20QLF_2...
+Name: 0, dtype: object
+2025-04-14 16:22:47: Product nan not found.
+2025-04-14 16:22:47: Product nan not found.
+2025-04-14 16:22:47: Product nan not found.
+2025-04-14 16:22:48: Product nan not found.
+2025-04-14 16:23:27: Downloading: S2A_MSIL1C_20230424T145721_N0509_R039_T20QLF_20230424T181926.SAFE
+2025-04-14 16:24:10: Successfully Downloaded: S2A_MSIL1C_20230424T145721_N0509_R039_T20QLF_20230424T181926.SAFE
+2025-04-14 16:25:17: Downloading: S2B_MSIL1C_20230429T145729_N0509_R039_T20QLF_20230429T163913.SAFE
+2025-04-14 16:26:36: Successfully Downloaded: S2B_MSIL1C_20230429T145729_N0509_R039_T20QLF_20230429T163913.SAFE
+2025-04-14 16:27:40: Downloading: S2B_MSIL1C_20230628T145729_N0509_R039_T20QLF_20230628T164133.SAFE
+2025-04-14 16:28:31: Successfully Downloaded: S2B_MSIL1C_20230628T145729_N0509_R039_T20QLF_20230628T164133.SAFE
+2025-04-14 16:29:39: Downloading: S2B_MSIL1C_20230827T145729_N0510_R039_T20QLF_20240823T070356.SAFE
+2025-04-14 16:30:49: Successfully Downloaded: S2B_MSIL1C_20230827T145729_N0510_R039_T20QLF_20240823T070356.SAFE
+2025-04-14 16:31:56: Downloading: S2B_MSIL1C_20230906T145729_N0509_R039_T20QLF_20230906T175934.SAFE
+2025-04-14 16:33:06: Successfully Downloaded: S2B_MSIL1C_20230906T145729_N0509_R039_T20QLF_20230906T175934.SAFE
+2025-04-14 16:33:27: Error retrieving product UUID (Status 403):
+2025-04-14 16:33:27: Error retrieving product UUID (Status 403):
+2025-04-14 16:33:28: Error retrieving product UUID (Status 403):

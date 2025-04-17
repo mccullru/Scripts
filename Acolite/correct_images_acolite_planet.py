@@ -195,17 +195,18 @@ def main(raw_dir, proc_dir, acolite_dir, acolite_settings_file, geojson_aoi):
 
 if __name__ == '__main__':
     
-    raw_dir = r"E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\SD_Anegada"    # dir with folder(s) of raw imagery
-    proc_dir = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_Anegada_output_0.075"   # output directory
+    raw_dir = r"E:\Thesis Stuff\AcoliteWithPython\Uncorrected_Imagery\All_Sentinel2\S2_Nait"   # dir with folder(s) of raw imagery
+    proc_dir = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_Sentinel2\S2_Nait_output"  # output directory
     
     # Acolite directory path
     # Example path: E:\downloads_\SatBathy2.1.7-Beta\SatBathy\satbathy\acolite-main
     acolite_dir = r"E:\Thesis Stuff\AcoliteWithPython\acolite-main"
 
-    acolite_settings_file = r"E:\Thesis Stuff\AcoliteWithPython\acolite_settings_planet.txt"  # path to settings file
+    acolite_settings_file = r"E:\Thesis Stuff\AcoliteWithPython\acolite_settings_planet_no_l2w_mask.txt"  # path to settings file
+    
     
     # path to geojson (needs to be in wgs84), only really required for S2 safe files which have not been clipped
-    geojson_aoi = r"B:\Thesis Project\AOIs\Final_AOIs\Anegada.geojson"
+    geojson_aoi = r"B:\Thesis Project\AOIs\Final_AOIs\Nait.geojson"
 
     main(raw_dir, proc_dir, acolite_dir, acolite_settings_file, geojson_aoi)    
 

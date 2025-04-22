@@ -23,10 +23,9 @@ import os
 import time
 import json
 import csv
+import pandas as pd
 
-
-
-# Your Copernicus Open Access Hub credentials
+# Copernicus Open Access Hub credentials
 username = "mccullru@oregonstate.edu"
 password = "Hurt0226917!"
 
@@ -146,9 +145,8 @@ password = "Hurt0226917!"
 ##############################################################################################################
 
 
-
 # Load your GeoJSON file
-with open(r"B:\Thesis Project\AOIs\Final_AOIs\Gyali.geojson") as f:
+with open(r"B:\Thesis Project\AOIs\Final_AOIs\Hyannis.geojson") as f:
     geojson = json.load(f)
 
 # Extract the coordinates of the bounding box
@@ -183,12 +181,29 @@ if response.status_code == 200:
     image_count = len(data['features'])
     print(f"Total number of images found: {image_count}")
     
+    image_data = []
+    
+    
     # Output image IDs and their acquisition dates
     print("\nImage IDs and Acquisition Dates:")
     for item in data['features']:
         image_id = item['id']
         acquisition_date = item['properties']['startDate']
-        print(f"ID: {image_id}, Date: {acquisition_date}")
+        
+        image_data.append({"ID": image_id, "Date": acquisition_date})
+        
+        #print(f"ID: {image_id}, Date: {acquisition_date}")
+
+    
+    df = pd.DataFrame(image_data)
+    
+    df_unique = df.drop_duplicates(subset='Date')
+    
+    
+    # Print unique dates and their count
+    print(f"\nTotal unique acquisition dates: {len(df_unique)}")
+    print(df_unique)
+
 else:
     print(f"Error: {response.status_code}")
 

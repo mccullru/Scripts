@@ -1,8 +1,8 @@
 clc; clear; close all;
 
 data = readmatrix("B:\Thesis Project\StatsAndFigures\Available_and_Usable_imgs\available_vs_usable_data.csv");
-AOI_label = {'Bum Bum'; 'Nait'; 'Anegada'; 'Marathon'; 'North Feut'; 'Bombah';
-    'Gyali'; 'Hyannis'; 'Punta'; 'Sout Port'; 'Dingle'; 'Rago'; 'Homer'; 'Skutvik'; 'Risoysundet'};
+AOI_label = {'Bum Bum (4.5)'; 'Nait (12.6)'; 'Anegada (18.7)'; 'Marathon (24.7)'; 'North Feut (28.7)'; 'Bombah (32.4)';
+    'Gyali (36.6)'; 'South Port (39.2)'; 'Hyannis (41.6)'; 'Punta (45.7)';  'Dingle (52)'; 'Rago (55)'; 'Homer (59.6)'; 'Skutvik (68)'; 'Risoysundet (69)'};
 
 
 sd_data_unuse = data(:,2:5);
@@ -18,18 +18,49 @@ grouped_data(2:2:end, :) = s2_data_unuse;
 figure;
 hb = bar(grouped_data, 'stacked');
 
-% Set ticks at centers of SD/S2 groups
+% Define SD (reds) and S2 (blues)
+sd_colors = [0.6 0 0; 1 0.2 0.2; 1 0.6 0.6;.7 .7 .7];
+s2_colors = [0 0 0.6; 0.2 0.6 1; 0.6 0.8 1;.7 .7 .7];
+
+% Assign per-bar color
+for k = 1:4
+    bars = hb(k);
+    CData = zeros(2*n, 3);
+    for i = 1:n
+        CData(2*i-1,:) = sd_colors(k,:);
+        CData(2*i,:)   = s2_colors(k,:);
+    end
+    bars.FaceColor = 'flat';
+    bars.CData = CData;
+end
+
+% X-axis setup
 xtick_positions = 1.5:2:(2*n);
 xticks(xtick_positions);
 xticklabels(AOI_label);
 xtickangle(45);
-
-legend({'1', '2', '3', 'Unusable'}, 'Location', 'northeastoutside');
-title('Grouped Stacked Bar Chart (SD vs S2 per AOI)');
 ylabel('Count');
 xlabel('AOI');
+title('Rates of Usable Imagery');
 grid on;
 
+% Create dummy objects for the unified legend
+dummy = gobjects(8,1);
+
+% SD Legend (first 4 entries)
+for k = 1:4
+    dummy(k) = patch(NaN, NaN, sd_colors(k,:));
+end
+
+% S2 Legend (next 4 entries)
+for k = 1:4
+    dummy(k+4) = patch(NaN, NaN, s2_colors(k,:));
+end
+
+% Unified Legend
+legend_labels = {' 1 (SD)', ' 2 (SD)', ' 3 (SD)', 'unusable', ' 1 (S2)', ' 2 (S2)', ' 3 (S2)', 'unusable'};
+lgd = legend(dummy, legend_labels, 'Location', 'northeastoutside');
+lgd.Title.String = "Img Ratings";
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,19 +78,49 @@ grouped_data(2:2:end, :) = s2_data;
 figure;
 hb = bar(grouped_data, 'stacked');
 
-% Set ticks at centers of SD/S2 groups
+% Define SD (reds) and S2 (blues)
+sd_colors = [0.6 0 0; 1 0.2 0.2; 1 0.6 0.6;];
+s2_colors = [0 0 0.6; 0.2 0.6 1; 0.6 0.8 1;];
+
+% Assign per-bar color
+for k = 1:3
+    bars = hb(k);
+    CData = zeros(2*n, 3);
+    for i = 1:n
+        CData(2*i-1,:) = sd_colors(k,:);
+        CData(2*i,:)   = s2_colors(k,:);
+    end
+    bars.FaceColor = 'flat';
+    bars.CData = CData;
+end
+
+% X-axis setup
 xtick_positions = 1.5:2:(2*n);
 xticks(xtick_positions);
 xticklabels(AOI_label);
 xtickangle(45);
-
-legend({'1', '2', '3'}, 'Location', 'northeastoutside');
-title('Grouped Stacked Bar Chart (SD vs S2 per AOI)');
 ylabel('Count');
 xlabel('AOI');
+title('Rates of Usable Imagery');
 grid on;
 
+% Create dummy objects for the unified legend
+dummy = gobjects(6,1);
 
+% SD Legend (first 3 entries)
+for k = 1:3
+    dummy(k) = patch(NaN, NaN, sd_colors(k,:));
+end
+
+% S2 Legend (next 3 entries)
+for k = 1:3
+    dummy(k+3) = patch(NaN, NaN, s2_colors(k,:));
+end
+
+% Unified Legend
+legend_labels = {' 1 (SD)', ' 2 (SD)', ' 3 (SD)', 'unusable', ' 1 (S2)', ' 2 (S2)', ' 3 (S2)', 'unusable'};
+lgd = legend(dummy, legend_labels, 'Location', 'northeastoutside');
+lgd.Title.String = "Img Ratings";
 
 
 

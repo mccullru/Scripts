@@ -1,0 +1,60 @@
+clc; clear; close all;
+
+data = readmatrix("B:\Thesis Project\StatsAndFigures\Available_and_Usable_imgs\available_vs_usable_data.csv");
+AOI_label = {'Bum Bum'; 'Nait'; 'Anegada'; 'Marathon'; 'North Feut'; 'Bombah';
+    'Gyali'; 'Hyannis'; 'Punta'; 'Sout Port'; 'Dingle'; 'Rago'; 'Homer'; 'Skutvik'; 'Risoysundet'};
+
+
+sd_data_unuse = data(:,2:5);
+s2_data = data(:,6:9);
+
+n = 15;
+
+grouped_data = zeros(n*2, 4);
+grouped_data(1:2:end, :) = sd_data;
+grouped_data(2:2:end, :) = s2_data;
+
+% Plot
+figure;
+hb = bar(grouped_data, 'stacked');
+
+% Set ticks at centers of SD/S2 groups
+xtick_positions = 1.5:2:(2*n);
+xticks(xtick_positions);
+xticklabels(AOI_label);
+xtickangle(45);
+
+legend({'1', '2', '3', 'Unusable'}, 'Location', 'northeastoutside');
+title('Grouped Stacked Bar Chart (SD vs S2 per AOI)');
+ylabel('Count');
+xlabel('AOI');
+grid on;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+sd_data = data(:,2:4);
+s2_data = data(:,6:8);
+
+n = 15;
+
+grouped_data = zeros(n*2, 4);
+grouped_data(1:2:end, :) = sd_data;
+grouped_data(2:2:end, :) = s2_data;
+
+% Plot
+figure;
+hb = bar(grouped_data, 'stacked');
+
+% Set ticks at centers of SD/S2 groups
+xtick_positions = 1.5:2:(2*n);
+xticks(xtick_positions);
+xticklabels(AOI_label);
+xtickangle(45);
+
+legend({'1', '2', '3', 'Unusable'}, 'Location', 'northeastoutside');
+title('Grouped Stacked Bar Chart (SD vs S2 per AOI)');
+ylabel('Count');
+xlabel('AOI');
+grid on;

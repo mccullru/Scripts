@@ -5,22 +5,22 @@ AOI_label = {'Bum Bum (4.5)'; 'Nait (12.6)'; 'Anegada (18.7)'; 'Marathon (24.7)'
     'Gyali (36.6)'; 'South Port (39.2)'; 'Hyannis (41.6)'; 'Punta (45.7)';  'Dingle (52)'; 'Rago (55)'; 'Homer (59.6)'; 'Skutvik (68)'; 'Risoysundet (69)'};
 
 
-sd_data_unuse = data(:,2:5);
-s2_data_unuse = data(:,6:9);
+sd_data = data(:,2:5);
+s2_data = data(:,6:9);
 
 n = 15;
 
 grouped_data = zeros(n*2, 4);
-grouped_data(1:2:end, :) = sd_data_unuse;
-grouped_data(2:2:end, :) = s2_data_unuse;
+grouped_data(1:2:end, :) = sd_data;
+grouped_data(2:2:end, :) = s2_data;
 
 % Plot
 figure;
 hb = bar(grouped_data, 'stacked');
 
 % Define SD (reds) and S2 (blues)
-sd_colors = [0.6 0 0; 1 0.2 0.2; 1 0.6 0.6;.7 .7 .7];
-s2_colors = [0 0 0.6; 0.2 0.6 1; 0.6 0.8 1;.7 .7 .7];
+sd_colors = [0.6 0 0; 1 0.2 0.2; 1 0.6 0.6;.99 .96 .77];    % .7 .7 .7 for light gray
+s2_colors = [0 0 0.6; 0.2 0.6 1; 0.6 0.8 1;.81 1 .96];      
 
 % Assign per-bar color
 for k = 1:4
@@ -40,7 +40,7 @@ xticks(xtick_positions);
 xticklabels(AOI_label);
 xtickangle(45);
 ylabel('Count');
-xlabel('AOI');
+xlabel('AOI (latitude)');
 title('Rates of Usable Imagery');
 grid on;
 
@@ -58,7 +58,7 @@ for k = 1:4
 end
 
 % Unified Legend
-legend_labels = {' 1 (SD)', ' 2 (SD)', ' 3 (SD)', 'unusable', ' 1 (S2)', ' 2 (S2)', ' 3 (S2)', 'unusable'};
+legend_labels = {' 1 (SD)', ' 2 (SD)', ' 3 (SD)', 'unusable (SD)', ' 1 (S2)', ' 2 (S2)', ' 3 (S2)', 'unusable (S2)'};
 lgd = legend(dummy, legend_labels, 'Location', 'northeastoutside');
 lgd.Title.String = "Img Ratings";
 
@@ -100,7 +100,7 @@ xticks(xtick_positions);
 xticklabels(AOI_label);
 xtickangle(45);
 ylabel('Count');
-xlabel('AOI');
+xlabel('AOI (latitude)');
 title('Rates of Usable Imagery');
 grid on;
 
@@ -118,9 +118,54 @@ for k = 1:3
 end
 
 % Unified Legend
-legend_labels = {' 1 (SD)', ' 2 (SD)', ' 3 (SD)', 'unusable', ' 1 (S2)', ' 2 (S2)', ' 3 (S2)', 'unusable'};
+legend_labels = {' 1 (SD)', ' 2 (SD)', ' 3 (SD)', ' 1 (S2)', ' 2 (S2)', ' 3 (S2)'};
 lgd = legend(dummy, legend_labels, 'Location', 'northeastoutside');
 lgd.Title.String = "Img Ratings";
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% Only use rating 3 data
+sd_data = data(:,4);  % column for rating 3 (SD)
+s2_data = data(:,8);  % column for rating 3 (S2)
+
+n = 15;
+
+% Combine into a 15x2 matrix: [SD, S2]
+grouped_data = [sd_data, s2_data];
+
+% Plot grouped bar chart
+figure;
+hb = bar(grouped_data, 'grouped');
+
+% Set bar colors manually
+sd_color = [1 0.6 0.6];
+s2_color = [0.6 0.8 1];
+hb(1).FaceColor = sd_color;
+hb(2).FaceColor = s2_color;
+
+% X-axis labels and formatting
+xticks(1:n);
+xticklabels(AOI_label);
+xtickangle(45);
+ylabel('Count');
+xlabel('AOI (latitude)');
+title('Total Best Imagery (3-Rated) per AOI');
+grid on;
+
+lgd = legend({'3-Rating SD', '3-Rating S2'}, 'Location', 'northeastoutside');
+lgd.Title.String = 'Image Source';
+
+
+
+
+
+
+
+
 
 
 

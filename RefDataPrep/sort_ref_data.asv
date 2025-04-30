@@ -218,7 +218,6 @@ splitRatio = 0.7;  % 70% calibration
 
 % Loop through each LAS file and concatenate all data
 for i = 1:length(lasFiles)
-    
     % Full path to the current LAS file
     lasFile = fullfile(lasFolder, lasFiles(i).name);
 
@@ -254,7 +253,6 @@ for i = 1:numBins
     
     % Get indices in current bin
     binPoints = find(binIdx == i);
-    
     if isempty(binPoints)
         continue;
     end

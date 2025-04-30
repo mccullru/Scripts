@@ -120,229 +120,9 @@ def combine_bands_to_rgb(input_folder, output_folder):
 
 ################# CHECK DIRECTORIES/INPUTS #####################
 
-input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\Marathon"
+input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_Sentinel2\S2_Homer_output"
 output_folder = r"E:\Thesis Stuff\RGBCompositOutput"
 combine_bands_to_rgb(input_folder, output_folder)
-
-
-###############################################################################
-###############################################################################
-
-# Reproject images from WGS84/UTM to ITRF14/UTM
-
-
-
-
-
-###############################################################################
-###############################################################################
-
-# Downsample SD (3m) to something else
-# NOTE: Does not downsample to exact target resolution, just a little bit over as in mm
-
-# import os
-# import rasterio
-# import numpy as np
-# import re
-# import pandas as pd
-# import geopandas as gpd
-# import matplotlib.pyplot as plt
-# import xarray as xr
-
-# from glob import glob
-# from rasterio.warp import calculate_default_transform, reproject, Resampling
-# from pathlib import Path
-# from rasterio.enums import Resampling
-# from sklearn.linear_model import LinearRegression
-# from sklearn.metrics import mean_squared_error, r2_score
-# from rasterio.mask import mask
-# from difflib import get_close_matches
-
-# def downsample_image(input_path, target_resolution):
-#     """
-#     Downsamples a GeoTIFF to a specified resolution using bilinear interpolation.
-    
-#     Args:
-#         input_path (str): Path to the input GeoTIFF.
-#         downscale_factor (float): Factor by which to downscale the image (e.g., 0.5 for halving the resolution).
-    
-#     Returns:
-#         data (numpy.ndarray): The downsampled image data.
-#         transform (Affine): The transformed affine matrix for the downsampled image.
-#         profile (dict): The metadata of the downsampled image.
-#     """
-   
-    
-   
-#     with rasterio.open(input_path) as dataset:
-        
-#         # Get the original resolution (cell size) from the dataset transform
-#         original_resolution_x = dataset.transform[0]  # pixel width
-#         original_resolution_y = -dataset.transform[4]  # pixel height (negative because of the top-left origin)
-
-#         # Calculate the number of pixels needed for the target resolution
-#         new_width = int(dataset.width * (original_resolution_x / target_resolution))
-#         new_height = int(dataset.height * (original_resolution_y / target_resolution))
-        
-#         # Downsample data to the target shape
-#         data = dataset.read(
-#             out_shape=(
-#                 dataset.count,
-#                 new_height,
-#                 new_width
-#             ),
-#             resampling=Resampling.bilinear
-#         )
-
-#         # Scale image transform for downsampling
-#         transform = dataset.transform * dataset.transform.scale(
-#             (dataset.width / data.shape[-1]),  # scale factor in x direction
-#             (dataset.height / data.shape[-2])  # scale factor in y direction
-#         )
-
-#         # Update metadata for the downsampled image
-#         profile = dataset.profile
-#         profile.update(
-#             height=data.shape[1],
-#             width=data.shape[2],
-#             transform=transform
-#         )
-
-#     return data, transform, profile
-
-# def process_images_in_folder(input_folder, target_resolution):
-#     """
-#     Processes all images in the input folder, downsamples them, and replaces the original images.
-    
-#     Args:
-#         input_folder (str): Path to the folder containing the input GeoTIFFs.
-#         downscale_factor (float): Factor by which to downscale the image.
-#     """
-#     # Loop through all files in the input folder
-#     for filename in os.listdir(input_folder):
-#         input_path = os.path.join(input_folder, filename)
-        
-#         # Only process files containing "PlanetScope" and .tif
-#         if not filename.endswith(".tif") or "PlanetScope" not in filename:
-#             continue
-
-#         print(f"Processing {filename}...")
-
-#         # Downsample the image
-#         data, transform, profile = downsample_image(input_path, target_resolution)
-
-#         # Modify the file name to add "_ds" (downsampled) before the extension
-#         output_filename = os.path.splitext(filename)[0] + "_ds7.tif"
-#         output_path = os.path.join(input_folder, output_filename)
-
-
-#         # Overwrite the original file with the downsampled image
-#         with rasterio.open(output_path, 'w', **profile) as dst:
-#             dst.write(data)
-#         os.remove(input_path)
-
-#         print(f"Downsampled image saved (replaced): {filename}")
-
-
-#       #################  CHECK DIRECTORIES/INPUTS #####################
-
-# input_folder = r"E:\Thesis Stuff\RGBCompositOutput"  
-# target_resolution = 7  # Downsample the image (e.g., from 3m to 10m resolution)
-
-# process_images_in_folder(input_folder, target_resolution)
-
-
-
-##############################################################################
-##############################################################################
-
-# Import icesat reference data (Only needs to be done once)
-# NOTE: If coordinate transforms are needed this is the place to do it
-
-
-# def process_lidar_files(input_folder, output_folder):
-#     """
-#     Processes all LiDAR CSV files in the input folder. Extracts easting, northing, and elevation data, 
-#     and keeps only the rows where the 'Class' column has a value of 40.
-    
-#     Args:
-#         input_folder (str): Path to the folder containing the LiDAR CSV files.
-#         output_folder (str): Path to the folder where the filtered CSV files will be saved.
-    
-#     Returns:
-#         List of DataFrames: List containing the filtered DataFrames for each LiDAR file.
-#     """
-#     lidar_data_list = []  # List to store the DataFrames of each file
-
-#     # Check if the output folder exists; if not, create it
-#     if not os.path.exists(output_folder):
-#         os.makedirs(output_folder)
-
-#     # Loop through all files in the input folder
-#     for filename in os.listdir(input_folder):
-#         input_path = os.path.join(input_folder, filename)
-        
-#         # Skip non-CSV files
-#         if not filename.endswith(".csv"):
-#             continue
-
-#         print(f"Processing {filename}...")
-
-#         # Read the CSV file into a pandas DataFrame
-#         lidar_data = pd.read_csv(input_path)
-
-#         # Assuming the CSV columns are labeled as 'Latitude', 'Longitude', 'Geoid_Corrected_Ortho_Height', 'Manual_Label'
-#         if 'Latitude' in lidar_data.columns and 'Longitude' in lidar_data.columns and 'Geoid_Corrected_Ortho_Height' in lidar_data.columns and 'Manual_Label' in lidar_data.columns:
-#             # Filter the data to keep only rows where 'Class' == 40
-#             lidar_data_filtered = lidar_data[lidar_data['Manual_Label'] == 40]
-
-#             # Keep only the desired columns: 'Latitude', 'Longitude', 'Geoid_Corrected_Ortho_Height'
-#             lidar_data_filtered = lidar_data_filtered[['Latitude', 'Longitude', 'Geoid_Corrected_Ortho_Height']]
-            
-            
-#             # Optionally, print first few rows to inspect
-#             #print(f"First few rows of filtered {filename}:")
-#             #print(lidar_data_filtered.head())  # Print first few rows of filtered data
-            
-#             # Append the filtered DataFrame to the list
-#             lidar_data_list.append(lidar_data_filtered)
-
-#             # Save the filtered data to a new CSV file in the output folder
-#             output_filename = f"filtered_{filename}"
-#             output_path = os.path.join(output_folder, output_filename)
-#             lidar_data_filtered.to_csv(output_path, index=False)
-#             print(f"Filtered data saved to: {output_path}")
-#         else:
-#             print(f"Skipping {filename}, required columns are missing.")
-
-#     return lidar_data_list
-
-# def process_lidar_data(lidar_data_list):
-#     """
-#     Example function to process the lidar data (e.g., apply transformations, analysis).
-    
-#     Args:
-#         lidar_data_list (list of DataFrame): List of DataFrames from each LiDAR CSV file.
-#     """
-#     for lidar_data in lidar_data_list:
-#         # Example processing: Print statistics for each filtered LiDAR dataset
-#         print("\nProcessing Filtered Data:")
-#         print(f"Longitude range: {lidar_data['Longitude'].min()} to {lidar_data['Longitude'].max()}")
-#         print(f"Latitude range: {lidar_data['Latitude'].min()} to {lidar_data['Latitude'].max()}")
-#         print(f"Elevation range: {lidar_data['Geoid_Corrected_Ortho_Height'].min()} to {lidar_data['Geoid_Corrected_Ortho_Height'].max()}")
-
-
-
-
-      #################  CHECK DIRECTORIES/INPUTS #####################
-
-# input_folder = r"B:\Thesis Project\Reference Data\Classified_ICESat_Tracks\UpdatedCSVs"
-# output_folder = r"B:\Thesis Project\Reference Data\Classified_ICESat_Tracks\BathyOnly_UpdatedCSVs"  
-
-# lidar_data_list = process_lidar_files(input_folder, output_folder)
-
-# # Optionally, process the filtered data further
-# process_lidar_data(lidar_data_list)
 
 
 
@@ -476,12 +256,116 @@ from sklearn.metrics import mean_squared_error, r2_score
 from rasterio.mask import mask
 from difflib import get_close_matches
 
-def extract_raster_values(csv_file, raster_folder, output_folder):
+
+
+""" Input a folder of reference data and match the names """
+# def extract_raster_values(csv_folder, raster_folder, output_folder):
+#     """
+#     Matches rasters and CSVs where the second word in the raster filename 
+#     matches the first word in the CSV filename.
+#     """
+#     if not os.path.exists(output_folder):
+#         os.makedirs(output_folder)
+
+#     # Build dictionary: {scene_id (from csv): full csv path}
+#     csv_files = [f for f in os.listdir(csv_folder) if f.endswith('.csv')]
+#     csv_prefix_map = {f.split('_')[0].lower(): os.path.join(csv_folder, f) for f in csv_files}
+
+#     for raster_file in os.listdir(raster_folder):
+#         if not raster_file.endswith(".tif"):
+#             continue
+
+#         parts = raster_file.split('_')
+#         if len(parts) < 2:
+#             print(f"Skipping invalid raster name: {raster_file}")
+#             continue
+
+#         scene_id = parts[1].lower()
+#         matching_csv_path = csv_prefix_map.get(scene_id)
+
+#         if not matching_csv_path:
+#             print(f"No matching CSV for raster {raster_file} (SceneID: {scene_id})")
+#             continue
+
+#         print(f"Processing raster: {raster_file} with CSV: {os.path.basename(matching_csv_path)}")
+
+#         # Load and prepare CSV
+#         df = pd.read_csv(matching_csv_path)
+#         easting = df.iloc[:, 0]
+#         northing = df.iloc[:, 1]
+#         height = df.iloc[:, 2]
+#         gdf = gpd.GeoDataFrame(df, geometry=gpd.GeoSeries.from_xy(easting, northing))
+
+#         raster_path = os.path.join(raster_folder, raster_file)
+#         with rasterio.open(raster_path) as src:
+#             bounds = src.bounds
+#             gdf_in_bounds = gdf[gdf.geometry.apply(lambda pt: is_point_within_bounds(pt, bounds))]
+
+#             if gdf_in_bounds.empty:
+#                 print(f"No points in bounds for: {raster_file}")
+#                 continue
+
+#             gdf_in_bounds.loc[:, 'Raster_Value'] = gdf_in_bounds.geometry.apply(lambda pt: get_raster_value_at_point(src, pt))
+
+#         gdf_filtered = gdf_in_bounds.dropna(subset=['Raster_Value'])
+
+#         output_filename = os.path.splitext(raster_file)[0] + "_extracted.csv"
+#         output_path = os.path.join(output_folder, output_filename)
+#         gdf_filtered.to_csv(output_path, index=False)
+#         print(f"Saved: {output_path}")
+
+# def get_raster_value_at_point(raster_src, point):
+#     """
+#     Gets the raster value at a specific point (latitude, longitude).
+    
+#     Args:
+#         raster_src (rasterio.io.DatasetReader): The raster source object.
+#         point (shapely.geometry.point.Point): The point geometry (Longitude, Latitude).
+    
+#     Returns:
+#         float: The raster value at the specified point.
+#     """
+#     try:
+#         # Convert point to raster coordinates
+#         row, col = raster_src.index(point.x, point.y)
+#         value = raster_src.read(1)[row, col]
+#     except (IndexError, ValueError):
+#         # Return a NoData value or NaN if the point is out of bounds
+#         value = float('nan')
+    
+#     return value
+
+# def is_point_within_bounds(point, bounds):
+#     """
+#     Checks if a point is within raster bounds.
+    
+#     Args:
+#         point (shapely.geometry.point.Point): The point geometry.
+#         bounds (tuple): The raster bounds (left, bottom, right, top).
+    
+#     Returns:
+#         bool: True if the point is within bounds, False otherwise.
+#     """
+#     left, bottom, right, top = bounds
+#     return left <= point.x <= right and bottom <= point.y <= top
+
+# csv_folder = r"B:\Thesis Project\Reference Data\ICESat_refractionCorrected"
+# raster_folder = r"E:\Thesis Stuff\pSDB"
+# output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
+
+# extract_raster_values(csv_folder, raster_folder, output_folder)
+
+
+
+
+
+""" Specifically choose reference data file"""
+def extract_raster_values(cal_csv_file, raster_folder, output_folder):
     """
     Extracts raster values at the locations provided in the CSV file and saves the results.
 
     Args:
-        csv_file (str): Path to the CSV file containing latitude, longitude, and elevation.
+        cal_csv_file (str): Path to the CSV file containing latitude, longitude, and elevation.
         raster_folder (str): Path to the folder containing GeoTIFF raster files.
         output_folder (str): Path to the folder where the results will be saved.
     """
@@ -490,12 +374,15 @@ def extract_raster_values(csv_file, raster_folder, output_folder):
         os.makedirs(output_folder)
 
     # Load the CSV file
-    df = pd.read_csv(csv_file)
+    df = pd.read_csv(cal_csv_file)
     
-    df.columns = ['Easting(m)', 'Northing(m)', 'Orthometric Height(m)']
+    # Easting has to be first column, northing second, and ortho heights third
+    easting = df.iloc[:, 0]
+    northing = df.iloc[:, 1]
+    height = df.iloc[:, 2]
     
-    # Convert the CSV to GeoDataFrame
-    gdf = gpd.GeoDataFrame(df, geometry=gpd.GeoSeries.from_xy(df['Easting(m)'], df['Northing(m)']))
+    # Convert to GeoDataFrame
+    gdf = gpd.GeoDataFrame(df, geometry=gpd.GeoSeries.from_xy(easting, northing))
     
     # Loop through all raster files in the folder
     for raster_file in os.listdir(raster_folder):
@@ -518,7 +405,7 @@ def extract_raster_values(csv_file, raster_folder, output_folder):
                 # Extract the raster values at each valid location
                 gdf_in_bounds.loc[:, 'Raster_Value'] = gdf_in_bounds.geometry.apply(lambda point: get_raster_value_at_point(src, point))
             
-            # Check if 'Raster_Value' exists and drop rows with NaN
+            # Check if 'Raster_Value' exists and drop rows with NaN (NoData or out-of-bounds)
             if 'Raster_Value' in gdf_in_bounds.columns:
                 gdf_filtered = gdf_in_bounds.dropna(subset=['Raster_Value'])
             else:
@@ -531,233 +418,45 @@ def extract_raster_values(csv_file, raster_folder, output_folder):
             gdf_filtered.to_csv(output_path, index=False)
             print(f"Results saved to: {output_path}")
 
-def get_raster_value_at_point(raster_src, point):
+def get_raster_value_at_point(src, point):
     """
     Gets the raster value at a specific point (latitude, longitude).
-    
-    Args:
-        raster_src (rasterio.io.DatasetReader): The raster source object.
-        point (shapely.geometry.point.Point): The point geometry (Longitude, Latitude).
-    
-    Returns:
-        float: The raster value at the specified point.
+    Returns None if the value is NoData.
     """
     try:
-        # Convert point to raster coordinates
-        row, col = raster_src.index(point.x, point.y)
-        value = raster_src.read(1)[row, col]
+        # Convert point to raster coordinates (row, column)
+        row, col = src.index(point.x, point.y)
+        value = src.read(1)[row, col]
+        
+        # Check if value is NoData and return None if so
+        if value == src.nodata:
+            return None  # Return None for NoData
+        else:
+            return value
     except (IndexError, ValueError):
-        # Return a NoData value or NaN if the point is out of bounds
-        value = float('nan')
-    
-    return value
+        # If an error occurs (e.g., point is out of bounds), return None
+        return None
 
 def is_point_within_bounds(point, bounds):
     """
     Checks if a point is within raster bounds.
-    
-    Args:
-        point (shapely.geometry.point.Point): The point geometry.
-        bounds (tuple): The raster bounds (left, bottom, right, top).
-    
-    Returns:
-        bool: True if the point is within bounds, False otherwise.
     """
-    left, bottom, right, top = bounds
-    return left <= point.x <= right and bottom <= point.y <= top
+    return bounds.left <= point.x <= bounds.right and bounds.bottom <= point.y <= bounds.top
 
 
 
       #################  CHECK DIRECTORIES/INPUTS #####################
 
-csv_file = r"E:\Thesis Stuff\ReferenceData\Topobathy\Marathon_2019_combined_and_downsampled_points.csv"
+cal_csv_file = r"B:\Thesis Project\Reference Data\test_topo\calibration_points.csv"      # Calibration reference data
 raster_folder = r"E:\Thesis Stuff\pSDB"
 output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
 
-extract_raster_values(csv_file, raster_folder, output_folder)
+extract_raster_values(cal_csv_file, raster_folder, output_folder)
 
 
 
 ##############################################################################
 ##############################################################################
-
-# Perform linear regressions between pSDB red and green and reference calibration data
-
-# import os
-# import rasterio
-# import numpy as np
-# import re
-# import pandas as pd
-# import geopandas as gpd
-# import matplotlib.pyplot as plt
-# import xarray as xr
-# import matplotlib
-# matplotlib.use('TkAgg')
-
-# from glob import glob
-# from rasterio.warp import calculate_default_transform, reproject, Resampling
-# from pathlib import Path
-# from rasterio.enums import Resampling
-# from sklearn.linear_model import LinearRegression
-# from sklearn.metrics import mean_squared_error, r2_score
-# from rasterio.mask import mask
-# from difflib import get_close_matches
-# from matplotlib.widgets import Slider
-
-
-# def process_csv_files(input_folder, output_folder):
-#     """
-#     Processes CSV files in the input folder, performs linear regression, 
-#     and saves the results in the output folder.
-#     """
-#     # Ensure output folder exists
-#     os.makedirs(output_folder, exist_ok=True)
-
-#     # Define the output file path
-#     #output_file = os.path.join(output_folder, "linear_regression_results.csv")
-
-#     # Loop through all CSV files in the input folder
-#     for filename in os.listdir(input_folder):
-#         if filename.endswith(".csv"):
-#             input_path = os.path.join(input_folder, filename)
-#             print(f"Processing {filename}...")
-
-#             # Read the CSV file
-#             data = pd.read_csv(input_path, delimiter=',', decimal='.')
-
-#             # Drop rows where 'Raster_Value' is blank
-#             data = data.dropna(subset=['Raster_Value', 'OrthometricHeight(m)'])
-            
-#             # Initialize a results list
-#             results = []
-
-#             # plot the data
-#             x = data[['Raster_Value']].values
-#             y = data[['OrthometricHeight(m)']].values
-            
-    
-#             # Create an interactive plot to choose the max X value
-#             fig, ay = plt.subplots(figsize=(8, 6))
-#             ay.scatter(y,x, color='blue', label='Data Points', alpha=0.7)
-#             ay.set_title(f"Select max X Value for {filename}")
-#             ay.set_ylabel("Raster Value")
-#             ay.set_xlabel("Elevation")
-#             ay.grid(True)
-            
-            
-            
-#             # Create a slider to adjust max X value
-#             ay_slider = plt.ayes([0.1, 0.01, 0.8, 0.03], facecolor='lightgoldenrodyellow')
-#             slider = Slider(ay_slider, 'max X', np.min(x), np.max(x), valinit=np.max(x), valstep=0.1)
-            
-            
-            
-#             def update(val):
-           
-#                 # Get selected max X value from the slider
-#                 max_x_value = slider.val
-#                 ay.clear()
-#                 ay.scatter(x, y, color='blue', label='Data Points', alpha=0.7)
-#                 ay.set_title(f"max X = {max_x_value} for {filename}")
-#                 ay.set_xlabel("Raster Value")
-#                 ay.set_ylabel("Elevation")
-#                 ay.grid(True)
-#                 ay.set_xlim([np.min(x), max_x_value])
-#                 plt.draw()
-
-
-            
-#             slider.on_changed(update)
-
-#             # Display the plot with interactive slider
-#             plt.subplots_adjust(bottom=0.15)  # Adjust to make room for the slider
-#             plt.show  # Show the plot and keep the interactive mode active
-           
-#             # Now filter the data based on the selected max x-value from the slider
-#             max_x_value = slider.val
-#             data_filtered = data[data['Raster_Value'] <= max_x_value]
-            
-#             # Perform linear regression on filtered data
-#             x_filtered = data_filtered[['Raster_Value']].values
-#             y_filtered = data_filtered['OrthometricHeight(m)'].values
-#             model = LinearRegression()
-#             model.fit(x_filtered, y_filtered)
-            
-#             print('check1')
-#             # Calculate regression metrics
-#             y_pred = model.predict(x_filtered)
-#             r2 = r2_score(y_filtered, y_pred)
-#             rmse = np.sqrt(mean_squared_error(y_filtered, y_pred))
-#             coef = model.coef_[0]
-#             intercept = model.intercept_
-#             print('check2')
-#             # Create the line of best fit equation
-#             equation = f"y = {coef:.4f}x + {intercept:.4f}"
-
-            
-#             print('check3')
-
-            
-#             max_x = np.max(x)
-#             max_y = np.max(y)
-            
-#             # Plot the data and the regression line
-#             plt.figure(figsize=(8, 6))
-#             plt.scatter(x, y, color='blue', label='Data Points', alpha=0.7)
-#             plt.plot(x, y_pred, color='red', label='Best Fit Line', linewidth=2)
-#             plt.title(f"Linear Regression for {filename}")
-#             plt.xlabel("Raster Value")
-#             plt.ylabel("Elevation")
-#             #plt.xlim(None, 1.15)
-#             plt.ylim(top=0)
-#             plt.legend()
-#             plt.grid(True)    
-#             # Add R^2 and RMSE as text on the plot
-#             plt.text(max_x, max_y, f"$R^2$ = {r2:.4f}\nRMSE = {rmse:.4f}", fontsize=10, 
-#                      bbox=dict(facecolor='white', alpha=0.5), ha='left')
-
-#             print('check4')
-
-#             # Invert both ayes so 0 is bottom left, and up and right are negative
-#             plt.gca().invert_yayis()
-
-#             # Generate and save the plot
-#             plot_filename = f"{os.path.splitext(filename)[0]}_LR_plot.png"
-#             plot_path = os.path.join(output_folder, plot_filename)
-#             plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-#             plt.close()  # Close the plot to free memory
-
-#             print(f"Plot saved to {plot_path}")
-            
-#             # Append the results to the list
-#             results.append({
-#                 "Image Name": filename,
-#                 "R^2": r2,
-#                 "RMSE": rmse,        
-#                 "Line of Best Fit": equation,
-#                 "m1": coef,
-#                 "m0": intercept})
-
-
-#             # Convert the results into a DataFrame
-#             results_df = pd.DataFrame(results)
-
-#             # Generate the output file name
-#             output_filename = f"{os.path.splitext(filename)[0]}_LR_stats.csv"
-#             output_path = os.path.join(output_folder, output_filename)
-
-
-#             # Save the results to the output CSV file
-#             results_df.to_csv(output_path, index=False)
-#             print(f"Results saved to {output_path}")
-
-
-#       #################  CHECK DIRECTORIES/INPUTS #####################
-
-# input_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"  
-# output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_Results" 
-# process_csv_files(input_folder, output_folder)
-
 
 # Perform linear regressions between pSDB red and green and reference calibration data
 
@@ -808,7 +507,7 @@ def process_csv_files(input_folder, output_folder):
 
             # Perform linear regression
             x = data[['Raster_Value']].values
-            y = data['Orthometric Height(m)'].values
+            y = data['Geoid_Corrected_Ortho_Height'].values
             model = LinearRegression()
             model.fit(x, y)
 
@@ -908,7 +607,7 @@ from rasterio.mask import mask
 from difflib import get_close_matches
 
 
-def create_sdb_rasters(raster_folder, csv_folder, output_folder, nodata_value=np.nan):
+def create_sdb_rasters(raster_folder, csv_folder, output_folder, nodata_value=-9999):
     """
     Creates SDB rasters using constants from linear regression stored in CSV files.
     
@@ -955,11 +654,15 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, nodata_value=np
                         # Perform the SDB raster calculation
                         result = m1 * pSDB + m0
 
-                        # Mask NaN values and set NoData value
-                        result = np.ma.masked_where(np.isnan(result), result)
-                        result_filled = result.filled(nodata_value)
+                        # Replace NaNs and original nodata values with output nodata_value
+                        result_filled = np.where(
+                            np.isnan(pSDB) | np.isnan(result), nodata_value, result
+                        )
 
-                        
+                        ## Mask NaN values and set NoData value
+                        #result = np.ma.masked_where(np.isnan(result), result)
+                        #result_filled = result.filled(nodata_value)
+
                         # Generate output raster path based on the input raster name
                         if raster_name.endswith('_pSDBgreen.tif'):
                             output_raster_name = raster_name.replace('_pSDBgreen.tif', '_SDBgreen.tif')
@@ -1036,6 +739,11 @@ def create_sdb_raster(sdb_red, sdb_green):
     lower_limit = -2 
     upper_limit = -3.5
 
+    # Handle NaNs in input data
+    sdb_red = np.nan_to_num(sdb_red, nan=np.nan)  # Changed: Ensure NaNs are handled explicitly
+    sdb_green = np.nan_to_num(sdb_green, nan=np.nan)  # Changed: Ensure NaNs are handled explicitly
+
+
     # Debug: Check input min/max values
     print(f"SDB Red Min: {np.nanmin(sdb_red)}, max: {np.nanmax(sdb_red)}")
     print(f"SDB Green Min: {np.nanmin(sdb_green)}, max: {np.nanmax(sdb_green)}")
@@ -1071,8 +779,60 @@ def create_sdb_raster(sdb_red, sdb_green):
     return sdb_merged
 
 
+
+# This way still works
+def process_sdb_folder(input_folder):
+    """Processes all matching SDBred and SDBgreen rasters in a folder."""
+
+    # Get lists of all SDBred and SDBgreen files
+    sdb_red_files = glob(os.path.join(input_folder, '*SDBred.tif'))
+    sdb_green_files = glob(os.path.join(input_folder, '*SDBgreen.tif'))
+
+    # Create a dictionary mapping filenames without 'SDBred' or 'SDBgreen' to their full paths
+    red_dict = {os.path.basename(f).replace('SDBred.tif', ''): f for f in sdb_red_files}
+    green_dict = {os.path.basename(f).replace('SDBgreen.tif', ''): f for f in sdb_green_files}
+
+    # Find matching pairs
+    common_keys = set(red_dict.keys()) & set(green_dict.keys())
+
+    for key in common_keys:
+        red_raster_path = red_dict[key]
+        green_raster_path = green_dict[key]
+        output_path = os.path.join(input_folder, f"{key}SDB_merged.tif")
+
+
+        # Open raster files and read data
+        with rasterio.open(red_raster_path) as red_dataset:
+            sdb_red = red_dataset.read(1)  # Read first band
+
+        with rasterio.open(green_raster_path) as green_dataset:
+            sdb_green = green_dataset.read(1)  # Read first band
+
+        # Create the merged SDB raster
+        sdb_merged = create_sdb_raster(sdb_red, sdb_green)
+        # Replace np.nan with NoData value (e.g., -9999)
+        nodata_value = -9999
+        sdb_merged_filled = np.where(np.isnan(sdb_merged), nodata_value, sdb_merged).astype(np.float32)
+        
+        # Save the new merged raster
+        with rasterio.open(output_path, 'w', driver='GTiff', count=1, dtype=sdb_merged.dtype,
+                            height=sdb_merged.shape[0], width=sdb_merged.shape[1],
+                            crs=red_dataset.crs, transform=red_dataset.transform, nodata=nodata_value) as dst:
+            dst.write(sdb_merged, 1)
+
+        print(f"Saved merged SDB raster: {output_path}")
+
+# Example usage
+input_folder = r"E:\Thesis Stuff\SDB"  # Folder with input rasters
+
+process_sdb_folder(input_folder)
+
+
+
+
+"""Processes all matching SDBred and SDBgreen rasters in a folder, merging only if R² ≥ threshold."""
 # def process_sdb_folder(input_folder, csv_folder, r2_threshold=0.7):
-#     """Processes all matching SDBred and SDBgreen rasters in a folder, merging only if R² ≥ threshold."""
+
 
 #     # Get lists of all SDBred and SDBgreen files
 #     sdb_red_files = glob(os.path.join(input_folder, '*SDBred.tif'))
@@ -1136,68 +896,6 @@ def create_sdb_raster(sdb_red, sdb_green):
 # process_sdb_folder(input_folder, csv_folder, r2_threshold=0.7)
 
 
-
-# This way still works
-def process_sdb_folder(input_folder):
-    """Processes all matching SDBred and SDBgreen rasters in a folder."""
-
-    # Get lists of all SDBred and SDBgreen files
-    sdb_red_files = glob(os.path.join(input_folder, '*SDBred.tif'))
-    sdb_green_files = glob(os.path.join(input_folder, '*SDBgreen.tif'))
-
-    # Create a dictionary mapping filenames without 'SDBred' or 'SDBgreen' to their full paths
-    red_dict = {os.path.basename(f).replace('SDBred.tif', ''): f for f in sdb_red_files}
-    green_dict = {os.path.basename(f).replace('SDBgreen.tif', ''): f for f in sdb_green_files}
-
-    # Find matching pairs
-    common_keys = set(red_dict.keys()) & set(green_dict.keys())
-
-    for key in common_keys:
-        red_raster_path = red_dict[key]
-        green_raster_path = green_dict[key]
-        output_path = os.path.join(input_folder, f"{key}SDB_merged.tif")
-
-
-        # Open raster files and read data
-        with rasterio.open(red_raster_path) as red_dataset:
-            sdb_red = red_dataset.read(1)  # Read first band
-
-        with rasterio.open(green_raster_path) as green_dataset:
-            sdb_green = green_dataset.read(1)  # Read first band
-
-        # Create the merged SDB raster
-        sdb_merged = create_sdb_raster(sdb_red, sdb_green)
-
-        # Save the new merged raster
-        with rasterio.open(output_path, 'w', driver='GTiff', count=1, dtype=sdb_merged.dtype,
-                            height=sdb_merged.shape[0], width=sdb_merged.shape[1],
-                            crs=red_dataset.crs, transform=red_dataset.transform) as dst:
-            dst.write(sdb_merged, 1)
-
-        print(f"Saved merged SDB raster: {output_path}")
-
-# Example usage
-input_folder = r"E:\Thesis Stuff\SDB"  # Folder with input rasters
-
-process_sdb_folder(input_folder)
-
-
-
-
-##############################################################################################################
-##############################################################################################################
-
-# Comparisons, SDB truthiness, other stats
-
-# Ok so I will have lots of SDB from both S2 and SD with the exact same boundary/area.
-# I should somehow use Matt's bathy truthiness tool to see what percent of area 
-# bathymetry can be identified between SD and S2. Would assume S2 to have a 
-# higher percent because it has better camera and sensors. Could then average 
-# percent that SD reaches vs S2. Higher percent = more optically shallow waters,
-# low percent = more optically deep waters.
-
-
-
 ##############################################################################################################
 ##############################################################################################################
 # Extract SDB values at reference point locations
@@ -1220,12 +918,12 @@ from sklearn.metrics import mean_squared_error, r2_score
 from rasterio.mask import mask
 from difflib import get_close_matches
 
-def extract_raster_values(csv_file, raster_folder, output_folder):
+def extract_raster_values(val_csv_file, raster_folder, output_folder):
     """
     Extracts raster values at the locations provided in the CSV file and saves the results.
 
     Args:
-        csv_file (str): Path to the CSV file containing latitude, longitude, and elevation.
+        val_csv_file (str): Path to the CSV file containing latitude, longitude, and elevation.
         raster_folder (str): Path to the folder containing GeoTIFF raster files.
         output_folder (str): Path to the folder where the results will be saved.
     """
@@ -1234,9 +932,9 @@ def extract_raster_values(csv_file, raster_folder, output_folder):
         os.makedirs(output_folder)
 
     # Load the CSV file
-    df = pd.read_csv(csv_file)
+    df = pd.read_csv(val_csv_file)
     
-    df.columns = ['Easting(m)', 'Northing(m)', 'Orthometric Height(m)']
+    df.columns = ['Easting(m)', 'Northing(m)', 'Geoid_Corrected_Ortho_Height']
     
     # Convert the CSV to GeoDataFrame
     gdf = gpd.GeoDataFrame(df, geometry=gpd.GeoSeries.from_xy(df['Easting(m)'], df['Northing(m)']))
@@ -1278,11 +976,11 @@ def extract_raster_values(csv_file, raster_folder, output_folder):
 
       #################  CHECK DIRECTORIES/INPUTS #####################
 
-csv_file = r"E:\Thesis Stuff\ReferenceData\Topobathy\Marathon_2017_combined_and_downsampled_points.csv"
+val_csv_file = r"B:\Thesis Project\Reference Data\test_topo\validation_points.csv"
 raster_folder = r"E:\Thesis Stuff\SDB"
 output_folder = r"E:\Thesis Stuff\SDB_ExtractedPts"
 
-extract_raster_values(csv_file, raster_folder, output_folder)
+extract_raster_values(val_csv_file, raster_folder, output_folder)
 
 
 
@@ -1332,7 +1030,7 @@ def process_csv_files(input_folder, output_folder):
 
             # Perform linear regression
             x = data[['Raster_Value']].values
-            y = data['Orthometric Height(m)'].values
+            y = data['Geoid_Corrected_Ortho_Height'].values
             model = LinearRegression()
             model.fit(x, y)
 
@@ -1420,49 +1118,6 @@ def process_csv_files(input_folder, output_folder):
             max_x_perp = np.max(data["Raster_Value"])
             min_y_perp = np.min(distances)
 
-           ## Scatter plot of perpendicular distance vs. raster value
-           #  plt.figure(figsize=(8, 6))
-           #  plt.scatter(data["Raster_Value"], distances, color='purple', alpha=0.5)
-           #  plt.ayhline(mean_dist, color='red', linestyle='dashed', label="Mean Distance")
-           #  plt.xlabel("Raster Value")
-           #  plt.ylabel("Perpendicular Distance to Best Fit Line")
-           #  plt.title(f"Perpendicular Distance vs. Raster Value ({filename})")
-           #  plt.legend()
-           #  plt.grid(True)
-           #  # Invert both ayes so 0 is bottom left, and up and right are negative
-           #  plt.gca().invert_xaxis()
-           # # plt.gca().invert_yaxis()
-           #  # Perform linear regression for the perpendicular distance vs raster value
-           #  x_perp = data["Raster_Value"].values.reshape(-1, 1)
-           #  y_perp = distances
-           #  model_perp = LinearRegression()
-           #  model_perp.fit(x_perp, y_perp)
-
-
-           #  # Calculate regression metrics for the perpendicular distance plot
-           #  y_pred_perp = model_perp.predict(x_perp)
-           #  r2_perp = r2_score(y_perp, y_pred_perp)
-           #  rmse_perp = np.sqrt(mean_squared_error(y_perp, y_pred_perp))
-           #  coef_perp = model_perp.coef_[0]
-           #  intercept_perp = model_perp.intercept_
-
-           #  # Create the line of best fit equation for the perpendicular distance
-           #  equation_perp = f"y = {coef_perp:.4f}x + {intercept_perp:.4f}"
-
-           #  # Add the line of best fit to the plot
-           #  plt.plot(data["Raster_Value"], y_pred_perp, color='green', label='Best Fit Line', linewidth=2)
-            
-           #  # Add R^2 and RMSE as text on the plot
-           #  plt.text(max_x_perp, min_y_perp, f"$R^2$ = {r2_perp:.4f}\nRMSE = {rmse_perp:.4f}", fontsize=10, 
-           #           bbox=dict(facecolor='white', alpha=0.5), ha='left')
-
-           #  # Save the perpendicular distance plot in the output folder
-           #  perp_plot_filename = f"{os.path.splitext(filename)[0]}_PerpDist_plot.png"
-           #  perp_plot_path = os.path.join(output_folder, perp_plot_filename)
-           #  plt.savefig(perp_plot_path)
-           #  print(f"Perpendicular distance plot saved as {perp_plot_path}")
-           #  plt.close()
-            
             
             # Convert the results into a DataFrame
             results_df = pd.DataFrame(results)
@@ -1485,10 +1140,6 @@ process_csv_files(input_folder, output_folder)
 
 
 
-##############################################################################################################
-##############################################################################################################
-
-# Calculate the deviations for each point from the line of best fit  
 
 
 

@@ -120,7 +120,7 @@ def combine_bands_to_rgb(input_folder, output_folder):
 
 ################# CHECK DIRECTORIES/INPUTS #####################
 
-input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_Sentinel2\S2_Homer_output"
+input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\Homer_test\GUI\SD"
 output_folder = r"E:\Thesis Stuff\RGBCompositOutput"
 combine_bands_to_rgb(input_folder, output_folder)
 
@@ -375,11 +375,18 @@ def extract_raster_values(cal_csv_file, raster_folder, output_folder):
 
     # Load the CSV file
     df = pd.read_csv(cal_csv_file)
+
+   
+    # Multiply the height column by -1 DON'T DO IF ALREADY POSITIVE
+    print(f"Multiplying height column '{df.columns[2]}' (index 2) by -1.")
+    # Make sure the column is numeric before multiplying
+    df.iloc[:, 2] = pd.to_numeric(df.iloc[:, 2], errors='coerce') * -1
+   
     
     # Easting has to be first column, northing second, and ortho heights third
     easting = df.iloc[:, 0]
     northing = df.iloc[:, 1]
-    height = df.iloc[:, 2]
+   #height = df.iloc[:, 2]
     
     # Convert to GeoDataFrame
     gdf = gpd.GeoDataFrame(df, geometry=gpd.GeoSeries.from_xy(easting, northing))
@@ -447,7 +454,7 @@ def is_point_within_bounds(point, bounds):
 
       #################  CHECK DIRECTORIES/INPUTS #####################
 
-cal_csv_file = r"B:\Thesis Project\Reference Data\test_topo\calibration_points.csv"      # Calibration reference data
+cal_csv_file = r"B:\Thesis Project\Reference Data\Full_topo_data\Homer, Alaska\ITRF_EGM08\2019\las\2D_calibration_points.csv"     # Calibration reference data
 raster_folder = r"E:\Thesis Stuff\pSDB"
 output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
 
@@ -532,26 +539,26 @@ def process_csv_files(input_folder, output_folder):
             })
 
             
-            max_x = np.max(x)
-            max_y = np.max(y)
+            min_x = np.min(x)
+            mean_y = np.mean(y)
             
             # Plot the data and the regression line
             plt.figure(figsize=(8, 6))
             plt.scatter(x, y, color='blue', label='Data Points', alpha=0.7)
             plt.plot(x, y_pred, color='red', label='Best Fit Line', linewidth=2)
             plt.title(f"Linear Regression for {filename}")
-            plt.xlabel("Raster Value")
-            plt.ylabel("Elevation")
+            plt.xlabel("pSDB Raster Value (unitless)")
+            plt.ylabel("Reference Calibration Depths (m)")
             #plt.xlim(None, 1.15)
-            plt.ylim(top=0)
+            plt.ylim(0, None)
             plt.legend()
             plt.grid(True)    
             # Add R^2 and RMSE as text on the plot
-            plt.text(max_x, max_y, f"$R^2$ = {r2:.4f}\nRMSE = {rmse:.4f}", fontsize=10, 
+            plt.text(min_x, mean_y, f"$R^2$ = {r2:.4f}\nRMSE = {rmse:.4f}", fontsize=10, 
                       bbox=dict(facecolor='white', alpha=0.5), ha='left')
             plt.show
             # Invert both ayes so 0 is bottom left, and up and right are negative
-            plt.gca().invert_yaxis()
+            #plt.gca().invert_yaxis()
 
             # Generate and save the plot
             plot_filename = f"{os.path.splitext(filename)[0]}_LR_plot.png"
@@ -936,6 +943,15 @@ def extract_raster_values(val_csv_file, raster_folder, output_folder):
     
     df.columns = ['Easting(m)', 'Northing(m)', 'Geoid_Corrected_Ortho_Height']
     
+   
+    # Multiply the 'Geoid_Corrected_Ortho_Height' column by -1 DON"T DO IT IF ALREADY POSITIVE
+    print("Multiplying 'Geoid_Corrected_Ortho_Height' column by -1.")
+    # Ensure the column is numeric before multiplying
+    height_col_name = 'Geoid_Corrected_Ortho_Height'
+    df[height_col_name] = pd.to_numeric(df[height_col_name], errors='coerce') * -1
+   
+    
+    
     # Convert the CSV to GeoDataFrame
     gdf = gpd.GeoDataFrame(df, geometry=gpd.GeoSeries.from_xy(df['Easting(m)'], df['Northing(m)']))
     
@@ -976,7 +992,7 @@ def extract_raster_values(val_csv_file, raster_folder, output_folder):
 
       #################  CHECK DIRECTORIES/INPUTS #####################
 
-val_csv_file = r"B:\Thesis Project\Reference Data\test_topo\validation_points.csv"
+val_csv_file = r"B:\Thesis Project\Reference Data\Full_topo_data\Homer, Alaska\ITRF_EGM08\2019\las\2D_validation_points.csv"
 raster_folder = r"E:\Thesis Stuff\SDB"
 output_folder = r"E:\Thesis Stuff\SDB_ExtractedPts"
 
@@ -1075,14 +1091,14 @@ def process_csv_files(input_folder, output_folder):
                 "std dev perp dist": std_dist 
             })
             
-            max_x = np.max(x)
-            max_y = np.max(y)
+            min_x = np.min(x)
+            mean_y = np.mean(y)
 
             # Compute the x-intercept (where y = 0)
             x_intercept = -intercept / coef if coef != 0 else np.min(x)
 
             # Generate extended x values from x_intercept to max x
-            x_ext = np.linspace(x_intercept, np.min(x), 100)
+            x_ext = np.linspace(x_intercept, np.max(x), 100)
 
             # Compute corresponding y values
             y_ext = coef * x_ext + intercept
@@ -1092,20 +1108,20 @@ def process_csv_files(input_folder, output_folder):
             plt.scatter(x, y, color='blue', label='Data Points', alpha=0.7)
             plt.plot(x_ext, y_ext, color='red', label='Best Fit Line', linewidth=2)
             plt.title(f"Linear Regression for {filename}")
-            plt.xlabel("Raster Value")
+            plt.xlabel("SDB Raster Value")
             plt.ylabel("Elevation")
             plt.legend()
             plt.grid(True)    
-            plt.xlim(None, 0)
-            plt.ylim(None, 0)
+            plt.xlim(0, None)
+            plt.ylim(0, None)
             
             # Add R^2 and RMSE as text on the plot
-            plt.text(max_x, max_y, f"$R^2$ = {r2:.4f}\nRMSE = {rmse:.4f}\nIntercept = {intercept:0.2f}", fontsize=10, 
+            plt.text(min_x, mean_y, f"$R^2$ = {r2:.4f}\nRMSE = {rmse:.4f}\nIntercept = {intercept:0.2f}", fontsize=10, 
                      bbox=dict(facecolor='white', alpha=0.5), ha='left')
             
             # Invert both ayes so 0 is bottom left, and up and right are negative
-            plt.gca().invert_xaxis()
-            plt.gca().invert_yaxis()
+            #plt.gca().invert_xaxis()
+            #plt.gca().invert_yaxis()
 
             # Save the regression plot in the output folder
             plot_filename = f"{os.path.splitext(filename)[0]}_LR_plot.png"

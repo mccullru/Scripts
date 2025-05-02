@@ -42,7 +42,7 @@ def process_single_csv(input_file, output_folder):
 
     # Perform linear regression
     x = data[['Raster_Value']].values
-    y = data['Orthometric Height(m)'].values
+    y = data['Geoid_Corrected_Ortho_Height'].values
     model = LinearRegression()
     model.fit(x, y)
 
@@ -91,20 +91,20 @@ def process_single_csv(input_file, output_folder):
     plt.legend()
     plt.grid(True)
     
-    plt.xlim(.9, None)
-    plt.ylim(None, 0.9)
+    #plt.xlim(.9, None)
+    #plt.ylim(None, 0.9)
 
     # Add R^2 and RMSE as text on the plot
-    max_x = np.max(x)
+    min_x = np.min(x)
     max_y = np.max(y)
     min_y = np.min(y)
-    
-    plt.text(.96, -6.5, f"$R^2$ = {r2:.2f}\nRMSE = {rmse:.2f}", fontsize=18, color='black', ha='left',
+    mean_y = np.mean(y)
+    plt.text(min_x, 10, f"$R^2$ = {r2:.2f}\nRMSE = {rmse:.2f}", fontsize=18, color='black', ha='left',
               bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.3'))
 
     # Invert both axes so 0 is bottom left, and up and right are negative
     #plt.gca().invert_xaxis()
-    plt.gca().invert_yaxis()
+    #plt.gca().invert_yaxis()
 
     # Save the regression plot in the output folder
     plot_filename = f"{os.path.splitext(os.path.basename(input_file))[0]}_LR_plot_better.png"
@@ -114,8 +114,8 @@ def process_single_csv(input_file, output_folder):
 
 
 
-input_file = r"E:\Thesis Stuff\Results\Marathon\Condition1_dsSD\Extracted Pts\pSDB\Marathon_S2A_MSI_2023_02_14_16_06_29_T17RMH_L2W__RGB_pSDBred_extracted.csv"
-output_folder = r"E:\Thesis Stuff\Results\Marathon\Condition1_dsSD\Extracted Pts\pSDB\test"
+input_file = r"E:\Thesis Stuff\pSDB_ExtractedPts\SD_PlanetScope_2274_2022_06_03_21_10_58_L2W__RGB_pSDBred_extracted.csv"
+output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
 process_single_csv(input_file, output_folder)
 
 

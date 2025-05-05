@@ -104,7 +104,7 @@ def combine_bands_to_rgb(input_folder, output_folder):
             # Output file name (remove "Rrs_<number>" from filename)
             input_folder_name = Path(input_folder).name
             output_file_name = re.sub(r"Rrs_\d+", "", r.name).replace("__", "_")  # Clean up any double underscores
-            output_file = os.path.join(output_folder, f"{input_folder_name}_{Path(output_file_name).stem}_RGB.tif")
+            output_file = os.path.join(output_folder, f"{Path(output_file_name).stem}_RGB.tif")
 
             # Write combined RGB TIFF
             with rasterio.open(output_file, "w", **profile) as dst:
@@ -120,7 +120,7 @@ def combine_bands_to_rgb(input_folder, output_folder):
 
 ################# CHECK DIRECTORIES/INPUTS #####################
 
-input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\Homer_test\GUI\SD"
+input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_Anegada_output\PSScene-20230110_142925_33_24a5"
 output_folder = r"E:\Thesis Stuff\RGBCompositOutput"
 combine_bands_to_rgb(input_folder, output_folder)
 
@@ -379,14 +379,23 @@ def extract_raster_values(cal_csv_file, raster_folder, output_folder):
    
     # Multiply the height column by -1 DON'T DO IF ALREADY POSITIVE
     print(f"Multiplying height column '{df.columns[2]}' (index 2) by -1.")
-    # Make sure the column is numeric before multiplying
+    # Make sure the column is positive before multiplying
     df.iloc[:, 2] = pd.to_numeric(df.iloc[:, 2], errors='coerce') * -1
    
+    # Remove rows where final depth < 0 
+    original_rows = len(df)
+    
+    # Removes rows that became NaN during `to_numeric` conversion
+    df = df[df.iloc[:, 2] >= 1]
+    rows_removed = original_rows - len(df)
+    if rows_removed > 0: # Added print for feedback
+         print(f"Removed {rows_removed} rows with negative or NaN depth values.")
+
     
     # Easting has to be first column, northing second, and ortho heights third
     easting = df.iloc[:, 0]
     northing = df.iloc[:, 1]
-   #height = df.iloc[:, 2]
+    # height = df.iloc[:, 2]
     
     # Convert to GeoDataFrame
     gdf = gpd.GeoDataFrame(df, geometry=gpd.GeoSeries.from_xy(easting, northing))
@@ -454,7 +463,7 @@ def is_point_within_bounds(point, bounds):
 
       #################  CHECK DIRECTORIES/INPUTS #####################
 
-cal_csv_file = r"B:\Thesis Project\Reference Data\Full_topo_data\Homer, Alaska\ITRF_EGM08\2019\las\2D_calibration_points.csv"     # Calibration reference data
+cal_csv_file = r"B:\Thesis Project\Reference Data\Processed_ICESat\Anegada_corrected.csv"     # Calibration reference data
 raster_folder = r"E:\Thesis Stuff\pSDB"
 output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
 
@@ -547,9 +556,9 @@ def process_csv_files(input_folder, output_folder):
             plt.scatter(x, y, color='blue', label='Data Points', alpha=0.7)
             plt.plot(x, y_pred, color='red', label='Best Fit Line', linewidth=2)
             plt.title(f"Linear Regression for {filename}")
-            plt.xlabel("pSDB Raster Value (unitless)")
-            plt.ylabel("Reference Calibration Depths (m)")
-            #plt.xlim(None, 1.15)
+            plt.xlabel("pSDB Values (unitless)")
+            plt.ylabel("Reference Depths (m)")
+            #plt.xlim(None, 1.5)
             plt.ylim(0, None)
             plt.legend()
             plt.grid(True)    
@@ -649,7 +658,8 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, nodata_value=-9
                 # Process the raster using the matched CSV file
                 with rasterio.open(raster_path) as src:
                     pSDB = src.read(1)  # Assuming the raster is single-band
-
+                    src_nodata = src.nodata
+                    
                     # Find the row in the CSV where the raster name matches
                     coeff_row = coefficients_df[coefficients_df['Image Name'].str.contains(base_raster_name, 
                                                                                            case=False, na=False)]
@@ -658,13 +668,30 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, nodata_value=-9
                         m1 = coeff_row['m1'].values[0]
                         m0 = coeff_row['m0'].values[0]
 
+                        # --- Minimal Prep for Calculation/Comparison ---
+                        # Ensure float type for calculations involving potential NaNs/NoData
+                        pSDB_f = pSDB.astype(np.float32)
+                        # Convert source nodata to NaN if it exists
+                        if src_nodata is not None:
+                            pSDB_f[pSDB_f == src_nodata] = np.nan
+                        # --- End Prep ---
+
+
+
                         # Perform the SDB raster calculation
                         result = m1 * pSDB + m0
 
                         # Replace NaNs and original nodata values with output nodata_value
                         result_filled = np.where(
-                            np.isnan(pSDB) | np.isnan(result), nodata_value, result
+                            np.isnan(pSDB) | np.isnan(result) | (result < 0),
+                            nodata_value,
+                            result
                         )
+
+
+
+
+
 
                         ## Mask NaN values and set NoData value
                         #result = np.ma.masked_where(np.isnan(result), result)
@@ -736,15 +763,15 @@ from difflib import get_close_matches
 def create_sdb_raster(sdb_red, sdb_green):
     """
     Create a merged SDB raster with the following rules:
-    - If 0 >= SDBred >= -2, use SDBred.
-    - If -2 > SDBred >= -3.5, use a weighted average of SDBred and SDBgreen.
-    - If SDBred < -3.5, use SDBgreen.
+    - If 0 <= SDBred <= 2, use SDBred.
+    - If 2 < SDBred <= 3.5, use a weighted average of SDBred and SDBgreen.
+    - If SDBred > 3.5, use SDBgreen.
     """
     # Initialize output array
     sdb_merged = np.full_like(sdb_red, np.nan)
 
-    lower_limit = -2 
-    upper_limit = -3.5
+    lower_limit = 2 
+    upper_limit = 3.5
 
     # Handle NaNs in input data
     sdb_red = np.nan_to_num(sdb_red, nan=np.nan)  # Changed: Ensure NaNs are handled explicitly
@@ -755,14 +782,17 @@ def create_sdb_raster(sdb_red, sdb_green):
     print(f"SDB Red Min: {np.nanmin(sdb_red)}, max: {np.nanmax(sdb_red)}")
     print(f"SDB Green Min: {np.nanmin(sdb_green)}, max: {np.nanmax(sdb_green)}")
 
-    # Condition 1: Use SDBred if 0 >= SDBred >= -2
-    red_condition = sdb_red > lower_limit
+    # Condition 1: Use SDBred if 0 <= SDBred <= 2
+    red_condition = sdb_red <= lower_limit
     print(f"Red Condition Count: {np.sum(red_condition)}")
     sdb_merged[red_condition] = sdb_red[red_condition]
 
-    # Condition 2: Weighted average if -2 > SDBred >= -3.5
-    weighted_condition = (sdb_red <= lower_limit) & (sdb_green >= upper_limit) & (sdb_red >sdb_green)    
+    # Condition 2: Weighted average if 2 < SDBred <= 3.5
+    weighted_condition = (sdb_red > lower_limit) & (sdb_red <= upper_limit) & (sdb_red < sdb_green)    
     print(f"Weighted Condition Count: {np.sum(weighted_condition)}")
+
+
+
 
     # Calculate weights (linear relationship)
     alpha = (sdb_red - lower_limit) / (upper_limit - lower_limit)  # Correct weight calculation
@@ -770,11 +800,15 @@ def create_sdb_raster(sdb_red, sdb_green):
     print(f"Alpha Min: {np.nanmin(alpha)}, max: {np.nanmax(alpha)}")
     print(f"Beta Min: {np.nanmin(beta)}, max: {np.nanmax(beta)}")
 
+
+
+
+
     sdb_weighted = alpha * sdb_red + beta * sdb_green
     sdb_merged[weighted_condition] = sdb_weighted[weighted_condition]
 
-    # Condition 3: Use SDBgreen if SDBred < -3.5
-    green_condition = (sdb_red <= lower_limit) & (sdb_green < upper_limit) | (sdb_red <= lower_limit) & (sdb_green >= upper_limit) & (sdb_red <=sdb_green)
+    # Condition 3: Use SDBgreen if SDBred > 3.5
+    green_condition = (sdb_red >= lower_limit) & (sdb_green > upper_limit) | (sdb_red >= lower_limit) & (sdb_green <= upper_limit) & (sdb_red >=sdb_green)
     
     
     print(f"Green Condition Count: {np.sum(green_condition)}")
@@ -992,7 +1026,7 @@ def extract_raster_values(val_csv_file, raster_folder, output_folder):
 
       #################  CHECK DIRECTORIES/INPUTS #####################
 
-val_csv_file = r"B:\Thesis Project\Reference Data\Full_topo_data\Homer, Alaska\ITRF_EGM08\2019\las\2D_validation_points.csv"
+val_csv_file = r"B:\Thesis Project\Reference Data\Processed_Topobathy\Marathon_validation_points.csv"
 raster_folder = r"E:\Thesis Stuff\SDB"
 output_folder = r"E:\Thesis Stuff\SDB_ExtractedPts"
 
@@ -1108,8 +1142,8 @@ def process_csv_files(input_folder, output_folder):
             plt.scatter(x, y, color='blue', label='Data Points', alpha=0.7)
             plt.plot(x_ext, y_ext, color='red', label='Best Fit Line', linewidth=2)
             plt.title(f"Linear Regression for {filename}")
-            plt.xlabel("SDB Raster Value")
-            plt.ylabel("Elevation")
+            plt.xlabel("SDB Value (m)")
+            plt.ylabel("Reference Depths (m)")
             plt.legend()
             plt.grid(True)    
             plt.xlim(0, None)

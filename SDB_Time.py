@@ -120,7 +120,7 @@ def combine_bands_to_rgb(input_folder, output_folder):
 
 ################# CHECK DIRECTORIES/INPUTS #####################
 
-input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_Anegada_output\PSScene-20230110_142925_33_24a5"
+input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_SouthPort_output"
 output_folder = r"E:\Thesis Stuff\RGBCompositOutput"
 combine_bands_to_rgb(input_folder, output_folder)
 
@@ -150,7 +150,9 @@ from rasterio.mask import mask
 from difflib import get_close_matches
 
 
-def process_rgb_geotiffs(input_folder, output_folder):
+" !!! IF you want to keep the RGB outputs, change delete_input_files to FALSE !!!"
+
+def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=True):
     """
     Processes a folder of RGB GeoTIFF files to compute the pSDBgreen index
     and saves the results as new GeoTIFF files.
@@ -225,10 +227,36 @@ def process_rgb_geotiffs(input_folder, output_folder):
                 print(f"Error processing {file_name}: {e}")
 
 
+     # --- MINIMAL CHANGE 2: Added optional deletion block ---
+    if delete_input_files:
+        print("\n--- Deleting Input Files ---")
+        print(f"WARNING: Attempting to delete FILES from input folder: {input_folder}")
+        print("         (Subdirectories will be skipped)")
+        deleted_count = 0
+        deletion_errors = 0
+        try: # Wrap the whole deletion attempt
+             for item_name in os.listdir(input_folder):
+                 item_path = os.path.join(input_folder, item_name)
+                 try:
+                     if os.path.isfile(item_path): # Delete only files
+                         os.remove(item_path)
+                         deleted_count += 1
+                 except Exception as e_del:
+                     print(f"  Error deleting file {item_name}: {e_del}")
+                     deletion_errors += 1
+             print(f"Deletion attempt complete. Deleted {deleted_count} files. Errors: {deletion_errors}")
+        except Exception as e_list:
+             print(f"ERROR: Could not list or access input folder for deletion: {input_folder} - {e_list}")
+    # --- END MINIMAL CHANGE ---
+
+    print("\nFunction process_rgb_geotiffs finished.") # Added
+
+
+
       #################  CHECK DIRECTORIES/INPUTS #####################
 
 input_folder = r"E:\Thesis Stuff\RGBCompositOutput"
-output_folder = r"E:\Thesis Stuff\pSDB"
+output_folder = r"B:\Thesis Project\SDB_Time\Results_main\SouthPort\SuperDove\pSDB"
 
 
 process_rgb_geotiffs(input_folder, output_folder)
@@ -357,8 +385,6 @@ from difflib import get_close_matches
 
 
 
-
-
 """ Specifically choose reference data file"""
 def extract_raster_values(cal_csv_file, raster_folder, output_folder):
     """
@@ -463,9 +489,9 @@ def is_point_within_bounds(point, bounds):
 
       #################  CHECK DIRECTORIES/INPUTS #####################
 
-cal_csv_file = r"B:\Thesis Project\Reference Data\Processed_ICESat\Anegada_corrected.csv"     # Calibration reference data
-raster_folder = r"E:\Thesis Stuff\pSDB"
-output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
+cal_csv_file = r"B:\Thesis Project\Reference Data\Processed_ICESat\SouthPort_corrected.csv"     # Calibration reference data
+raster_folder = r"B:\Thesis Project\SDB_Time\Results_main\SouthPort\SuperDove\pSDB"
+output_folder = r"B:\Thesis Project\SDB_Time\Results_main\SouthPort\SuperDove\Extracted Pts\pSDB"
 
 extract_raster_values(cal_csv_file, raster_folder, output_folder)
 
@@ -593,13 +619,13 @@ def process_csv_files(input_folder, output_folder):
 
       #################  CHECK DIRECTORIES/INPUTS #####################
 
-input_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"  
-output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_Results" 
+input_folder = r"B:\Thesis Project\SDB_Time\Results_main\SouthPort\SuperDove\Extracted Pts\pSDB"
+output_folder = r"B:\Thesis Project\SDB_Time\Results_main\SouthPort\SuperDove\Figures\pSDB"
 process_csv_files(input_folder, output_folder)
 
 
-##############################################################################
-##############################################################################
+###################################################################################################################################################
+##################################################################################################################################################
 
 # Create SDB red and green with constants from linear regression
 
@@ -668,15 +694,11 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, nodata_value=-9
                         m1 = coeff_row['m1'].values[0]
                         m0 = coeff_row['m0'].values[0]
 
-                        # --- Minimal Prep for Calculation/Comparison ---
-                        # Ensure float type for calculations involving potential NaNs/NoData
                         pSDB_f = pSDB.astype(np.float32)
+                        
                         # Convert source nodata to NaN if it exists
                         if src_nodata is not None:
                             pSDB_f[pSDB_f == src_nodata] = np.nan
-                        # --- End Prep ---
-
-
 
                         # Perform the SDB raster calculation
                         result = m1 * pSDB + m0
@@ -688,14 +710,6 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, nodata_value=-9
                             result
                         )
 
-
-
-
-
-
-                        ## Mask NaN values and set NoData value
-                        #result = np.ma.masked_where(np.isnan(result), result)
-                        #result_filled = result.filled(nodata_value)
 
                         # Generate output raster path based on the input raster name
                         if raster_name.endswith('_pSDBgreen.tif'):

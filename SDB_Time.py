@@ -12,15 +12,11 @@ import re
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
-import xarray as xr
 
 from glob import glob
-from rasterio.warp import calculate_default_transform, reproject, Resampling
 from pathlib import Path
-from rasterio.enums import Resampling
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
-from rasterio.mask import mask
 from difflib import get_close_matches
 
 
@@ -121,7 +117,7 @@ def combine_bands_to_rgb(input_folder, output_folder):
 
 ################# CHECK DIRECTORIES/INPUTS #####################
 
-input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_Sentinel2\S2_Anegada_output"
+input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_Sentinel2\S2_Marathon_output"
 output_folder = r"E:\Thesis Stuff\RGBCompositOutput"
 
 
@@ -237,10 +233,10 @@ def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=True):
 input_folder = r"E:\Thesis Stuff\RGBCompositOutput"
 
 # Save Results Path
-#output_folder = r"B:\Thesis Project\SDB_Time\Results_main\BumBum\Sentinel-2\pSDB"
+output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\pSDB"
 
 # Workspace Path
-output_folder = r"E:\Thesis Stuff\pSDB"
+#output_folder = r"E:\Thesis Stuff\pSDB"
 
 process_rgb_geotiffs(input_folder, output_folder)
 
@@ -451,20 +447,20 @@ def is_point_within_bounds(point, bounds):
 
       #################  CHECK DIRECTORIES/INPUTS #####################
 
-cal_csv_file = r"B:\Thesis Project\Reference Data\Processed_ICESat\Anegada_corrected.csv"     # Calibration reference data
+cal_csv_file = r"B:\Thesis Project\Reference Data\Processed_Topobathy\Marathon_calibration_points.csv"     # Calibration reference data
 
 ### Save Results Path ###
-#raster_folder = r"B:\Thesis Project\SDB_Time\Results_main\BumBum\Sentinel-2\pSDB"
+raster_folder = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\pSDB"
 
 ### Workspace Path ###
-raster_folder = r"E:\Thesis Stuff\pSDB"
+#raster_folder = r"E:\Thesis Stuff\pSDB"
 
 
 ### Save Results Path ###
-#output_folder = r"B:\Thesis Project\SDB_Time\Results_main\BumBum\Sentinel-2\Extracted Pts\pSDB"
+output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\Extracted Pts\pSDB"
 
 ### Workspace Path ###
-output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
+#output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
 
 extract_raster_values(cal_csv_file, raster_folder, output_folder)
 
@@ -571,17 +567,17 @@ def process_csv_files(input_folder, output_folder):
       #################  CHECK DIRECTORIES/INPUTS #####################
 
 ### Save Results Path ###
-#input_folder = r"B:\Thesis Project\SDB_Time\Results_main\BumBum\Sentinel-2\Extracted Pts\pSDB"
+input_folder = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\Extracted Pts\pSDB"
 
 ### Workspace Path ###
-input_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
+#input_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
 
 
 ### Save Results Path ###
-#output_folder = r"B:\Thesis Project\SDB_Time\Results_main\BumBum\Sentinel-2\Figures\pSDB"
+output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\Figures\pSDB"
 
 ### Workspace Path ###
-output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_Results"
+#output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_Results"
 
 
 process_csv_files(input_folder, output_folder)
@@ -592,9 +588,19 @@ process_csv_files(input_folder, output_folder)
 
 ### Perform another linear regression but this time find the best line of fit with the highest R^2 value ###
 
-data_folder_path = r"E:\Thesis Stuff\pSDB_ExtractedPts" 
+### Save Results Path ###
+data_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\Extracted Pts\pSDB"
 
-output_save_folder_path = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results"
+### Workspace Path ###
+#data_folder_path = r"E:\Thesis Stuff\pSDB_ExtractedPts" 
+
+
+### Save Results Path ###
+output_save_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\Figures\pSDB_maxR2"
+
+### Workspace Path ###
+#output_save_folder_path = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results"
+
 
 
 # Create the output folder if it doesn't exist
@@ -602,7 +608,7 @@ if not os.path.exists(output_save_folder_path):
     os.makedirs(output_save_folder_path)
     print(f"Created output folder: {output_save_folder_path}")
 
-csv_files = glob.glob(os.path.join(data_folder_path, "*.csv"))
+csv_files = glob(os.path.join(data_folder_path, "*.csv"))
 
 if not csv_files:
     raise FileNotFoundError(f"No CSV files found in the specified folder: {data_folder_path}")
@@ -712,16 +718,18 @@ for data_name_full_path in csv_files:
         iteration_results_for_plot_obj = [] # For finding best line for the plot object
         num_iterations = len(depth_max_limits_to_test)
         print(f'Calculating regression for {num_iterations} depth ranges for {current_file_name_for_output}...')
+        
+        
         for k in range(num_iterations):
             current_depth_max_limit = depth_max_limits_to_test[k]
-            
+
             plot_result_entry = {'depth_limit': current_depth_max_limit, 'R2': np.nan, 'params': None, 
-                                 'point_count': 0, 'x_min_fit': np.nan, 'x_max_fit': np.nan}
+                                 'point_count': 0, 'x_min_fit': np.nan, 'x_max_fit': np.nan, 'slope_m': np.nan}
 
             m_for_iteration, b_for_iteration = np.nan, np.nan
             equation_for_iteration = "N/A"
             R2_for_iteration = np.nan
-            rmse_for_iteration = np.nan
+            rmse_for_iteration = np.nan         
             
             range_idx = (y_original >= depth_min_limit_regr) & (y_original <= current_depth_max_limit)
             x_iter_range = x_original[range_idx]
@@ -732,6 +740,7 @@ for data_name_full_path in csv_files:
             if num_points > 1:
                 params = np.polyfit(x_iter_range, y_iter_range, 1)
                 y_fit_iter_range = np.polyval(params, x_iter_range)
+                
                 
                 if len(np.unique(y_iter_range)) > 1:
                     R2_for_iteration = r2_score(y_iter_range, y_fit_iter_range)
@@ -747,6 +756,7 @@ for data_name_full_path in csv_files:
                     plot_result_entry['x_max_fit'] = np.max(x_iter_range)
 
                 m_for_iteration = params[0]
+                plot_result_entry['slope_m'] = m_for_iteration # Store the slope
                 b_for_iteration = params[1]
                 equation_for_iteration = f"y = {m_for_iteration:.4f}x + {b_for_iteration:.4f}"
                 rmse_for_iteration = np.sqrt(mean_squared_error(y_iter_range, y_fit_iter_range))
@@ -762,7 +772,8 @@ for data_name_full_path in csv_files:
                 'Line of Best Fit': equation_for_iteration,
                 'm1': m_for_iteration,
                 'm0': b_for_iteration,
-                'Pt Count': num_points 
+                'Pt Count': num_points, 
+                
             })
         
         results_df_for_plot = pd.DataFrame(iteration_results_for_plot_obj)
@@ -772,25 +783,37 @@ for data_name_full_path in csv_files:
         best_R2_for_plot = -np.inf
         best_fit_params_for_plot = None
         best_depth_limit_for_plot_annotation = np.nan
-        best_k_overall_index_for_plot = -1
+        best_iteration_details_for_plot = None
         rmse_for_best_plot_fit = np.nan
 
-        if not results_df_for_plot.empty and not results_df_for_plot['R2'].isna().all():
-            best_idx_plot = results_df_for_plot['R2'].idxmax()
-            best_result_row_plot = results_df_for_plot.loc[best_idx_plot]
-            
-            best_R2_for_plot = best_result_row_plot['R2']
-            best_fit_params_for_plot = best_result_row_plot['params']
-            best_depth_limit_for_plot_annotation = best_result_row_plot['depth_limit']
-            best_k_overall_index_for_plot = best_idx_plot
-            
-            if best_fit_params_for_plot is not None and len(best_fit_params_for_plot) == 2:
-                best_fit_range_idx_plot = (y_original >= depth_min_limit_regr) & (y_original <= best_depth_limit_for_plot_annotation)
-                x_for_rmse_plot = x_original[best_fit_range_idx_plot]
-                y_true_for_rmse_plot = y_original[best_fit_range_idx_plot]
-                if len(x_for_rmse_plot) > 1:
-                    y_pred_for_rmse_plot = np.polyval(best_fit_params_for_plot, x_for_rmse_plot)
-                    rmse_for_best_plot_fit = np.sqrt(mean_squared_error(y_true_for_rmse_plot, y_pred_for_rmse_plot))
+
+        if not results_df_for_plot.empty: # Ensure there are results to process
+
+            # Filter for iterations with a positive slope
+            # Using 1e-9 as a threshold for "positive" to handle floating point inaccuracies near zero
+            positive_slope_results_df = results_df_for_plot[results_df_for_plot['slope_m'] > 1e-9].copy()
+
+            if not positive_slope_results_df.empty and not positive_slope_results_df['R2'].isna().all():
+                best_idx_plot = positive_slope_results_df['R2'].idxmax() # Get index from the filtered DataFrame
+                best_iteration_details_for_plot = positive_slope_results_df.loc[best_idx_plot] # Get the row
+
+                best_R2_for_plot = best_iteration_details_for_plot['R2']
+                best_fit_params_for_plot = best_iteration_details_for_plot['params']
+                best_depth_limit_for_plot_annotation = best_iteration_details_for_plot['depth_limit']
+
+
+                if best_fit_params_for_plot is not None and len(best_fit_params_for_plot) == 2:
+                    best_fit_range_idx_plot = (y_original >= depth_min_limit_regr) & (y_original <= best_depth_limit_for_plot_annotation)
+                    x_for_rmse_plot = x_original[best_fit_range_idx_plot]
+                    y_true_for_rmse_plot = y_original[best_fit_range_idx_plot]
+                    if len(x_for_rmse_plot) > 1:
+                        y_pred_for_rmse_plot = np.polyval(best_fit_params_for_plot, x_for_rmse_plot)
+                        rmse_for_best_plot_fit = np.sqrt(mean_squared_error(y_true_for_rmse_plot, y_pred_for_rmse_plot))
+            else:
+                print(f"No iterations with a positive slope and valid R2 found for plotting for file: {current_file_name_for_output}")
+
+        else:
+            print(f"No iteration results to process for R2 for file: {current_file_name_for_output}")
 
 
         # --- Plotting All Regression Lines (for current file) ---
@@ -806,30 +829,41 @@ for data_name_full_path in csv_files:
                     ax.plot(x_line_segment, y_plot_fit_segment, color=[0.7, 0.7, 0.7], linewidth=0.5)
         
         best_line_handle = None
-        if best_k_overall_index_for_plot != -1 and best_fit_params_for_plot is not None and not results_df_for_plot.empty:
-            best_x_min_line = results_df_for_plot.loc[best_k_overall_index_for_plot, 'x_min_fit']
-            best_x_max_line = results_df_for_plot.loc[best_k_overall_index_for_plot, 'x_max_fit']
-            if not (np.isnan(best_x_min_line) or np.isnan(best_x_max_line)):
-                if best_x_min_line == best_x_max_line: x_best_line_segment = np.array([best_x_min_line]*2)
-                else: x_best_line_segment = np.linspace(best_x_min_line, best_x_max_line, 20)
+
+        if best_iteration_details_for_plot is not None and best_fit_params_for_plot is not None:
+            best_x_min_line = best_iteration_details_for_plot['x_min_fit']
+            best_x_max_line = best_iteration_details_for_plot['x_max_fit']
+
+            if pd.notna(best_x_min_line) and pd.notna(best_x_max_line): # Check if x_min/max are valid
+                if best_x_min_line == best_x_max_line:
+                    # Handle plotting a line if x_min and x_max are the same (e.g., extend based on scatter)
+                    if len(x_for_scatter) > 0:
+                        overall_x_min_scatter, overall_x_max_scatter = np.min(x_for_scatter), np.max(x_for_scatter)
+                        if overall_x_min_scatter == overall_x_max_scatter:
+                             x_best_line_segment = np.array([best_x_min_line - 0.1, best_x_min_line + 0.1]) # small segment
+                        else: x_best_line_segment = np.array([overall_x_min_scatter, overall_x_max_scatter])
+                    else: x_best_line_segment = np.array([best_x_min_line - 0.1, best_x_min_line + 0.1]) # default small segment
+                else:
+                    x_best_line_segment = np.linspace(best_x_min_line, best_x_max_line, 20)
+
                 y_best_plot_fit_segment = np.polyval(best_fit_params_for_plot, x_best_line_segment)
-                line_label_for_plot = f'Best R² Fit (R²={best_R2_for_plot:.2f}, RMSE={rmse_for_best_plot_fit:.2f})'
+                line_label_for_plot = f'Best Positive Slope Fit (R²={best_R2_for_plot:.2f}, RMSE={rmse_for_best_plot_fit:.2f})'
                 line_plots = ax.plot(x_best_line_segment, y_best_plot_fit_segment, color='r', linewidth=2.5, label=line_label_for_plot)
                 if line_plots: best_line_handle = line_plots[0]
-        
+
 
         # --- Text Annotation for Best Fit (on Plot) ---
-        if best_k_overall_index_for_plot != -1 and best_fit_params_for_plot is not None:
-            if len(x_for_scatter) > 0: 
-                plot_x_min, plot_x_max = np.min(x_for_scatter), np.max(x_for_scatter)
-                plot_y_min, plot_y_max = np.min(y_for_scatter), np.max(y_for_scatter)
-                text_x_pos = plot_x_min + (plot_x_max - plot_x_min) * 0.05
-                text_y_pos = plot_y_max - (plot_y_max - plot_y_min) * 0.05
-                if ax.get_yaxis().get_inverted(): text_y_pos = plot_y_min + (plot_y_max - plot_y_min) * 0.05
-                
+        if best_iteration_details_for_plot is not None and best_fit_params_for_plot is not None:
+            if len(x_for_scatter) > 0:
+                plot_x_min_s, plot_x_max_s = np.min(x_for_scatter), np.max(x_for_scatter)
+                plot_y_min_s, plot_y_max_s = np.min(y_for_scatter), np.max(y_for_scatter)
+                text_x_pos = plot_x_min_s + (plot_x_max_s - plot_x_min_s) * 0.05
+                text_y_pos = plot_y_max_s - (plot_y_max_s - plot_y_min_s) * 0.05
+                if ax.get_yaxis().get_inverted(): text_y_pos = plot_y_min_s + (plot_y_max_s - plot_y_min_s) * 0.05
+
                 m_plot_annot, b_plot_annot = best_fit_params_for_plot[0], best_fit_params_for_plot[1]
                 eq_plot_annot = f"y = {m_plot_annot:.2f}x + {b_plot_annot:.2f}"
-                annotation_text = (f'Overall Best Fit (Plot)\nRange: {depth_min_limit_regr:.2f}-{best_depth_limit_for_plot_annotation:.2f} m\n'
+                annotation_text = (f'Best Positive Slope Fit (Plot)\nRange: {depth_min_limit_regr:.2f}-{best_depth_limit_for_plot_annotation:.2f} m\n'
                                    f'{eq_plot_annot}\nR² = {best_R2_for_plot:.2f}, RMSE = {rmse_for_best_plot_fit:.2f}')
                 ax.text(text_x_pos, text_y_pos, annotation_text, color='r', fontsize=9, fontweight='bold',
                         bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.3'),
@@ -876,13 +910,10 @@ print("\n--- All CSV files processed. ---")
 
 
 
-
-
 ###################################################################################################################################################
 ##################################################################################################################################################
 
 ### Create SDB red and green with constants from linear regression ###
-
 
 
 def create_sdb_rasters(raster_folder, csv_folder, output_folder, nodata_value=-9999):
@@ -966,7 +997,6 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, nodata_value=-9
                             result
                         )
 
-
                         # Generate output raster path based on the input raster name
                         if raster_name.endswith('_pSDBgreen.tif'):
                             output_raster_name = raster_name.replace('_pSDBgreen.tif', '_SDBgreen.tif')
@@ -999,9 +1029,28 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, nodata_value=-9
 
 # ############## CHECK DIRECTORIES/INPUTS ###########################
 
-raster_folder = r"E:\Thesis Stuff\pSDB"
-csv_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results"
-output_folder = r"E:\Thesis Stuff\SDB"
+### Save Results Path ###
+raster_folder = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\pSDB"
+
+### Workspace Path ###
+#raster_folder = r"E:\Thesis Stuff\pSDB"
+
+
+### Save Results Path ###
+csv_folder = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\Figures\pSDB_maxR2"
+
+### Workspace Path ###
+#csv_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results"
+
+
+### Save Results Path ###
+output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\SDB"
+
+### Workspace Path ###
+#output_folder = r"E:\Thesis Stuff\SDB"
+
+
+
 
 create_sdb_rasters(raster_folder, csv_folder, output_folder)
 
@@ -1105,8 +1154,12 @@ def process_sdb_folder(input_folder):
 
         print(f"Saved merged SDB raster: {output_path}")
 
-# Example usage
-input_folder = r"E:\Thesis Stuff\SDB"  # Folder with input rasters
+### Save Results Path ### 
+input_folder = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\SDB"
+
+### Workspace Path ###
+#input_folder = r"E:\Thesis Stuff\SDB"  # Folder with input rasters
+
 
 process_sdb_folder(input_folder)
 
@@ -1250,12 +1303,24 @@ def extract_raster_values(val_csv_file, raster_folder, output_folder):
 ######################  CHECK DIRECTORIES/INPUTS #####################
 
 val_csv_file = r"B:\Thesis Project\Reference Data\Processed_Topobathy\Marathon_validation_points.csv"
-raster_folder = r"E:\Thesis Stuff\SDB"
-output_folder = r"E:\Thesis Stuff\SDB_ExtractedPts"
+
+
+### Save Results Path ###
+raster_folder = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\SDB"
+
+### Workspace Path ###
+#raster_folder = r"E:\Thesis Stuff\SDB"
+
+
+### Save Results Path ###
+output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\Extracted Pts\SDB"
+
+### Workspace Path ###
+#output_folder = r"E:\Thesis Stuff\SDB_ExtractedPts"
+
+
 
 extract_raster_values(val_csv_file, raster_folder, output_folder)
-
-
 
 ##############################################################################################################
 ##############################################################################################################
@@ -1382,8 +1447,18 @@ def process_csv_files(input_folder, output_folder):
 
       #################  CHECK DIRECTORIES/INPUTS #####################
 
-input_folder = r"E:\Thesis Stuff\SDB_ExtractedPts"  
-output_folder = r"E:\Thesis Stuff\SDB_ExtractedPts_Results" 
+### Save Results Path ###
+input_folder = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\Extracted Pts\SDB"
+
+### Workspace Path ###
+#input_folder = r"E:\Thesis Stuff\SDB_ExtractedPts"  
+
+
+### Save Results Path ###
+output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\Figures\SDB"
+
+### Workspace Path ###
+#output_folder = r"E:\Thesis Stuff\SDB_ExtractedPts_Results" 
 
 
 process_csv_files(input_folder, output_folder)

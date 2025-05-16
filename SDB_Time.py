@@ -24,10 +24,11 @@ from rasterio.mask import mask
 from difflib import get_close_matches
 
 
+
 ##############################################################################
 ##############################################################################
 
-# Composite R, G, B tiffs into one RGB tiff
+### Composite R, G, B tiffs into one RGB tiff ###
 
 def extract_rrs_number(file_name):
     """Extract the number after 'Rrs_' in the file name."""
@@ -122,35 +123,17 @@ def combine_bands_to_rgb(input_folder, output_folder):
 
 input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_Sentinel2\S2_Anegada_output"
 output_folder = r"E:\Thesis Stuff\RGBCompositOutput"
+
+
 combine_bands_to_rgb(input_folder, output_folder)
 
-
-
 ##############################################################################
 ##############################################################################
 
-# Create pSDB red and green
-
-import os
-import rasterio
-import numpy as np
-import re
-import pandas as pd
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import xarray as xr
-
-from glob import glob
-from rasterio.warp import calculate_default_transform, reproject, Resampling
-from pathlib import Path
-from rasterio.enums import Resampling
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
-from rasterio.mask import mask
-from difflib import get_close_matches
-
+### Create pSDB red and green ###
 
 " !!! IF you want to keep the RGB outputs, change delete_input_files to FALSE !!!"
+
 
 def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=True):
     """
@@ -206,10 +189,7 @@ def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=True):
                     nodata=np.nan
                 )
 
-                # Save the computed index to the output folder
-                
-                ######## Change between pSDBred and pSDBgreen as needed #########
-                
+                # Save the computed index to the output folder                
                 # pSDBred
                 output_file = os.path.join(output_folder, f"{os.path.splitext(file_name)[0]}_pSDBred.tif")    
                 with rasterio.open(output_file, 'w', **profile) as dst:
@@ -227,7 +207,7 @@ def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=True):
                 print(f"Error processing {file_name}: {e}")
 
 
-     # --- MINIMAL CHANGE 2: Added optional deletion block ---
+     # Optional deletion block
     if delete_input_files:
         print("\n--- Deleting Input Files ---")
         print(f"WARNING: Attempting to delete FILES from input folder: {input_folder}")
@@ -247,7 +227,6 @@ def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=True):
              print(f"Deletion attempt complete. Deleted {deleted_count} files. Errors: {deletion_errors}")
         except Exception as e_list:
              print(f"ERROR: Could not list or access input folder for deletion: {input_folder} - {e_list}")
-    # --- END MINIMAL CHANGE ---
 
     print("\nFunction process_rgb_geotiffs finished.") # Added
 
@@ -268,26 +247,7 @@ process_rgb_geotiffs(input_folder, output_folder)
 
 ##############################################################################
 ##############################################################################
-# Extract pSDB values at reference point locations
-
-import os
-import rasterio
-import numpy as np
-import re
-import pandas as pd
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import xarray as xr
-
-from glob import glob
-from rasterio.warp import calculate_default_transform, reproject, Resampling
-from pathlib import Path
-from rasterio.enums import Resampling
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
-from rasterio.mask import mask
-from difflib import get_close_matches
-
+### Extract pSDB values at reference point locations ###
 
 
 """ Input a folder of reference data and match the names """
@@ -406,8 +366,7 @@ def extract_raster_values(cal_csv_file, raster_folder, output_folder):
     # Load the CSV file
     df = pd.read_csv(cal_csv_file)
 
-   
-    # Multiply the height column by -1 DON'T DO IF ALREADY POSITIVE
+    # Multiply the height column by -1 to change from elevation to depth values
     print(f"Multiplying height column '{df.columns[2]}' (index 2) by -1.")
     # Make sure the column is positive before multiplying
     df.iloc[:, 2] = pd.to_numeric(df.iloc[:, 2], errors='coerce') * -1
@@ -425,7 +384,6 @@ def extract_raster_values(cal_csv_file, raster_folder, output_folder):
     # Easting has to be first column, northing second, and ortho heights third
     easting = df.iloc[:, 0]
     northing = df.iloc[:, 1]
-    # height = df.iloc[:, 2]
     
     # Convert to GeoDataFrame
     gdf = gpd.GeoDataFrame(df, geometry=gpd.GeoSeries.from_xy(easting, northing))
@@ -515,25 +473,7 @@ extract_raster_values(cal_csv_file, raster_folder, output_folder)
 ##############################################################################
 ##############################################################################
 
-# Perform linear regressions between pSDB red and green and reference calibration data
-
-import os
-import rasterio
-import numpy as np
-import re
-import pandas as pd
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import xarray as xr
-
-from glob import glob
-from rasterio.warp import calculate_default_transform, reproject, Resampling
-from pathlib import Path
-from rasterio.enums import Resampling
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
-from rasterio.mask import mask
-from difflib import get_close_matches
+### Perform linear regressions between pSDB red and green and reference calibration data ###
 
 
 def process_csv_files(input_folder, output_folder):
@@ -544,8 +484,6 @@ def process_csv_files(input_folder, output_folder):
     # Ensure output folder exists
     os.makedirs(output_folder, exist_ok=True)
 
-    # Define the output file path
-    #output_file = os.path.join(output_folder, "linear_regression_results.csv")
 
     # Loop through all CSV files in the input folder
     for filename in os.listdir(input_folder):
@@ -581,14 +519,13 @@ def process_csv_files(input_folder, output_folder):
             # Append the results to the list
             results.append({
                 "Image Name": filename,
-                "R^2": r2,
+                "R2 Value": r2,
                 "RMSE": rmse,        
                 "Line of Best Fit": equation,
                 "m1": coef,
                 "m0": intercept
             })
 
-            
             min_x = np.min(x)
             mean_y = np.mean(y)
             
@@ -603,12 +540,11 @@ def process_csv_files(input_folder, output_folder):
             plt.ylim(0, None)
             plt.legend()
             plt.grid(True)    
+            
             # Add R^2 and RMSE as text on the plot
             plt.text(min_x, mean_y, f"$R^2$ = {r2:.4f}\nRMSE = {rmse:.4f}", fontsize=10, 
                       bbox=dict(facecolor='white', alpha=0.5), ha='left')
             plt.show
-            # Invert both ayes so 0 is bottom left, and up and right are negative
-            #plt.gca().invert_yaxis()
 
             # Generate and save the plot
             plot_filename = f"{os.path.splitext(filename)[0]}_LR_plot.png"
@@ -654,16 +590,7 @@ process_csv_files(input_folder, output_folder)
 ##############################################################################################################
 ##############################################################################################################
 
-# Perform another linear regression but this time find the best line of fit with the highest R^2 value
-
-
-import os
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.metrics import r2_score, mean_squared_error
-import glob
-
+### Perform another linear regression but this time find the best line of fit with the highest R^2 value ###
 
 data_folder_path = r"E:\Thesis Stuff\pSDB_ExtractedPts" 
 
@@ -709,14 +636,12 @@ for data_name_full_path in csv_files:
 
             if x_original.size == 0 or y_original.size == 0:
                 raise ValueError('No valid data points after removing NaNs from x or y.')
-            # print(f'Loaded {len(x_original)} valid data points after initial NaN removal.') # Less verbose
-
-            # print('Filtering pSDB (x) values to keep only those >= 0 and <= 5...') # Less verbose
+            
             original_point_count = len(x_original)
             valid_x_idx = (x_original >= 0) & (x_original <= 5)
             x_original = x_original[valid_x_idx]
             y_original = y_original[valid_x_idx]
-            # print(f'Retained {len(x_original)} points after filtering x values (removed {original_point_count - len(x_original)} points).') # Less verbose
+        
             if x_original.size == 0 or y_original.size == 0:
                 raise ValueError('No data points remain after filtering x values between 0 and 5.')
 
@@ -909,7 +834,7 @@ for data_name_full_path in csv_files:
                 ax.text(text_x_pos, text_y_pos, annotation_text, color='r', fontsize=9, fontweight='bold',
                         bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.3'),
                         verticalalignment='top' if not ax.get_yaxis().get_inverted() else 'bottom')
-        # --- End Text Annotation ---
+
 
         # --- Legend ---
         handles_for_legend = []
@@ -933,7 +858,7 @@ for data_name_full_path in csv_files:
         # --- Save Iteration Data for the Current File to its own CSV ---
         if current_file_iterations_data:
             file_summary_df = pd.DataFrame(current_file_iterations_data)
-            output_csv_filename = f"{just_the_filename_for_output_csv}_iterations_summary.csv"
+            output_csv_filename = f"{just_the_filename_for_output_csv}_LR_Stats_maxR2.csv"
             output_csv_save_path = os.path.join(output_save_folder_path, output_csv_filename)
             file_summary_df.to_csv(output_csv_save_path, index=False, float_format='%.4f')
             print(f"Iterations summary for {current_file_name_for_output} saved to: {output_csv_save_path}")
@@ -956,26 +881,8 @@ print("\n--- All CSV files processed. ---")
 ###################################################################################################################################################
 ##################################################################################################################################################
 
-# Create SDB red and green with constants from linear regression
+### Create SDB red and green with constants from linear regression ###
 
-
-import os
-import rasterio
-import numpy as np
-import re
-import pandas as pd
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import xarray as xr
-
-from glob import glob
-from rasterio.warp import calculate_default_transform, reproject, Resampling
-from pathlib import Path
-from rasterio.enums import Resampling
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
-from rasterio.mask import mask
-from difflib import get_close_matches
 
 
 def create_sdb_rasters(raster_folder, csv_folder, output_folder, nodata_value=-9999):
@@ -1017,20 +924,40 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, nodata_value=-9
                     
                     # Find the row in the CSV where the raster name matches
                     coeff_row = coefficients_df[coefficients_df['Image Name'].str.contains(base_raster_name, 
-                                                                                           case=False, na=False)]
+                                                                                           case=False, na=False)].copy()
                     if not coeff_row.empty:
-                        # Extract coefficients
-                        m1 = coeff_row['m1'].values[0]
-                        m0 = coeff_row['m0'].values[0]
 
-                        pSDB_f = pSDB.astype(np.float32)
+                        # Ensure 'R2 Value' column is numeric and handle potential NaNs
+                        if 'R2 Value' in coeff_row.columns and \
+                           'm1' in coeff_row.columns and \
+                           'm0' in coeff_row.columns:
+                            
+                            coeff_row['R2 Value'] = pd.to_numeric(coeff_row['R2 Value'], errors='coerce')
+                            # Drop rows where R2 became NaN or m1/m0 are NaN
+                            coeff_row.dropna(subset=['R2 Value', 'm1', 'm0'], inplace=True)
+                        else:
+                            print(f"  Error: Missing required columns ('R2 Value', 'm1', or 'm0') in CSV data for {base_raster_name}. Skipping.")
+                            coeff_row = pd.DataFrame() # Make it empty so next check fails
+
+                        if not coeff_row.empty:
+                            # Find the single row with the highest 'R2 Value'
+                            best_R2_row = coeff_row.loc[coeff_row['R2 Value'].idxmax()]
+                            
+                            m1 = best_R2_row['m1']
+                            m0 = best_R2_row['m0']
+
+                        else:
+                            print(f" No valid rows with R2, m1, m0 found after filtering for {base_raster_name} in {csv_file}. Skipping raster.")
+                            continue # Skip to the next raster_name in the outer loop
+
                         
                         # Convert source nodata to NaN if it exists
+                        pSDB_for_calc = pSDB.astype(np.float32)
                         if src_nodata is not None:
-                            pSDB_f[pSDB_f == src_nodata] = np.nan
+                            pSDB_for_calc[pSDB_for_calc == src_nodata] = np.nan
 
                         # Perform the SDB raster calculation
-                        result = m1 * pSDB + m0
+                        result = m1 * pSDB_for_calc + m0
 
                         # Replace NaNs and original nodata values with output nodata_value
                         result_filled = np.where(
@@ -1082,25 +1009,7 @@ create_sdb_rasters(raster_folder, csv_folder, output_folder)
 ##############################################################################
 ##############################################################################
 
-# Merge SDB red and green together
-
-import os
-import rasterio
-import numpy as np
-import re
-import pandas as pd
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import xarray as xr
-
-from glob import glob
-from rasterio.warp import calculate_default_transform, reproject, Resampling
-from pathlib import Path
-from rasterio.enums import Resampling
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
-from rasterio.mask import mask
-from difflib import get_close_matches
+### Merge SDB red and green together ###
 
 
 def create_sdb_raster(sdb_red, sdb_green):
@@ -1117,8 +1026,8 @@ def create_sdb_raster(sdb_red, sdb_green):
     upper_limit = 3.5
 
     # Handle NaNs in input data
-    sdb_red = np.nan_to_num(sdb_red, nan=np.nan)  # Changed: Ensure NaNs are handled explicitly
-    sdb_green = np.nan_to_num(sdb_green, nan=np.nan)  # Changed: Ensure NaNs are handled explicitly
+    sdb_red = np.nan_to_num(sdb_red, nan=np.nan) 
+    sdb_green = np.nan_to_num(sdb_green, nan=np.nan)  
 
 
     # Debug: Check input min/max values
@@ -1134,25 +1043,17 @@ def create_sdb_raster(sdb_red, sdb_green):
     weighted_condition = (sdb_red > lower_limit) & (sdb_red <= upper_limit) & (sdb_red < sdb_green)    
     print(f"Weighted Condition Count: {np.sum(weighted_condition)}")
 
-
-
-
     # Calculate weights (linear relationship)
     alpha = (sdb_red - lower_limit) / (upper_limit - lower_limit)  # Correct weight calculation
     beta = 1 - alpha
     print(f"Alpha Min: {np.nanmin(alpha)}, max: {np.nanmax(alpha)}")
     print(f"Beta Min: {np.nanmin(beta)}, max: {np.nanmax(beta)}")
 
-
-
-
-
     sdb_weighted = alpha * sdb_red + beta * sdb_green
     sdb_merged[weighted_condition] = sdb_weighted[weighted_condition]
 
     # Condition 3: Use SDBgreen if SDBred > 3.5
     green_condition = (sdb_red >= lower_limit) & (sdb_green > upper_limit) | (sdb_red >= lower_limit) & (sdb_green <= upper_limit) & (sdb_red >=sdb_green)
-    
     
     print(f"Green Condition Count: {np.sum(green_condition)}")
     sdb_merged[green_condition] = sdb_green[green_condition]
@@ -1163,8 +1064,6 @@ def create_sdb_raster(sdb_red, sdb_green):
     return sdb_merged
 
 
-
-# This way still works
 def process_sdb_folder(input_folder):
     """Processes all matching SDBred and SDBgreen rasters in a folder."""
 
@@ -1196,7 +1095,7 @@ def process_sdb_folder(input_folder):
         sdb_merged = create_sdb_raster(sdb_red, sdb_green)
         # Replace np.nan with NoData value (e.g., -9999)
         nodata_value = -9999
-        sdb_merged_filled = np.where(np.isnan(sdb_merged), nodata_value, sdb_merged).astype(np.float32)
+        #sdb_merged_filled = np.where(np.isnan(sdb_merged), nodata_value, sdb_merged).astype(np.float32)
         
         # Save the new merged raster
         with rasterio.open(output_path, 'w', driver='GTiff', count=1, dtype=sdb_merged.dtype,
@@ -1282,25 +1181,9 @@ process_sdb_folder(input_folder)
 
 ##############################################################################################################
 ##############################################################################################################
-# Extract SDB values at reference point locations
 
-import os
-import rasterio
-import numpy as np
-import re
-import pandas as pd
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import xarray as xr
+### Extract SDB values at reference point locations ###
 
-from glob import glob
-from rasterio.warp import calculate_default_transform, reproject, Resampling
-from pathlib import Path
-from rasterio.enums import Resampling
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
-from rasterio.mask import mask
-from difflib import get_close_matches
 
 def extract_raster_values(val_csv_file, raster_folder, output_folder):
     """
@@ -1319,7 +1202,6 @@ def extract_raster_values(val_csv_file, raster_folder, output_folder):
     df = pd.read_csv(val_csv_file)
     
     df.columns = ['Easting(m)', 'Northing(m)', 'Geoid_Corrected_Ortho_Height']
-    
    
     # Multiply the 'Geoid_Corrected_Ortho_Height' column by -1 DON"T DO IT IF ALREADY POSITIVE
     print("Multiplying 'Geoid_Corrected_Ortho_Height' column by -1.")
@@ -1327,8 +1209,6 @@ def extract_raster_values(val_csv_file, raster_folder, output_folder):
     height_col_name = 'Geoid_Corrected_Ortho_Height'
     df[height_col_name] = pd.to_numeric(df[height_col_name], errors='coerce') * -1
    
-    
-    
     # Convert the CSV to GeoDataFrame
     gdf = gpd.GeoDataFrame(df, geometry=gpd.GeoSeries.from_xy(df['Easting(m)'], df['Northing(m)']))
     
@@ -1367,7 +1247,7 @@ def extract_raster_values(val_csv_file, raster_folder, output_folder):
             print(f"Results saved to: {output_path}")
 
 
-      #################  CHECK DIRECTORIES/INPUTS #####################
+######################  CHECK DIRECTORIES/INPUTS #####################
 
 val_csv_file = r"B:\Thesis Project\Reference Data\Processed_Topobathy\Marathon_validation_points.csv"
 raster_folder = r"E:\Thesis Stuff\SDB"
@@ -1379,24 +1259,9 @@ extract_raster_values(val_csv_file, raster_folder, output_folder)
 
 ##############################################################################################################
 ##############################################################################################################
-# Perform linear regressions between SDB and other reference data for accuracy
 
+### Perform linear regressions between SDB and other reference data for accuracy ###
 
-import os
-import rasterio
-from rasterio.enums import Resampling
-import numpy as np
-import re
-import pandas as pd
-import geopandas as gpd
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
-import matplotlib.pyplot as plt
-from rasterio.mask import mask
-from difflib import get_close_matches
-import xarray as xr
-from glob import glob
-from rasterio.warp import calculate_default_transform, reproject, Resampling
 
 def process_csv_files(input_folder, output_folder):
     """
@@ -1495,23 +1360,13 @@ def process_csv_files(input_folder, output_folder):
             # Add R^2 and RMSE as text on the plot
             plt.text(min_x, mean_y, f"$R^2$ = {r2:.4f}\nRMSE = {rmse:.4f}\nIntercept = {intercept:0.2f}", fontsize=10, 
                      bbox=dict(facecolor='white', alpha=0.5), ha='left')
-            
-            # Invert both ayes so 0 is bottom left, and up and right are negative
-            #plt.gca().invert_xaxis()
-            #plt.gca().invert_yaxis()
 
             # Save the regression plot in the output folder
             plot_filename = f"{os.path.splitext(filename)[0]}_LR_plot.png"
             plot_path = os.path.join(output_folder, plot_filename)
             plt.savefig(plot_path)
-            #print(f"Regression plot saved as {plot_path}")
             plt.close()
 
-
-            max_x_perp = np.max(data["Raster_Value"])
-            min_y_perp = np.min(distances)
-
-            
             # Convert the results into a DataFrame
             results_df = pd.DataFrame(results)
 
@@ -1529,27 +1384,9 @@ def process_csv_files(input_folder, output_folder):
 
 input_folder = r"E:\Thesis Stuff\SDB_ExtractedPts"  
 output_folder = r"E:\Thesis Stuff\SDB_ExtractedPts_Results" 
+
+
 process_csv_files(input_folder, output_folder)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

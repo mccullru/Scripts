@@ -125,184 +125,184 @@ from scipy.stats import gaussian_kde
 
 """ Individual Error Histograms """
 
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-import os
-import glob
-from scipy.stats import gaussian_kde
+# import numpy as np
+# import matplotlib.pyplot as plt
+# import pandas as pd
+# import os
+# import glob
+# from scipy.stats import gaussian_kde
 
-# Specify the folder containing your input CSV files
-input_csv_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\SuperDove\Final5\Extracted Pts\New folder"  
+# # Specify the folder containing your input CSV files
+# input_csv_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\SuperDove\Final5\Extracted Pts\New folder"  
 
-# Specify the folder where you want to save the output plots
-output_plot_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\SuperDove\Final5\Extracted Pts\New folder\test_output" 
-# Define column names
-ref_col = "Geoid_Corrected_Ortho_Height"
-SDB_col = "Raster_Value"
-error_col_name = "Error" 
+# # Specify the folder where you want to save the output plots
+# output_plot_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\SuperDove\Final5\Extracted Pts\New folder\test_output" 
+# # Define column names
+# ref_col = "Geoid_Corrected_Ortho_Height"
+# SDB_col = "Raster_Value"
+# error_col_name = "Error" 
 
-# --- MODIFICATION: Define a FIXED BIN WIDTH ---
-fixed_bin_width = 0.1  # Adjust this value based on your data's typical error range and desired resolution
-# --- END MODIFICATION ---
+# # --- MODIFICATION: Define a FIXED BIN WIDTH ---
+# fixed_bin_width = 0.1  # Adjust this value based on your data's typical error range and desired resolution
+# # --- END MODIFICATION ---
 
-# Histogram plot settings
-hist_xlim = (-2, 2)
-hist_ylim = (0, 45) 
+# # Histogram plot settings
+# hist_xlim = (-2, 2)
+# hist_ylim = (0, 45) 
 
-# --- Create Output Folder if it Doesn't Exist ---
-if not os.path.exists(output_plot_folder_path):
-    os.makedirs(output_plot_folder_path)
-    print(f"Created output folder: {output_plot_folder_path}")
+# # --- Create Output Folder if it Doesn't Exist ---
+# if not os.path.exists(output_plot_folder_path):
+#     os.makedirs(output_plot_folder_path)
+#     print(f"Created output folder: {output_plot_folder_path}")
 
-# --- Find and Process CSV Files ---
-csv_files = glob.glob(os.path.join(input_csv_folder_path, "*.csv"))
+# # --- Find and Process CSV Files ---
+# csv_files = glob.glob(os.path.join(input_csv_folder_path, "*.csv"))
 
-if not csv_files:
-    print(f"No CSV files found in the folder: {input_csv_folder_path}")
-else:
-    print(f"Found {len(csv_files)} CSV files to process in: {input_csv_folder_path}")
+# if not csv_files:
+#     print(f"No CSV files found in the folder: {input_csv_folder_path}")
+# else:
+#     print(f"Found {len(csv_files)} CSV files to process in: {input_csv_folder_path}")
 
-for csv_file_path in csv_files:
-    print(f"\n--- Processing file: {csv_file_path} ---")
-    base_filename = os.path.basename(csv_file_path)
-    filename_no_ext = os.path.splitext(base_filename)[0]
-    fig = None # Initialize fig here to ensure it's defined for error handling
+# for csv_file_path in csv_files:
+#     print(f"\n--- Processing file: {csv_file_path} ---")
+#     base_filename = os.path.basename(csv_file_path)
+#     filename_no_ext = os.path.splitext(base_filename)[0]
+#     fig = None # Initialize fig here to ensure it's defined for error handling
 
-    try:
-        df = pd.read_csv(csv_file_path)
+#     try:
+#         df = pd.read_csv(csv_file_path)
 
-        if ref_col not in df.columns or SDB_col not in df.columns:
-            print(f"Warning: Required columns ('{ref_col}', '{SDB_col}') not found in {base_filename}. Skipping.")
-            continue
+#         if ref_col not in df.columns or SDB_col not in df.columns:
+#             print(f"Warning: Required columns ('{ref_col}', '{SDB_col}') not found in {base_filename}. Skipping.")
+#             continue
 
-        df[ref_col] = pd.to_numeric(df[ref_col], errors='coerce')
-        df[SDB_col] = pd.to_numeric(df[SDB_col], errors='coerce')
-        df = df.dropna(subset=[ref_col, SDB_col])
+#         df[ref_col] = pd.to_numeric(df[ref_col], errors='coerce')
+#         df[SDB_col] = pd.to_numeric(df[SDB_col], errors='coerce')
+#         df = df.dropna(subset=[ref_col, SDB_col])
 
-        if df.empty:
-            print(f"Warning: No valid numeric data after coercion and NaN removal in {base_filename}. Skipping.")
-            continue
+#         if df.empty:
+#             print(f"Warning: No valid numeric data after coercion and NaN removal in {base_filename}. Skipping.")
+#             continue
 
-        df[error_col_name] = df[ref_col] - df[SDB_col]
+#         df[error_col_name] = df[ref_col] - df[SDB_col]
         
-        # Ensure there's data for histogram after error calculation and potential new NaNs
-        error_data_for_hist = df[error_col_name].dropna()
-        if error_data_for_hist.empty:
-            print(f"Warning: No error data to plot for {base_filename} after dropna. Skipping plot generation.")
-            continue
+#         # Ensure there's data for histogram after error calculation and potential new NaNs
+#         error_data_for_hist = df[error_col_name].dropna()
+#         if error_data_for_hist.empty:
+#             print(f"Warning: No error data to plot for {base_filename} after dropna. Skipping plot generation.")
+#             continue
 
 
-        stats = error_data_for_hist.describe()
-        if error_data_for_hist.empty: # Should be caught by above, but good for safety
-            stats["RMSE"] = np.nan
-        else:
-            stats["RMSE"] = (error_data_for_hist.astype(float) ** 2).mean() ** 0.5
+#         stats = error_data_for_hist.describe()
+#         if error_data_for_hist.empty: # Should be caught by above, but good for safety
+#             stats["RMSE"] = np.nan
+#         else:
+#             stats["RMSE"] = (error_data_for_hist.astype(float) ** 2).mean() ** 0.5
 
-        print(f"Statistics for {base_filename}:")
-        print(stats)
+#         print(f"Statistics for {base_filename}:")
+#         print(stats)
 
-        fig, ax = plt.subplots(figsize=(10, 6))
+#         fig, ax = plt.subplots(figsize=(10, 6))
         
-        # --- MODIFICATION: Define bins based on fixed_bin_width ---
-        min_val = error_data_for_hist.min()
-        max_val = error_data_for_hist.max()
-        # Ensure bins cover the data range appropriately, even if min_val equals max_val
-        if np.isclose(min_val, max_val):
-            bins_array = np.array([min_val - fixed_bin_width/2, max_val + fixed_bin_width/2])
-        else:
-            bins_array = np.arange(min_val, max_val + fixed_bin_width, fixed_bin_width)
-        if len(bins_array) < 2: # Ensure at least one bin
-            bins_array = np.array([min_val - fixed_bin_width/2, max_val + fixed_bin_width/2])
+#         # --- MODIFICATION: Define bins based on fixed_bin_width ---
+#         min_val = error_data_for_hist.min()
+#         max_val = error_data_for_hist.max()
+#         # Ensure bins cover the data range appropriately, even if min_val equals max_val
+#         if np.isclose(min_val, max_val):
+#             bins_array = np.array([min_val - fixed_bin_width/2, max_val + fixed_bin_width/2])
+#         else:
+#             bins_array = np.arange(min_val, max_val + fixed_bin_width, fixed_bin_width)
+#         if len(bins_array) < 2: # Ensure at least one bin
+#             bins_array = np.array([min_val - fixed_bin_width/2, max_val + fixed_bin_width/2])
 
-        counts, bin_edges, patches = ax.hist(error_data_for_hist, bins=bins_array, edgecolor='black', alpha=0.7, label=f'{error_col_name} Counts')
-        # --- END MODIFICATION ---
+#         counts, bin_edges, patches = ax.hist(error_data_for_hist, bins=bins_array, edgecolor='black', alpha=0.7, label=f'{error_col_name} Counts')
+#         # --- END MODIFICATION ---
         
-        # Add KDE Plot
-        if len(error_data_for_hist) > 1: # KDE needs at least 2 points
-            try:
-                # Create KDE
-                kde = gaussian_kde(error_data_for_hist)
-                # Create x-values for plotting the KDE curve (cover range of histogram)
-                kde_x = np.linspace(bin_edges[0], bin_edges[-1], 200) # Use histogram bin edges for range
-                kde_y = kde(kde_x)
+#         # Add KDE Plot
+#         if len(error_data_for_hist) > 1: # KDE needs at least 2 points
+#             try:
+#                 # Create KDE
+#                 kde = gaussian_kde(error_data_for_hist)
+#                 # Create x-values for plotting the KDE curve (cover range of histogram)
+#                 kde_x = np.linspace(bin_edges[0], bin_edges[-1], 200) # Use histogram bin edges for range
+#                 kde_y = kde(kde_x)
 
-                # Scale KDE to match histogram counts
-                # (Area under KDE is 1, area under hist is N * bin_width)
-                bin_width = bin_edges[1] - bin_edges[0]
-                N = len(error_data_for_hist)
-                scaled_kde_y = kde_y * N * bin_width
+#                 # Scale KDE to match histogram counts
+#                 # (Area under KDE is 1, area under hist is N * bin_width)
+#                 bin_width = bin_edges[1] - bin_edges[0]
+#                 N = len(error_data_for_hist)
+#                 scaled_kde_y = kde_y * N * bin_width
 
-                # Plot KDE on the same axis
-                ax.plot(kde_x, scaled_kde_y, color='red', linestyle='--', linewidth=2, label='KDE')
-            except Exception as e_kde:
-                print(f"Warning: Could not compute or plot KDE for {base_filename}. Error: {e_kde}")
+#                 # Plot KDE on the same axis
+#                 ax.plot(kde_x, scaled_kde_y, color='red', linestyle='--', linewidth=2, label='KDE')
+#             except Exception as e_kde:
+#                 print(f"Warning: Could not compute or plot KDE for {base_filename}. Error: {e_kde}")
         
-        # --- ADD THIS TO CHECK BIN WIDTH ---
-        if len(bin_edges) > 1: # Check if there are at least two bin edges
-            bin_width_current_hist = bin_edges[1] - bin_edges[0]
-            print(f"Bin width for {base_filename}: \n{bin_width_current_hist:.4f}")
-        else:
-            print(f"Could not determine bin width for {base_filename} (not enough bin_edges).")
-            # --- END ADDITION ---
+#         # --- ADD THIS TO CHECK BIN WIDTH ---
+#         if len(bin_edges) > 1: # Check if there are at least two bin edges
+#             bin_width_current_hist = bin_edges[1] - bin_edges[0]
+#             print(f"Bin width for {base_filename}: \n{bin_width_current_hist:.4f}")
+#         else:
+#             print(f"Could not determine bin width for {base_filename} (not enough bin_edges).")
+#             # --- END ADDITION ---
         
         
-        ax.set_xlabel(f"{error_col_name} (m)", fontsize=14)
-        ax.set_ylabel("Count", fontsize=14)
-        plot_title = f"{filename_no_ext.replace('_', ' ')} Error Distribution"
-        ax.set_title(plot_title, fontsize=16)
-        ax.grid(axis='y', linestyle='--', alpha=0.7)
+#         ax.set_xlabel(f"{error_col_name} (m)", fontsize=14)
+#         ax.set_ylabel("Count", fontsize=14)
+#         plot_title = f"{filename_no_ext.replace('_', ' ')} Error Distribution"
+#         ax.set_title(plot_title, fontsize=16)
+#         ax.grid(axis='y', linestyle='--', alpha=0.7)
         
-        ax.set_xlim(hist_xlim)
-        if hist_ylim:
-            ax.set_ylim(hist_ylim)
-        else:
-            # Dynamic y-limit if hist_ylim is not set or is (0,0) which can happen
-            max_y_val = 0
-            if len(counts) > 0:
-                max_y_val = max(counts)
-            if 'scaled_kde_y' in locals() and len(scaled_kde_y) > 0 : # Check if KDE was plotted
-                  max_y_val = max(max_y_val, np.max(scaled_kde_y))
-            ax.set_ylim(0, max_y_val * 1.1 if max_y_val > 0 else 10)
+#         ax.set_xlim(hist_xlim)
+#         if hist_ylim:
+#             ax.set_ylim(hist_ylim)
+#         else:
+#             # Dynamic y-limit if hist_ylim is not set or is (0,0) which can happen
+#             max_y_val = 0
+#             if len(counts) > 0:
+#                 max_y_val = max(counts)
+#             if 'scaled_kde_y' in locals() and len(scaled_kde_y) > 0 : # Check if KDE was plotted
+#                   max_y_val = max(max_y_val, np.max(scaled_kde_y))
+#             ax.set_ylim(0, max_y_val * 1.1 if max_y_val > 0 else 10)
 
 
-        stats_text = (f"Mean = {stats.get('mean', np.nan):.3f} m\n"
-                      f"Min = {stats.get('min', np.nan):.2f} m\n"
-                      f"Max = {stats.get('max', np.nan):.2f} m\n"
-                      f"Std Dev = {stats.get('std', np.nan):.2f} m\n"
-                      f"RMSE = {stats.get('RMSE', np.nan):.2f} m\n"
-                      f"Count = {stats.get('count', 0):.0f}")
+#         stats_text = (f"Mean = {stats.get('mean', np.nan):.3f} m\n"
+#                       f"Min = {stats.get('min', np.nan):.2f} m\n"
+#                       f"Max = {stats.get('max', np.nan):.2f} m\n"
+#                       f"Std Dev = {stats.get('std', np.nan):.2f} m\n"
+#                       f"RMSE = {stats.get('RMSE', np.nan):.2f} m\n"
+#                       f"Count = {stats.get('count', 0):.0f}")
         
-        current_text_x = hist_xlim[0] + (hist_xlim[1] - hist_xlim[0]) * 0.05
-        current_text_y = (ax.get_ylim()[1]) * 0.95
+#         current_text_x = hist_xlim[0] + (hist_xlim[1] - hist_xlim[0]) * 0.05
+#         current_text_y = (ax.get_ylim()[1]) * 0.95
         
-        ax.text(current_text_x, current_text_y, stats_text, fontsize=10, color='black', ha='left', va='top',
-                bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.5'))
+#         ax.text(current_text_x, current_text_y, stats_text, fontsize=10, color='black', ha='left', va='top',
+#                 bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.5'))
         
-        ax.legend() # Add legend to show histogram and KDE labels
-        plt.tight_layout()
+#         ax.legend() # Add legend to show histogram and KDE labels
+#         plt.tight_layout()
 
-        output_plot_filename = f"{filename_no_ext}_error_histogram_kde.png" 
-        output_plot_full_path = os.path.join(output_plot_folder_path, output_plot_filename)
+#         output_plot_filename = f"{filename_no_ext}_error_histogram_kde.png" 
+#         output_plot_full_path = os.path.join(output_plot_folder_path, output_plot_filename)
         
-        #plt.savefig(output_plot_full_path) # Uncommented this
-        #print(f"Saved plot to: {output_plot_full_path}")
+#         #plt.savefig(output_plot_full_path) # Uncommented this
+#         #print(f"Saved plot to: {output_plot_full_path}")
 
-        plt.show() 
-        plt.close(fig)
+#         plt.show() 
+#         plt.close(fig)
 
-    except FileNotFoundError:
-        print(f"Error: File not found at {csv_file_path}. Skipping.")
-    except pd.errors.EmptyDataError:
-        print(f"Warning: CSV file {base_filename} is empty. Skipping.")
-    except KeyError as e:
-        print(f"Warning: Column missing in {base_filename} - {e}. Skipping.")
-    except Exception as e:
-        print(f"An error occurred while processing {csv_file_path}: {e}")
-        if fig and plt.fignum_exists(fig.number): # Ensure fig exists before trying to close
-            plt.close(fig)
+#     except FileNotFoundError:
+#         print(f"Error: File not found at {csv_file_path}. Skipping.")
+#     except pd.errors.EmptyDataError:
+#         print(f"Warning: CSV file {base_filename} is empty. Skipping.")
+#     except KeyError as e:
+#         print(f"Warning: Column missing in {base_filename} - {e}. Skipping.")
+#     except Exception as e:
+#         print(f"An error occurred while processing {csv_file_path}: {e}")
+#         if fig and plt.fignum_exists(fig.number): # Ensure fig exists before trying to close
+#             plt.close(fig)
 
-print("\n--- All CSV files processed. ---")
+# print("\n--- All CSV files processed. ---")
 
 
 ##############################################################################################################
@@ -312,12 +312,12 @@ print("\n--- All CSV files processed. ---")
 cluttering the chart. Also adds an average line from all the plotted lines """
 
 
-# --- 1. Configuration ---
+# Configuration
 # Specify the folder containing your input CSV files
-input_csv_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\SuperDove\Final5\Extracted Pts\New folder"
+input_csv_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\Extracted Pts\SDB\New Folder"
 
 # Specify the folder and filename for the combined output plot
-output_plot_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\SuperDove\Final5\Extracted Pts\New folder\test_output"
+output_plot_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\Final5\Extracted Pts\New folder\test_output"
 combined_plot_filename = "combined_error_kdes_with_average.png" # Updated filename
 
 # Define column names
@@ -327,17 +327,18 @@ error_col_name = "Error"
 
 # Plot settings
 num_bins_for_scaling = 30
-plot_xlim = (-2, 2)
+plot_xlim = (-4.5, 4.5)
+plot_ylim = (0, 45)
 
-colors = ['blue', 'darkorange', 'green', 'red', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
-linestyles = ['-', '--', '-.', ':', (0, (3, 5, 1, 5)), (0, (5, 10)), (0, (5, 1)), (0, (1, 1))]
+#colors = ['blue', 'darkorange', 'green', 'red', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
+#linestyles = ['-', '--', '-.', ':', (0, (3, 5, 1, 5)), (0, (5, 10)), (0, (5, 1)), (0, (1, 1))]
 
-# --- 2. Create Output Folder if it Doesn't Exist ---
+# Create Output Folder if it Doesn't Exist
 if not os.path.exists(output_plot_folder_path):
     os.makedirs(output_plot_folder_path)
     print(f"Created output folder: {output_plot_folder_path}")
 
-# --- 3. Load Data from ALL CSV Files ---
+# Load Data from ALL CSV Files
 all_error_data_for_overall_range = []
 datasets_for_kde = []
 
@@ -365,8 +366,11 @@ for i, csv_file_path in enumerate(csv_files):
         if df.empty:
             print(f"Warning: No valid numeric data after coercion/NaN removal in {base_filename}. Skipping.")
             continue
-        df[error_col_name] = df[ref_col] - df[SDB_col]
+        
+        # Calculate the Errors (Measure - Reference)
+        df[error_col_name] = df[SDB_col] - df[ref_col]
         error_data = df[error_col_name].dropna()
+        
         if error_data.empty:
             print(f"Warning: No error data to process for {base_filename} after dropna. Skipping.")
             continue
@@ -380,21 +384,21 @@ for i, csv_file_path in enumerate(csv_files):
         print(f"An error occurred while processing {csv_file_path}: {e}")
 
 
-# --- 4. Plot Multiple Scaled KDEs on a Single Figure ---
+# Plot Multiple Scaled KDEs on a Single Figure
 if datasets_for_kde:
     fig, ax = plt.subplots(figsize=(12, 7))
 
-    # --- MODIFICATION: Use the same fixed_bin_width for scaling all KDEs ---
+    # Use the same fixed_bin_width for scaling all KDEs
     bin_width = 0.1
     print(f"Using fixed common bin_width for KDE scaling: {bin_width:.4f}")
-    # --- END MODIFICATION ---
+
 
     max_scaled_kde_y = 0
     
-    # --- MODIFICATION: Store all scaled KDE y values and common x values ---
+    # Store all scaled KDE y values and common x values
     all_scaled_kde_y_arrays = []
     common_kde_x = None # Will be set by the first KDE
-    # --- END MODIFICATION ---
+
 
     for i, dataset_info in enumerate(datasets_for_kde):
         label = dataset_info['label']
@@ -413,9 +417,8 @@ if datasets_for_kde:
             kde_y_density = kde(common_kde_x)
             scaled_kde_y = kde_y_density * N * bin_width
             
-            # --- MODIFICATION: Store the scaled_kde_y for averaging ---
+            # Store the scaled_kde_y for averaging
             all_scaled_kde_y_arrays.append(scaled_kde_y)
-            # --- END MODIFICATION ---
             
             if scaled_kde_y.size > 0:
                   current_max_y = np.max(scaled_kde_y)
@@ -423,8 +426,8 @@ if datasets_for_kde:
                       max_scaled_kde_y = current_max_y
 
             ax.plot(common_kde_x, scaled_kde_y,
-                    color=colors[i % len(colors)],
-                    linestyle=linestyles[i % len(linestyles)],
+                    color='gray',     # colors[i % len(colors)]
+                    linestyle='-',         # linestyles[i % len(linestyles)]
                     linewidth=1.5,
                     label=f'{label.replace("_", " ")} (N={N})')
             print(f"Plotted KDE for: {label}")
@@ -432,7 +435,7 @@ if datasets_for_kde:
         except Exception as e_kde:
             print(f"Warning: Could not compute or plot KDE for {label}. Error: {e_kde}")
 
-    # --- MODIFICATION: Calculate and Plot Average KDE Line ---
+    # Calculate and Plot Average KDE Line
     if all_scaled_kde_y_arrays and common_kde_x is not None: # Check if there's anything to average
         if len(all_scaled_kde_y_arrays) > 0:
             stacked_kdes = np.array(all_scaled_kde_y_arrays)
@@ -445,25 +448,26 @@ if datasets_for_kde:
                     max_scaled_kde_y = current_max_avg_y
 
             ax.plot(common_kde_x, average_kde_y,
-                    color='black',        # Distinct color for average
+                    color='red',        # Distinct color for average
                     linestyle='-.',       # Distinct linestyle
                     linewidth=2.5,        # Make it a bit thicker
                     label=f'Average KDE (of {len(all_scaled_kde_y_arrays)} datasets)',
                     zorder=len(datasets_for_kde) + 1) # Ensure it plots on top
             print("Plotted Average KDE line.")
-    # --- END MODIFICATION ---
 
     ax.set_xlabel(f"{error_col_name} (m)", fontsize=14)
     ax.set_ylabel("Smoothed Frequency Estimate (Scaled Density)", fontsize=14)
     ax.set_title(f"Comparative Distribution of {error_col_name} Values", fontsize=16)
     
     ax.set_xlim(plot_xlim)
-    if max_scaled_kde_y > 0 :
-        ax.set_ylim(0, max_scaled_kde_y * 1.1)
-    else:
-        ax.set_ylim(0, 10)
+    ax.set_ylim(plot_ylim)
+    
+    # if max_scaled_kde_y > 0 :
+    #     ax.set_ylim(0, max_scaled_kde_y * 1.1)
+    # else:
+    #     ax.set_ylim(0, 10)
 
-    ax.legend(fontsize=9, loc='best')
+    #ax.legend(fontsize=9, loc='best')
     ax.grid(axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
 

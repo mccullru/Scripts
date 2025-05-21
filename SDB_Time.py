@@ -117,11 +117,162 @@ def combine_bands_to_rgb(input_folder, output_folder):
 
 ################# CHECK DIRECTORIES/INPUTS #####################
 
-input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_Homer_output"
+input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_Sentinel2\S2_Nait_output"
 output_folder = r"E:\Thesis Stuff\RGBCompositOutput"
 
 
 combine_bands_to_rgb(input_folder, output_folder)
+
+
+##############################################################################
+##############################################################################
+
+### First Optically Deep Finder (ODF) where blue/green values < 0.003 sr^-1 are omitted
+
+def mask_optically_deep_water(input_rgb_folder, 
+                              output_masked_folder, # Folder for the processed RGBs
+                              output_binary_mask_folder=None, 
+                              threshold=0.003):
+    """
+    Processes RGB GeoTIFF files to mask optically deep water pixels.
+    Pixels where either the green OR blue band value is <= threshold are set to NaN.
+    Saves the masked RGB to a NEW FILE in output_masked_folder.
+    Optionally saves a separate binary mask of the changed pixels.
+
+    Args:
+        input_rgb_folder (str): Path to the folder containing RGB GeoTIFF files.
+        output_masked_folder (str): Path to save the processed GeoTIFFs with ODW masked.
+        output_binary_mask_folder (str, optional): Path to save binary masks of ODW areas.
+                                                   If None, binary masks are not saved.
+        threshold (float): Reflectance threshold to identify ODW pixels.
+    """
+    if not os.path.exists(output_masked_folder):
+        os.makedirs(output_masked_folder)
+        print(f"Created masked output folder: {output_masked_folder}")
+
+    if output_binary_mask_folder and not os.path.exists(output_binary_mask_folder):
+        os.makedirs(output_binary_mask_folder)
+        print(f"Created binary mask output folder: {output_binary_mask_folder}")
+
+    for file_name in os.listdir(input_rgb_folder):
+        if file_name.endswith('.tif') and "_RGB" in file_name: # Process only the RGB composites
+            input_file_path = os.path.join(input_rgb_folder, file_name) # Changed variable name for clarity
+            print(f"Masking ODW for file: {input_file_path}")
+
+            try:
+                with rasterio.open(input_file_path) as src: # Use input_file_path
+                    profile = src.profile
+                    red_band = src.read(1).astype(rasterio.float32)
+                    green_band = src.read(2).astype(rasterio.float32)
+                    blue_band = src.read(3).astype(rasterio.float32)
+
+                    nodata_value = src.nodata
+                    if nodata_value is None and profile.get('nodata') is np.nan:
+                        nodata_value = np.nan
+                    
+                    red_masked = red_band.copy()
+                    green_masked = green_band.copy()
+                    blue_masked = blue_band.copy()
+
+                    odw_condition = np.logical_or(green_band <= threshold, blue_band <= threshold)
+                    
+                    if nodata_value is not None and not np.isnan(nodata_value):
+                        existing_nodata_mask_g = (green_band == nodata_value)
+                        existing_nodata_mask_b = (blue_band == nodata_value)
+                        odw_condition = np.logical_and(odw_condition, ~existing_nodata_mask_g)
+                        odw_condition = np.logical_and(odw_condition, ~existing_nodata_mask_b)
+                    elif np.isnan(nodata_value): 
+                        existing_nodata_mask_g = np.isnan(green_band)
+                        existing_nodata_mask_b = np.isnan(blue_band)
+                        odw_condition = np.logical_and(odw_condition, ~existing_nodata_mask_g)
+                        odw_condition = np.logical_and(odw_condition, ~existing_nodata_mask_b)
+
+                    red_masked[odw_condition] = np.nan
+                    green_masked[odw_condition] = np.nan
+                    blue_masked[odw_condition] = np.nan
+                    
+                    profile.update(nodata=np.nan, dtype=rasterio.float32, count=3)
+
+                    # adds file extention
+                    original_filename_stem = os.path.splitext(file_name)[0]
+                    output_masked_filename = f"{original_filename_stem}_ODWmasked.tif"
+                    output_masked_file_path = os.path.join(output_masked_folder, output_masked_filename)
+
+                    with rasterio.open(output_masked_file_path, 'w', **profile) as dst: # Use output_masked_file_path
+                        dst.write(red_masked, 1)
+                        dst.write(green_masked, 2)
+                        dst.write(blue_masked, 3)
+                    print(f"Saved ODW masked RGB to: {output_masked_file_path}")
+
+                    if output_binary_mask_folder:
+                        # ... (binary mask saving logic as before) ...
+                        binary_odw_mask = np.zeros_like(red_band, dtype=rasterio.uint8)
+                        binary_odw_mask[odw_condition] = 1
+                        
+                        mask_nodata_val = 255 # Default for uint8 mask nodata
+                        if nodata_value is not None and not np.isnan(nodata_value):
+                            original_nodata_combined = np.logical_or(red_band == nodata_value, 
+                                                                     green_band == nodata_value, 
+                                                                     blue_band == nodata_value)
+                            binary_odw_mask[original_nodata_combined] = mask_nodata_val
+                        elif np.isnan(nodata_value):
+                            original_nodata_combined = np.logical_or(np.isnan(red_band), 
+                                                                     np.isnan(green_band), 
+                                                                     np.isnan(blue_band))
+                            binary_odw_mask[original_nodata_combined] = mask_nodata_val
+                            
+                        mask_profile = profile.copy()
+                        mask_profile.update(count=1, dtype=rasterio.uint8, nodata=mask_nodata_val)
+
+                        output_binary_mask_file = os.path.join(output_binary_mask_folder, f"{original_filename_stem}_ODWbinarymask.tif")
+                        with rasterio.open(output_binary_mask_file, 'w', **mask_profile) as dst_mask:
+                            dst_mask.write(binary_odw_mask, 1)
+                        print(f"Saved ODW binary mask to: {output_binary_mask_file}")
+
+            except Exception as e:
+                print(f"Error processing ODW for {file_name}: {e}")
+
+    print("\nFunction mask_optically_deep_water finished.")
+
+
+################# CHECK DIRECTORIES/INPUTS #####################
+
+raw_bands_input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_Sentinel2\S2_Nait_output"
+# This is where combine_bands_to_rgb saves its RGB outputs
+# AND this will be the INPUT FOLDER for mask_optically_deep_water
+# AND this will ALSO be the OUTPUT FOLDER for the _ODWmasked.tif files
+rgb_and_masked_folder = r"E:\Thesis Stuff\RGBCompositOutput"
+
+# Path for optional binary masks (can be different or None)
+output_for_binary_masks = r"E:\Thesis Stuff\RGBCompositOutput_ODWbinarymasks" # Or set to None
+
+print("--- Starting Step 1: Combining bands to RGB composites ---")
+combine_bands_to_rgb(raw_bands_input_folder, rgb_and_masked_folder) # Saves _RGB.tif files here
+print("\n--- Finished Step 1 ---")
+
+print("\n--- Starting Step 2: Masking Optically Deep Water from RGB composites ---")
+mask_optically_deep_water(
+    input_rgb_folder=rgb_and_masked_folder,         # Read _RGB.tif from here
+    output_masked_folder=rgb_and_masked_folder,     # <--- SAVE _ODWmasked.tif TO THE SAME FOLDER
+    output_binary_mask_folder=output_for_binary_masks,
+    threshold=0.003 # Your current threshold
+)
+print("\n--- Finished Step 2 ---")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ##############################################################################
 ##############################################################################
@@ -131,7 +282,7 @@ combine_bands_to_rgb(input_folder, output_folder)
 " !!! IF you want to keep the RGB outputs, change delete_input_files to FALSE !!!"
 
 
-def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=True):
+def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=False):
     """
     Processes a folder of RGB GeoTIFF files to compute the pSDBgreen index
     and saves the results as new GeoTIFF files.
@@ -160,9 +311,9 @@ def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=True):
                     profile = src.profile
 
                 # Scale the bands
-                scaled_red = red_band * 100000
-                scaled_green = green_band * 100000
-                scaled_blue = blue_band * 100000
+                scaled_red = red_band * 1000 * 3.14159     # Original 100000
+                scaled_green = green_band * 1000 * 3.14159  # Original 100000
+                scaled_blue = blue_band * 1000 * 3.14159    # Original 100000
 
                 # Avoid log errors: Set negative or zero values to NaN
                 scaled_red[scaled_red <= 0] = np.nan
@@ -177,6 +328,10 @@ def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=True):
                 # Compute the pSDBgreen index
                 pSDBred = ln_blue / ln_red
                 pSDBgreen = ln_blue / ln_green
+
+                # Remove any negative pSDB values
+                pSDBred[pSDBred < 0] = np.nan
+                pSDBgreen[pSDBgreen < 0] = np.nan
 
                 # Update profile for the output GeoTIFF
                 profile.update(
@@ -210,6 +365,7 @@ def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=True):
         print("         (Subdirectories will be skipped)")
         deleted_count = 0
         deletion_errors = 0
+        
         try: # Wrap the whole deletion attempt
              for item_name in os.listdir(input_folder):
                  item_path = os.path.join(input_folder, item_name)
@@ -224,7 +380,7 @@ def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=True):
         except Exception as e_list:
              print(f"ERROR: Could not list or access input folder for deletion: {input_folder} - {e_list}")
 
-    print("\nFunction process_rgb_geotiffs finished.") # Added
+    print("\nFunction process_rgb_geotiffs finished.")
 
 
 
@@ -233,12 +389,14 @@ def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=True):
 input_folder = r"E:\Thesis Stuff\RGBCompositOutput"
 
 # Save Results Path
-output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\pSDB"
+#output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\pSDB"
 
 # Workspace Path
-#output_folder = r"E:\Thesis Stuff\pSDB"
+output_folder = r"E:\Thesis Stuff\pSDB"
 
 process_rgb_geotiffs(input_folder, output_folder)
+
+
 
 
 ##############################################################################
@@ -450,17 +608,17 @@ def is_point_within_bounds(point, bounds):
 cal_csv_file = r"B:\Thesis Project\Reference Data\Processed_Topobathy\Homer_calibration_points.csv"     # Calibration reference data
 
 ### Save Results Path ###
-raster_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\pSDB"
+#raster_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\pSDB"
 
 ### Workspace Path ###
-#raster_folder = r"E:\Thesis Stuff\pSDB"
+raster_folder = r"E:\Thesis Stuff\pSDB"
 
 
 ### Save Results Path ###
-output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Extracted Pts\pSDB"
+#output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Extracted Pts\pSDB"
 
 ### Workspace Path ###
-#output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
+output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
 
 extract_raster_values(cal_csv_file, raster_folder, output_folder)
 
@@ -567,17 +725,17 @@ def process_csv_files(input_folder, output_folder):
       #################  CHECK DIRECTORIES/INPUTS #####################
 
 ### Save Results Path ###
-input_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Extracted Pts\pSDB"
+#input_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Extracted Pts\pSDB"
 
 ### Workspace Path ###
-#input_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
+input_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
 
 
 ### Save Results Path ###
-output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Figures\pSDB"
+#output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Figures\pSDB"
 
 ### Workspace Path ###
-#output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_Results"
+output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_Results"
 
 
 process_csv_files(input_folder, output_folder)
@@ -591,17 +749,17 @@ process_csv_files(input_folder, output_folder)
 
 
 ### Save Results Path ###
-data_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Extracted Pts\pSDB"
+#data_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Extracted Pts\pSDB"
 
 ### Workspace Path ###
-#data_folder_path = r"E:\Thesis Stuff\pSDB_ExtractedPts" 
+data_folder_path = r"E:\Thesis Stuff\pSDB_ExtractedPts" 
 
 
 ### Save Results Path ###
-output_save_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Figures\pSDB_maxR2"
+#output_save_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Figures\pSDB_maxR2"
 
 ### Workspace Path ###
-#output_save_folder_path = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results"
+output_save_folder_path = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results"
 
 
 
@@ -626,8 +784,7 @@ for data_name_full_path in csv_files:
     current_file_iterations_data = []
 
     try:
-        # --- Load Data ---
-        # (Your data loading code remains the same - assuming it's correct)
+        # Load Data
         if not os.path.isfile(data_name_full_path):
             print(f'Warning: Data CSV file not found: {data_name_full_path}')
             continue
@@ -660,8 +817,7 @@ for data_name_full_path in csv_files:
 
         data_name_for_conditions = str(just_the_filename_for_output_csv).lower()
 
-        # --- Initial Plot Setup ---
-        # (Your initial plot setup code remains the same)
+        # Initial Plot Setup
         fig, ax = plt.subplots(figsize=(10, 7))
         if "green" in data_name_for_conditions: depth_min_limit_for_plot = 2.0
         elif "red" in data_name_for_conditions: depth_min_limit_for_plot = 0.0
@@ -680,79 +836,112 @@ for data_name_full_path in csv_files:
         ax.set_title(f'pSDB Regression: {just_the_filename_for_output_csv.replace("_", " ")}') # Slightly shorter title
         ax.grid(True)
 
+        iteration_results_for_plot_obj = []
 
-        # --- Iterative Regression Section ---
-        # (Your iterative regression loop to populate results_df_for_plot remains the same)
-        # Ensure 'results_df_for_plot' DataFrame has 'depth_limit', 'R2', 'params', 'slope_m', 'x_min_fit', 'x_max_fit'
-        # (Your existing code for this loop seems to correctly populate these)
-        if "green" in data_name_for_conditions:
-            depth_min_limit_regr = 2.0; overall_max_depth = 20.0; step = 0.25; initial_depth_max = 2.5
-        elif "red" in data_name_for_conditions:
-            depth_min_limit_regr = 1.0; overall_max_depth = 20.0; step = 0.25; initial_depth_max = 0.5
+        # Define the two sets of depth_min_limit_regr ###
+        depth_min_regr_sets = [1.0, 2.0]
+        step = 0.25 # Common step
+
+        if y_original.size > 0:
+            overall_max_depth_data = np.max(y_original) # Max depth from this specific file
+            print(f"DEBUG: Dynamically set overall_max_depth_data to: {overall_max_depth_data:.2f} m")
         else:
-            depth_min_limit_regr = 1.0; overall_max_depth = 12.0; step = 0.25; initial_depth_max = 0.5
-
-        if initial_depth_max >= overall_max_depth:
-            depth_max_limits_to_test = np.array([overall_max_depth])
-        else:
-            depth_max_limits_to_test = np.arange(initial_depth_max, overall_max_depth + step, step)
-            if not np.isclose(depth_max_limits_to_test[-1], overall_max_depth) and depth_max_limits_to_test[-1] < overall_max_depth:
-                depth_max_limits_to_test = np.append(depth_max_limits_to_test, overall_max_depth)
-
-        if 1.0 not in depth_max_limits_to_test and depth_min_limit_regr <= 1.0 and initial_depth_max <= 1.0 and 1.0 <= overall_max_depth:
-            depth_max_limits_to_test = np.sort(np.unique(np.append(depth_max_limits_to_test, 1.0)))
-
-        if len(depth_max_limits_to_test) == 0:
-            print(f'Warning: No depth ranges defined to test for regression for {current_file_name_for_output}. Skipping.')
-            plot_filename = f"{just_the_filename_for_output_csv}_plot.png"
-            plot_save_path = os.path.join(output_save_folder_path, plot_filename)
-            if fig: plt.savefig(plot_save_path); plt.close(fig)
+            print("Warning: y_original is empty for regression. Skipping iterations.")
+            # Save empty plot if needed and continue
+            if fig: plt.savefig(os.path.join(output_save_folder_path, f"{just_the_filename_for_output_csv}_plot_no_data_for_regr.png")); plt.close(fig)
             continue
 
-        iteration_results_for_plot_obj = []
-        num_iterations = len(depth_max_limits_to_test)
-        print(f'Calculating regression for {num_iterations} depth ranges for {current_file_name_for_output}...')
-        for k_loop_idx, current_depth_max_limit in enumerate(depth_max_limits_to_test): # Use enumerate for original index if needed
-            plot_result_entry = {'depth_limit': current_depth_max_limit, 'R2': np.nan, 'params': None,
-                                 'point_count': 0, 'x_min_fit': np.nan, 'x_max_fit': np.nan, 'slope_m': np.nan,
-                                 'original_index': k_loop_idx} # Store original index from depth_max_limits_to_test
+        # Loop through each depth_min_limit_regr set ###
+        for depth_min_limit_regr in depth_min_regr_sets:
+            print(f"\n--- Iterating with Min Depth Range starting at: {depth_min_limit_regr:.2f} m ---")
 
-            m_for_iteration, b_for_iteration, R2_for_iteration, rmse_for_iteration = np.nan, np.nan, np.nan, np.nan
-            equation_for_iteration = "N/A"
-            range_idx = (y_original >= depth_min_limit_regr) & (y_original <= current_depth_max_limit)
-            x_iter_range, y_iter_range = x_original[range_idx], y_original[range_idx]
-            num_points = len(x_iter_range)
-            plot_result_entry['point_count'] = num_points
+            # Determine initial_depth_max based on the current depth_min_limit_regr
+            initial_depth_max = depth_min_limit_regr + step # Start one step above the min
+            if initial_depth_max < depth_min_limit_regr: # handles if step is 0 or negative, though unlikely
+                initial_depth_max = depth_min_limit_regr
 
-            if num_points > 1:
-                params = np.polyfit(x_iter_range, y_iter_range, 1)
-                y_fit_iter_range = np.polyval(params, x_iter_range)
-                m_for_iteration, b_for_iteration = params[0], params[1]
-                plot_result_entry['slope_m'] = m_for_iteration
-                if len(np.unique(y_iter_range)) > 1:
-                    R2_for_iteration = r2_score(y_iter_range, y_fit_iter_range)
-                    if R2_for_iteration < 0: R2_for_iteration = 0.0
-                elif len(x_iter_range) > 0:
-                    R2_for_iteration = 1.0 if np.allclose(y_iter_range, y_fit_iter_range) else 0.0
-                plot_result_entry['R2'] = R2_for_iteration
-                plot_result_entry['params'] = params
-                if len(x_iter_range) > 0:
-                    plot_result_entry['x_min_fit'], plot_result_entry['x_max_fit'] = np.min(x_iter_range), np.max(x_iter_range)
-                equation_for_iteration = f"y = {m_for_iteration:.4f}x + {b_for_iteration:.4f}"
-                rmse_for_iteration = np.sqrt(mean_squared_error(y_iter_range, y_fit_iter_range))
-            iteration_results_for_plot_obj.append(plot_result_entry)
-            current_file_iterations_data.append({
-                'Image Name': current_file_name_for_output, 'Min Depth Range': depth_min_limit_regr,
-                'Max Depth Range': current_depth_max_limit, 'R2 Value': R2_for_iteration, 'RMSE': rmse_for_iteration,
-                'Line of Best Fit': equation_for_iteration, 'm1': m_for_iteration, 'm0': b_for_iteration,
-                'Pt Count': num_points,
-            })
+            # Cap initial_depth_max at overall_max_depth_data
+            initial_depth_max = min(initial_depth_max, overall_max_depth_data)
+
+            if initial_depth_max >= overall_max_depth_data:
+                if overall_max_depth_data >= depth_min_limit_regr:
+                    depth_max_limits_to_test = np.array([overall_max_depth_data])
+                else:
+                    depth_max_limits_to_test = np.array([])
+            else:
+                start_arange = max(initial_depth_max, depth_min_limit_regr) # Ensure arange starts correctly
+                if start_arange >= overall_max_depth_data:
+                    if overall_max_depth_data >= depth_min_limit_regr:
+                        depth_max_limits_to_test = np.array([overall_max_depth_data])
+                    else:
+                        depth_max_limits_to_test = np.array([])
+                else:
+                    depth_max_limits_to_test = np.arange(start_arange, overall_max_depth_data + step, step)
+                    if not np.isclose(depth_max_limits_to_test[-1], overall_max_depth_data) and \
+                       depth_max_limits_to_test[-1] < overall_max_depth_data and \
+                       overall_max_depth_data >= depth_min_limit_regr:
+                        depth_max_limits_to_test = np.append(depth_max_limits_to_test, overall_max_depth_data)
+            
+            # Ensure all test limits are valid for the current depth_min_limit_regr
+            if len(depth_max_limits_to_test) > 0:
+                depth_max_limits_to_test = depth_max_limits_to_test[depth_max_limits_to_test >= depth_min_limit_regr]
+                depth_max_limits_to_test = np.unique(depth_max_limits_to_test) # Remove duplicates and sort
+
+            if len(depth_max_limits_to_test) == 0:
+                print(f'Warning: No valid depth ranges for Min Depth {depth_min_limit_regr:.2f}m. Skipping this set.')
+                continue
+
+            print(f'Calculating regression for {len(depth_max_limits_to_test)} depth ranges (Min Depth: {depth_min_limit_regr:.2f}m) for {current_file_name_for_output}...')
+            for k_loop_idx, current_depth_max_limit in enumerate(depth_max_limits_to_test):
+                plot_result_entry = {'depth_limit': current_depth_max_limit, 'R2': np.nan, 'params': None,
+                                     'point_count': 0, 'x_min_fit': np.nan, 'x_max_fit': np.nan, 'slope_m': np.nan,
+                                     'original_k_index': k_loop_idx, # You can use this or a combined index later
+                                     'min_depth_regr_setting': depth_min_limit_regr} # Store which min_depth this iteration belongs to
+
+                m_for_iteration, b_for_iteration, R2_for_iteration, rmse_for_iteration = np.nan, np.nan, np.nan, np.nan
+                equation_for_iteration = "N/A"
+                # IMPORTANT: range_idx now uses the current depth_min_limit_regr from the outer loop
+                range_idx = (y_original >= depth_min_limit_regr) & (y_original <= current_depth_max_limit)
+                x_iter_range, y_iter_range = x_original[range_idx], y_original[range_idx]
+                num_points = len(x_iter_range)
+                plot_result_entry['point_count'] = num_points
+
+                if num_points > 1:
+                    params = np.polyfit(x_iter_range, y_iter_range, 1)
+                    y_fit_iter_range = np.polyval(params, x_iter_range)
+                    m_for_iteration, b_for_iteration = params[0], params[1]
+                    plot_result_entry['slope_m'] = m_for_iteration
+                    if len(np.unique(y_iter_range)) > 1:
+                        R2_for_iteration = r2_score(y_iter_range, y_fit_iter_range)
+                        if R2_for_iteration < 0: R2_for_iteration = 0.0
+                    elif len(x_iter_range) > 0:
+                        R2_for_iteration = 1.0 if np.allclose(y_iter_range, y_fit_iter_range) else 0.0
+                    
+                    plot_result_entry['R2'] = R2_for_iteration
+                    plot_result_entry['params'] = params
+                    if len(x_iter_range) > 0:
+                        plot_result_entry['x_min_fit'], plot_result_entry['x_max_fit'] = np.min(x_iter_range), np.max(x_iter_range)
+                    equation_for_iteration = f"y = {m_for_iteration:.4f}x + {b_for_iteration:.4f}"
+                    rmse_for_iteration = np.sqrt(mean_squared_error(y_iter_range, y_fit_iter_range))
+                
+                iteration_results_for_plot_obj.append(plot_result_entry) # Appends to the list for the plot object
+                
+                # Append to the CSV data list, including the Min Depth Range setting
+                current_file_iterations_data.append({
+                    'Image Name': current_file_name_for_output,
+                    'Min Depth Range': depth_min_limit_regr, # This now reflects 1.0 or 2.0
+                    'Max Depth Range': current_depth_max_limit,
+                    'R2 Value': R2_for_iteration, 'RMSE': rmse_for_iteration,
+                    'Line of Best Fit': equation_for_iteration, 'm1': m_for_iteration, 'm0': b_for_iteration,
+                    'Pt Count': num_points,
+                })
+        
+        
         results_df_for_plot = pd.DataFrame(iteration_results_for_plot_obj)
         # Ensure sorted by depth_limit for the subsequent logic, though arange should provide this.
         results_df_for_plot = results_df_for_plot.sort_values(by='depth_limit').reset_index(drop=True)
 
 
-        # --- MODIFICATION START: Find Peak R² and Deepest Tolerable R² Line ---
         peak_R2_iteration_details = None
         peak_R2_value = -np.inf
         rmse_for_peak_R2_fit = np.nan
@@ -776,11 +965,10 @@ for data_name_full_path in csv_files:
                         y_pred = np.polyval(peak_R2_iteration_details['params'], x_original[fit_range_idx])
                         rmse_for_peak_R2_fit = np.sqrt(mean_squared_error(y_original[fit_range_idx], y_pred))
 
-                # 2. Find Deepest Tolerable R² Line
+                # Find Deepest Tolerable R² Line
                 R2_threshold = peak_R2_value * 0.95
                 
-                # Iterate through positive slope results (already sorted by depth_limit)
-                # to find the last one meeting the threshold
+                # Iterate through positive slope results to find the last one meeting the threshold
                 for index, row in positive_slope_results_df.iterrows():
                     if pd.notna(row['R2']) and row['R2'] >= R2_threshold:
                         deepest_tolerable_iteration_details = row # Keep updating, last one will be the deepest
@@ -796,11 +984,9 @@ for data_name_full_path in csv_files:
                 print(f"No iterations with a positive slope and valid R2 found for file: {current_file_name_for_output}")
         else:
             print(f"No iteration results to process for R2 for file: {current_file_name_for_output}")
-        # --- MODIFICATION END ---
 
 
         # --- Plotting All Regression Lines (for current file) ---
-        # (Your code for plotting grey lines remains the same)
         if not results_df_for_plot.empty:
             for index, row_data in results_df_for_plot.iterrows():
                 if pd.notna(row_data['R2']) and row_data['params'] is not None and \
@@ -840,10 +1026,10 @@ for data_name_full_path in csv_files:
         # Plot Deepest Tolerable R² Line (New Color)
         if deepest_tolerable_iteration_details is not None and deepest_tolerable_iteration_details['params'] is not None:
             # Avoid plotting twice if it's the same as the peak R2 line
-            # Check based on original_index or a combination of R2 and depth_limit
+            # Check based on original_k_index or a combination of R2 and depth_limit
             is_same_as_peak = False
             if peak_R2_iteration_details is not None:
-                 if deepest_tolerable_iteration_details['original_index'] == peak_R2_iteration_details['original_index']:
+                 if deepest_tolerable_iteration_details['original_k_index'] == peak_R2_iteration_details['original_k_index']:
                     is_same_as_peak = True
             
             if not is_same_as_peak:
@@ -899,7 +1085,7 @@ for data_name_full_path in csv_files:
         if deepest_tolerable_iteration_details is not None and \
            deepest_tolerable_iteration_details['params'] is not None and \
            (peak_R2_iteration_details is None or \
-            deepest_tolerable_iteration_details['original_index'] != peak_R2_iteration_details['original_index']): # Only if different
+            deepest_tolerable_iteration_details['original_k_index'] != peak_R2_iteration_details['original_k_index']): # Only if different
             if len(x_for_scatter) > 0: # x_for_scatter should exist if peak_R2 was found
                 m_d, b_d = deepest_tolerable_iteration_details['params'][0], deepest_tolerable_iteration_details['params'][1]
                 eq_d = f"y = {m_d:.2f}x + {b_d:.2f}"
@@ -922,7 +1108,7 @@ for data_name_full_path in csv_files:
             if peak_R2_line_handle is None or (deepest_tolerable_line_handle != peak_R2_line_handle):
                  handles_for_legend.append(deepest_tolerable_line_handle)
             elif peak_R2_line_handle and (deepest_tolerable_iteration_details is not None and peak_R2_iteration_details is not None and \
-                  deepest_tolerable_iteration_details['original_index'] == peak_R2_iteration_details['original_index']):
+                  deepest_tolerable_iteration_details['original_k_index'] == peak_R2_iteration_details['original_k_index']):
                   # If they are the same and label was updated, we don't need a duplicate handle
                   pass
 
@@ -1088,24 +1274,24 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, nodata_value=-9
 # ############## CHECK DIRECTORIES/INPUTS ###########################
 
 ### Save Results Path ###
-raster_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\pSDB"
+#raster_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\pSDB"
 
 ### Workspace Path ###
-#raster_folder = r"E:\Thesis Stuff\pSDB"
+raster_folder = r"E:\Thesis Stuff\pSDB"
 
 
 ### Save Results Path ###
-csv_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Figures\pSDB_maxR2"
+#csv_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Figures\pSDB_maxR2"
 
 ### Workspace Path ###
-#csv_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results"
+csv_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results"
 
 
 ### Save Results Path ###
-output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\SDB"
+#output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\SDB"
 
 ### Workspace Path ###
-#output_folder = r"E:\Thesis Stuff\SDB"
+output_folder = r"E:\Thesis Stuff\SDB"
 
 
 
@@ -1213,10 +1399,10 @@ def process_sdb_folder(input_folder):
         print(f"Saved merged SDB raster: {output_path}")
 
 ### Save Results Path ### 
-input_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\SDB"
+#input_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\SDB"
 
 ### Workspace Path ###
-#input_folder = r"E:\Thesis Stuff\SDB"  # Folder with input rasters
+input_folder = r"E:\Thesis Stuff\SDB"  # Folder with input rasters
 
 
 process_sdb_folder(input_folder)
@@ -1364,17 +1550,17 @@ val_csv_file = r"B:\Thesis Project\Reference Data\Processed_Topobathy\Homer_vali
 
 
 ### Save Results Path ###
-raster_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\SDB"
+#raster_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\SDB"
 
 ### Workspace Path ###
-#raster_folder = r"E:\Thesis Stuff\SDB"
+raster_folder = r"E:\Thesis Stuff\SDB"
 
 
 ### Save Results Path ###
-output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Extracted Pts\SDB"
+#output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Extracted Pts\SDB"
 
 ### Workspace Path ###
-#output_folder = r"E:\Thesis Stuff\SDB_ExtractedPts"
+output_folder = r"E:\Thesis Stuff\SDB_ExtractedPts"
 
 
 
@@ -1506,17 +1692,17 @@ def process_csv_files(input_folder, output_folder):
       #################  CHECK DIRECTORIES/INPUTS #####################
 
 ### Save Results Path ###
-input_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Extracted Pts\SDB"
+#input_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Extracted Pts\SDB"
 
 ### Workspace Path ###
-#input_folder = r"E:\Thesis Stuff\SDB_ExtractedPts"  
+input_folder = r"E:\Thesis Stuff\SDB_ExtractedPts"  
 
 
 ### Save Results Path ###
-output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Figures\SDB"
+#output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Figures\SDB"
 
 ### Workspace Path ###
-#output_folder = r"E:\Thesis Stuff\SDB_ExtractedPts_Results" 
+output_folder = r"E:\Thesis Stuff\SDB_ExtractedPts_Results" 
 
 
 process_csv_files(input_folder, output_folder)

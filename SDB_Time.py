@@ -24,7 +24,7 @@ from difflib import get_close_matches
 ##############################################################################
 ##############################################################################
 
-### Composite R, G, B tiffs into one RGB tiff ###
+"""Composite R, G, B tiffs into one RGB tiff"""
 
 def extract_rrs_number(file_name):
     """Extract the number after 'Rrs_' in the file name."""
@@ -101,7 +101,7 @@ def combine_bands_to_rgb(input_folder, output_folder):
             # Output file name (remove "Rrs_<number>" from filename)
             input_folder_name = Path(input_folder).name
             output_file_name = re.sub(r"Rrs_\d+", "", r.name).replace("__", "_")  # Clean up any double underscores
-            output_file = os.path.join(output_folder, f"{Path(output_file_name).stem}_RGB.tif")
+            output_file = os.path.join(output_folder, f"{Path(output_file_name).stem}RGB.tif")
 
             # Write combined RGB TIFF
             with rasterio.open(output_file, "w", **profile) as dst:
@@ -117,7 +117,7 @@ def combine_bands_to_rgb(input_folder, output_folder):
 
 ################# CHECK DIRECTORIES/INPUTS #####################
 
-input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_Sentinel2\S2_Nait_output"
+input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_Sentinel2\S2_Nait_output\S2B_MSIL1C_20230128T065129_N0509_R020_T39PYP_20230128T083718.SAFE"
 output_folder = r"E:\Thesis Stuff\RGBCompositOutput"
 
 
@@ -127,7 +127,8 @@ combine_bands_to_rgb(input_folder, output_folder)
 ##############################################################################
 ##############################################################################
 
-### First Optically Deep Finder (ODF) where blue/green values < 0.003 sr^-1 are omitted
+"""First Optically Deep Finder (ODF) where blue/green values < 0.003 sr^-1 are omitted"""
+
 
 def mask_optically_deep_water(input_rgb_folder, 
                               output_masked_folder, # Folder for the processed RGBs
@@ -195,7 +196,7 @@ def mask_optically_deep_water(input_rgb_folder,
 
                     # adds file extention
                     original_filename_stem = os.path.splitext(file_name)[0]
-                    output_masked_filename = f"{original_filename_stem}_ODWmasked.tif"
+                    output_masked_filename = f"{original_filename_stem}_m1.tif"
                     output_masked_file_path = os.path.join(output_masked_folder, output_masked_filename)
 
                     with rasterio.open(output_masked_file_path, 'w', **profile) as dst: # Use output_masked_file_path
@@ -224,7 +225,7 @@ def mask_optically_deep_water(input_rgb_folder,
                         mask_profile = profile.copy()
                         mask_profile.update(count=1, dtype=rasterio.uint8, nodata=mask_nodata_val)
 
-                        output_binary_mask_file = os.path.join(output_binary_mask_folder, f"{original_filename_stem}_ODWbinarymask.tif")
+                        output_binary_mask_file = os.path.join(output_binary_mask_folder, f"{original_filename_stem}_m1_Mask.tif")
                         with rasterio.open(output_binary_mask_file, 'w', **mask_profile) as dst_mask:
                             dst_mask.write(binary_odw_mask, 1)
                         print(f"Saved ODW binary mask to: {output_binary_mask_file}")
@@ -235,54 +236,37 @@ def mask_optically_deep_water(input_rgb_folder,
     print("\nFunction mask_optically_deep_water finished.")
 
 
+
 ################# CHECK DIRECTORIES/INPUTS #####################
 
-raw_bands_input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_Sentinel2\S2_Nait_output"
-# This is where combine_bands_to_rgb saves its RGB outputs
-# AND this will be the INPUT FOLDER for mask_optically_deep_water
-# AND this will ALSO be the OUTPUT FOLDER for the _ODWmasked.tif files
+raw_bands_input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_Sentinel2\S2_Nait_output\S2B_MSIL1C_20230128T065129_N0509_R020_T39PYP_20230128T083718.SAFE"
+
 rgb_and_masked_folder = r"E:\Thesis Stuff\RGBCompositOutput"
 
-# Path for optional binary masks (can be different or None)
+# Path for optional binary masks
 output_for_binary_masks = r"E:\Thesis Stuff\RGBCompositOutput_ODWbinarymasks" # Or set to None
 
-print("--- Starting Step 1: Combining bands to RGB composites ---")
-combine_bands_to_rgb(raw_bands_input_folder, rgb_and_masked_folder) # Saves _RGB.tif files here
-print("\n--- Finished Step 1 ---")
+combine_bands_to_rgb(raw_bands_input_folder, rgb_and_masked_folder) 
 
-print("\n--- Starting Step 2: Masking Optically Deep Water from RGB composites ---")
+print("Masking Optically Deep Water from RGB composites")
 mask_optically_deep_water(
-    input_rgb_folder=rgb_and_masked_folder,         # Read _RGB.tif from here
-    output_masked_folder=rgb_and_masked_folder,     # <--- SAVE _ODWmasked.tif TO THE SAME FOLDER
+    input_rgb_folder=rgb_and_masked_folder,        
+    output_masked_folder=rgb_and_masked_folder,     
     output_binary_mask_folder=output_for_binary_masks,
-    threshold=0.003 # Your current threshold
-)
-print("\n--- Finished Step 2 ---")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
+    # Current sr^-1 threshold
+    threshold=0.003) 
 
 
 ##############################################################################
 ##############################################################################
 
-### Create pSDB red and green ###
+"""Create pSDB red and green"""
 
 " !!! IF you want to keep the RGB outputs, change delete_input_files to FALSE !!!"
 
 
-def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=False):
+def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=True):
     """
     Processes a folder of RGB GeoTIFF files to compute the pSDBgreen index
     and saves the results as new GeoTIFF files.
@@ -296,7 +280,7 @@ def process_rgb_geotiffs(input_folder, output_folder, delete_input_files=False):
 
     # Loop through all GeoTIFF files in the input folder
     for file_name in os.listdir(input_folder):
-        if file_name.endswith('.tif'):
+        if file_name.endswith('m1.tif'):
             file_path = os.path.join(input_folder, file_name)
             print(f"Processing file: {file_name}")
 
@@ -398,13 +382,14 @@ process_rgb_geotiffs(input_folder, output_folder)
 
 
 
+##############################################################################
+##############################################################################
+"""Extract pSDB values at reference point locations"""
 
-##############################################################################
-##############################################################################
-### Extract pSDB values at reference point locations ###
 
 
 """ Input a folder of reference data and match the names """
+
 # def extract_raster_values(csv_folder, raster_folder, output_folder):
 #     """
 #     Matches rasters and CSVs where the second word in the raster filename 
@@ -504,6 +489,8 @@ process_rgb_geotiffs(input_folder, output_folder)
 
 
 """ Specifically choose reference data file"""
+
+
 def extract_raster_values(cal_csv_file, raster_folder, output_folder):
     """
     Extracts raster values at the locations provided in the CSV file and saves the results.
@@ -605,7 +592,7 @@ def is_point_within_bounds(point, bounds):
 
       #################  CHECK DIRECTORIES/INPUTS #####################
 
-cal_csv_file = r"B:\Thesis Project\Reference Data\Processed_Topobathy\Homer_calibration_points.csv"     # Calibration reference data
+cal_csv_file = r"B:\Thesis Project\Reference Data\Processed_ICESat\Nait_corrected.csv"     # Calibration reference data
 
 ### Save Results Path ###
 #raster_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\pSDB"
@@ -627,125 +614,125 @@ extract_raster_values(cal_csv_file, raster_folder, output_folder)
 ##############################################################################
 ##############################################################################
 
-### Perform linear regressions between pSDB red and green and reference calibration data ###
+""" Perform linear regressions between pSDB red and green and reference calibration data """
 
 
-def process_csv_files(input_folder, output_folder):
-    """
-    Processes CSV files in the input folder, performs linear regression, 
-    and saves the results in the output folder.
-    """
-    # Ensure output folder exists
-    os.makedirs(output_folder, exist_ok=True)
+# def process_csv_files(input_folder, output_folder):
+#     """
+#     Processes CSV files in the input folder, performs linear regression, 
+#     and saves the results in the output folder.
+#     """
+#     # Ensure output folder exists
+#     os.makedirs(output_folder, exist_ok=True)
 
 
-    # Loop through all CSV files in the input folder
-    for filename in os.listdir(input_folder):
-        if filename.endswith(".csv"):
-            input_path = os.path.join(input_folder, filename)
-            print(f"Processing {filename}...")
+#     # Loop through all CSV files in the input folder
+#     for filename in os.listdir(input_folder):
+#         if filename.endswith(".csv"):
+#             input_path = os.path.join(input_folder, filename)
+#             print(f"Processing {filename}...")
 
-            # Read the CSV file
-            data = pd.read_csv(input_path)
+#             # Read the CSV file
+#             data = pd.read_csv(input_path)
 
-            # Drop rows where 'Raster_Value' is blank
-            data = data.dropna(subset=['Raster_Value'])
+#             # Drop rows where 'Raster_Value' is blank
+#             data = data.dropna(subset=['Raster_Value'])
 
-            # Initialize a results list
-            results = []
+#             # Initialize a results list
+#             results = []
 
-            # Perform linear regression
-            x = data[['Raster_Value']].values
-            y = data['Geoid_Corrected_Ortho_Height'].values
-            model = LinearRegression()
-            model.fit(x, y)
+#             # Perform linear regression
+#             x = data[['Raster_Value']].values
+#             y = data['Geoid_Corrected_Ortho_Height'].values
+#             model = LinearRegression()
+#             model.fit(x, y)
 
-            # Calculate regression metrics
-            y_pred = model.predict(x)
-            r2 = r2_score(y, y_pred)
-            rmse = np.sqrt(mean_squared_error(y, y_pred))
-            coef = model.coef_[0]
-            intercept = model.intercept_
+#             # Calculate regression metrics
+#             y_pred = model.predict(x)
+#             r2 = r2_score(y, y_pred)
+#             rmse = np.sqrt(mean_squared_error(y, y_pred))
+#             coef = model.coef_[0]
+#             intercept = model.intercept_
 
-            # Create the line of best fit equation
-            equation = f"y = {coef:.4f}x + {intercept:.4f}"
+#             # Create the line of best fit equation
+#             equation = f"y = {coef:.4f}x + {intercept:.4f}"
 
-            # Append the results to the list
-            results.append({
-                "Image Name": filename,
-                "R2 Value": r2,
-                "RMSE": rmse,        
-                "Line of Best Fit": equation,
-                "m1": coef,
-                "m0": intercept
-            })
+#             # Append the results to the list
+#             results.append({
+#                 "Image Name": filename,
+#                 "R2 Value": r2,
+#                 "RMSE": rmse,        
+#                 "Line of Best Fit": equation,
+#                 "m1": coef,
+#                 "m0": intercept
+#             })
 
-            min_x = np.min(x)
-            mean_y = np.mean(y)
+#             min_x = np.min(x)
+#             mean_y = np.mean(y)
             
-            # Plot the data and the regression line
-            plt.figure(figsize=(8, 6))
-            plt.scatter(x, y, color='blue', label='Data Points', alpha=0.7)
-            plt.plot(x, y_pred, color='red', label='Best Fit Line', linewidth=2)
-            plt.title(f"Linear Regression for {filename}")
-            plt.xlabel("pSDB Values (unitless)")
-            plt.ylabel("Reference Depths (m)")
-            #plt.xlim(None, 1.5)
-            plt.ylim(0, None)
-            plt.legend()
-            plt.grid(True)    
+#             # Plot the data and the regression line
+#             plt.figure(figsize=(8, 6))
+#             plt.scatter(x, y, color='blue', label='Data Points', alpha=0.7)
+#             plt.plot(x, y_pred, color='red', label='Best Fit Line', linewidth=2)
+#             plt.title(f"Linear Regression for {filename}")
+#             plt.xlabel("pSDB Values (unitless)")
+#             plt.ylabel("Reference Depths (m)")
+#             #plt.xlim(None, 1.5)
+#             plt.ylim(0, None)
+#             plt.legend()
+#             plt.grid(True)    
             
-            # Add R^2 and RMSE as text on the plot
-            plt.text(min_x, mean_y, f"$R^2$ = {r2:.4f}\nRMSE = {rmse:.4f}", fontsize=10, 
-                      bbox=dict(facecolor='white', alpha=0.5), ha='left')
-            plt.show
+#             # Add R^2 and RMSE as text on the plot
+#             plt.text(min_x, mean_y, f"$R^2$ = {r2:.4f}\nRMSE = {rmse:.4f}", fontsize=10, 
+#                       bbox=dict(facecolor='white', alpha=0.5), ha='left')
+#             #plt.show
 
-            # Generate and save the plot
-            plot_filename = f"{os.path.splitext(filename)[0]}_LR_plot.png"
-            plot_path = os.path.join(output_folder, plot_filename)
-            plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-            #plt.close()  # Close the plot to free memory
+#             # Generate and save the plot
+#             plot_filename = f"{os.path.splitext(filename)[0]}_LR_plot.png"
+#             plot_path = os.path.join(output_folder, plot_filename)
+#             plt.savefig(plot_path, dpi=300, bbox_inches='tight')
+#             #plt.close()  # Close the plot to free memory
 
-            print(f"Plot saved to {plot_path}")
-
-
-            # Convert the results into a DataFrame
-            results_df = pd.DataFrame(results)
-
-            # Generate the output file name
-            output_filename = f"{os.path.splitext(filename)[0]}_LR_stats.csv"
-            output_path = os.path.join(output_folder, output_filename)
+#             print(f"Plot saved to {plot_path}")
 
 
-            # Save the results to the output CSV file
-            results_df.to_csv(output_path, index=False)
-            print(f"Results saved to {output_path}")
+#             # Convert the results into a DataFrame
+#             results_df = pd.DataFrame(results)
+
+#             # Generate the output file name
+#             output_filename = f"{os.path.splitext(filename)[0]}_LR_stats.csv"
+#             output_path = os.path.join(output_folder, output_filename)
 
 
-      #################  CHECK DIRECTORIES/INPUTS #####################
-
-### Save Results Path ###
-#input_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Extracted Pts\pSDB"
-
-### Workspace Path ###
-input_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
+#             # Save the results to the output CSV file
+#             results_df.to_csv(output_path, index=False)
+#             print(f"Results saved to {output_path}")
 
 
-### Save Results Path ###
-#output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Figures\pSDB"
+#       #################  CHECK DIRECTORIES/INPUTS #####################
 
-### Workspace Path ###
-output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_Results"
+# ### Save Results Path ###
+# #input_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Extracted Pts\pSDB"
+
+# ### Workspace Path ###
+# input_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
 
 
-process_csv_files(input_folder, output_folder)
+# ### Save Results Path ###
+# #output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Homer\SuperDove\Figures\pSDB"
+
+# ### Workspace Path ###
+# output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_Results"
+
+
+# process_csv_files(input_folder, output_folder)
 
 
 ##############################################################################################################
 ##############################################################################################################
 
-### Better Optically Deep finder: Perform another linear regression but this time find the best line of fit 
-### with the highest R^2 value 
+"""Better Optically Deep finder: Perform another linear regression but this time find the best line of fit 
+   with the highest R^2 value """
 
 
 ### Save Results Path ###
@@ -934,6 +921,7 @@ for data_name_full_path in csv_files:
                     'R2 Value': R2_for_iteration, 'RMSE': rmse_for_iteration,
                     'Line of Best Fit': equation_for_iteration, 'm1': m_for_iteration, 'm0': b_for_iteration,
                     'Pt Count': num_points,
+                    'Indicator': 0 # Initialize Indicator to 0, will update later
                 })
         
         
@@ -1029,7 +1017,8 @@ for data_name_full_path in csv_files:
             # Check based on original_k_index or a combination of R2 and depth_limit
             is_same_as_peak = False
             if peak_R2_iteration_details is not None:
-                 if deepest_tolerable_iteration_details['original_k_index'] == peak_R2_iteration_details['original_k_index']:
+                 if deepest_tolerable_iteration_details['original_k_index'] == peak_R2_iteration_details['original_k_index'] and \
+                    np.isclose(deepest_tolerable_iteration_details['min_depth_regr_setting'], peak_R2_iteration_details['min_depth_regr_setting']):
                     is_same_as_peak = True
             
             if not is_same_as_peak:
@@ -1049,9 +1038,9 @@ for data_name_full_path in csv_files:
                     line_plots = ax.plot(x_segment, y_segment, color=color_deepest_tolerable, linewidth=2.0, linestyle='--', label=label)
                     if line_plots: deepest_tolerable_line_handle = line_plots[0]
             elif peak_R2_line_handle: # If same, update label of peak line to include this info or just let it be
-                 current_label = peak_R2_line_handle.get_label()
-                 peak_R2_line_handle.set_label(f"{current_label}\n(Also Deepest Tolerable)")
-                 print(f"INFO: Peak R2 line is also the Deepest Tolerable R2 line for {current_file_name_for_output}")
+                    current_label = peak_R2_line_handle.get_label()
+                    peak_R2_line_handle.set_label(f"{current_label}\n(Also Deepest Tolerable)")
+                    print(f"INFO: Peak R2 line is also the Deepest Tolerable R2 line for {current_file_name_for_output}")
 
 
         # --- Text Annotation for Highlighted Fits (on Plot) ---
@@ -1075,7 +1064,7 @@ for data_name_full_path in csv_files:
                 m_p, b_p = peak_R2_iteration_details['params'][0], peak_R2_iteration_details['params'][1]
                 eq_p = f"y = {m_p:.2f}x + {b_p:.2f}"
                 ann_text_peak = (f"Peak R² Fit\n"
-                                 f"Range: {depth_min_limit_regr:.2f}-{peak_R2_iteration_details['depth_limit']:.2f} m\n"
+                                 f"Range: {peak_R2_iteration_details['min_depth_regr_setting']:.2f}-{peak_R2_iteration_details['depth_limit']:.2f} m\n"
                                  f"{eq_p}\nR² = {peak_R2_iteration_details['R2']:.2f}, RMSE = {rmse_for_peak_R2_fit:.2f}")
                 ax.text(text_x_pos, text_y_base + annotation_y_offset, ann_text_peak, color='r', fontsize=8, fontweight='bold',
                         bbox=dict(facecolor='white', edgecolor='red', boxstyle='round,pad=0.3', alpha=0.8),
@@ -1085,12 +1074,13 @@ for data_name_full_path in csv_files:
         if deepest_tolerable_iteration_details is not None and \
            deepest_tolerable_iteration_details['params'] is not None and \
            (peak_R2_iteration_details is None or \
-            deepest_tolerable_iteration_details['original_k_index'] != peak_R2_iteration_details['original_k_index']): # Only if different
+            deepest_tolerable_iteration_details['original_k_index'] != peak_R2_iteration_details['original_k_index'] or \
+            not np.isclose(deepest_tolerable_iteration_details['min_depth_regr_setting'], peak_R2_iteration_details['min_depth_regr_setting'])): # Only if different
             if len(x_for_scatter) > 0: # x_for_scatter should exist if peak_R2 was found
                 m_d, b_d = deepest_tolerable_iteration_details['params'][0], deepest_tolerable_iteration_details['params'][1]
                 eq_d = f"y = {m_d:.2f}x + {b_d:.2f}"
-                ann_text_deep = (f"Deepest Tolerable R² Fit (within 10% of Peak)\n"
-                                 f"Range: {depth_min_limit_regr:.2f}-{deepest_tolerable_iteration_details['depth_limit']:.2f} m\n"
+                ann_text_deep = (f"Deepest Tolerable R² Fit (within 5% of Peak)\n"
+                                 f"Range: {deepest_tolerable_iteration_details['min_depth_regr_setting']:.2f}-{deepest_tolerable_iteration_details['depth_limit']:.2f} m\n"
                                  f"{eq_d}\nR² = {deepest_tolerable_iteration_details['R2']:.2f}, RMSE = {rmse_for_deepest_tolerable_fit:.2f}")
                 ax.text(text_x_pos, text_y_base + annotation_y_offset, ann_text_deep, color=color_deepest_tolerable, fontsize=8, fontweight='bold',
                         bbox=dict(facecolor='white', edgecolor=color_deepest_tolerable, boxstyle='round,pad=0.3', alpha=0.8),
@@ -1106,11 +1096,12 @@ for data_name_full_path in csv_files:
         if deepest_tolerable_line_handle: # Add only if it was plotted and is distinct
              # Check if it's truly a different handle than peak_R2_line_handle
             if peak_R2_line_handle is None or (deepest_tolerable_line_handle != peak_R2_line_handle):
-                 handles_for_legend.append(deepest_tolerable_line_handle)
+                handles_for_legend.append(deepest_tolerable_line_handle)
             elif peak_R2_line_handle and (deepest_tolerable_iteration_details is not None and peak_R2_iteration_details is not None and \
-                  deepest_tolerable_iteration_details['original_k_index'] == peak_R2_iteration_details['original_k_index']):
-                  # If they are the same and label was updated, we don't need a duplicate handle
-                  pass
+                 deepest_tolerable_iteration_details['original_k_index'] == peak_R2_iteration_details['original_k_index'] and \
+                 np.isclose(deepest_tolerable_iteration_details['min_depth_regr_setting'], peak_R2_iteration_details['min_depth_regr_setting'])):
+                 # If they are the same and label was updated, we don't need a duplicate handle
+                 pass
 
 
         if handles_for_legend:
@@ -1131,12 +1122,48 @@ for data_name_full_path in csv_files:
         if fig:
             plt.savefig(plot_save_path)
             print(f"Plot for {current_file_name_for_output} saved to: {plot_save_path}")
-            plt.show() # Keep for testing, comment out for batch
+            plt.show() 
             plt.close(fig)
 
         # --- Save Iteration Data for the Current File to its own CSV ---
         if current_file_iterations_data:
             file_summary_df = pd.DataFrame(current_file_iterations_data)
+
+            # --- Add Indicator Column Logic ---
+            # Set all to 0 initially as per initialization in current_file_iterations_data.append
+            # Then update based on conditions.
+            if peak_R2_iteration_details is not None:
+                # Find the row corresponding to the peak R^2 line and set Indicator to 1
+                peak_R2_mask = (file_summary_df['Min Depth Range'] == peak_R2_iteration_details['min_depth_regr_setting']) & \
+                               (file_summary_df['Max Depth Range'] == peak_R2_iteration_details['depth_limit']) & \
+                               (file_summary_df['R2 Value'] == peak_R2_iteration_details['R2'])
+                
+                # Check if peak_R2_iteration_details refers to a row in current_file_iterations_data before assigning
+                # This handles cases where positive_slope_results_df might be empty or peak_R2_iteration_details might be from a different source
+                if not peak_R2_mask.empty and peak_R2_mask.any():
+                    file_summary_df.loc[peak_R2_mask, 'Indicator'] = 1
+
+            if deepest_tolerable_iteration_details is not None:
+                # Find the row corresponding to the deepest tolerable R^2 line
+                deepest_tolerable_mask = (file_summary_df['Min Depth Range'] == deepest_tolerable_iteration_details['min_depth_regr_setting']) & \
+                                         (file_summary_df['Max Depth Range'] == deepest_tolerable_iteration_details['depth_limit']) & \
+                                         (file_summary_df['R2 Value'] == deepest_tolerable_iteration_details['R2'])
+                
+                # Check if deepest_tolerable_iteration_details refers to a row in current_file_iterations_data
+                if not deepest_tolerable_mask.empty and deepest_tolerable_mask.any():
+                    # Check if it's the same line as the peak R^2 line
+                    is_same_line = False
+                    if peak_R2_iteration_details is not None:
+                        is_same_line = (deepest_tolerable_iteration_details['original_k_index'] == peak_R2_iteration_details['original_k_index'] and \
+                                        np.isclose(deepest_tolerable_iteration_details['min_depth_regr_setting'], peak_R2_iteration_details['min_depth_regr_setting']))
+                    
+                    if is_same_line:
+                        # If only one regression line, mark as 2
+                        file_summary_df.loc[deepest_tolerable_mask, 'Indicator'] = 2
+                    else:
+                        # If different, mark as 2 (deepest tolerable)
+                        file_summary_df.loc[deepest_tolerable_mask, 'Indicator'] = 2
+
             output_csv_filename = f"{just_the_filename_for_output_csv}_LR_Stats_iterations.csv" # Slightly different name
             output_csv_save_path = os.path.join(output_save_folder_path, output_csv_filename)
             file_summary_df.to_csv(output_csv_save_path, index=False, float_format='%.4f')
@@ -1153,12 +1180,10 @@ for data_name_full_path in csv_files:
 print("\n--- All CSV files processed. ---")
 
 
-
 ###################################################################################################################################################
 ##################################################################################################################################################
 
-### Create SDB red and green with constants from linear regression ###
-
+"""Create SDB red and green with constants from linear regression"""
 
 def create_sdb_rasters(raster_folder, csv_folder, output_folder, nodata_value=-9999):
     """
@@ -1199,30 +1224,43 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, nodata_value=-9
                     
                     # Find the row in the CSV where the raster name matches
                     coeff_row = coefficients_df[coefficients_df['Image Name'].str.contains(base_raster_name, 
-                                                                                           case=False, na=False)].copy()
+                                                                                        case=False, na=False)].copy()
                     if not coeff_row.empty:
 
-                        # Ensure 'R2 Value' column is numeric and handle potential NaNs
-                        if 'R2 Value' in coeff_row.columns and \
+                        # Ensure 'Indicator', 'm1', and 'm0' columns are numeric and handle potential NaNs
+                        if 'Indicator' in coeff_row.columns and \
                            'm1' in coeff_row.columns and \
                            'm0' in coeff_row.columns:
                             
-                            coeff_row['R2 Value'] = pd.to_numeric(coeff_row['R2 Value'], errors='coerce')
-                            # Drop rows where R2 became NaN or m1/m0 are NaN
-                            coeff_row.dropna(subset=['R2 Value', 'm1', 'm0'], inplace=True)
+                            coeff_row['Indicator'] = pd.to_numeric(coeff_row['Indicator'], errors='coerce')
+                            # Drop rows where Indicator, m1, or m0 are NaN
+                            coeff_row.dropna(subset=['Indicator', 'm1', 'm0'], inplace=True)
                         else:
-                            print(f"  Error: Missing required columns ('R2 Value', 'm1', or 'm0') in CSV data for {base_raster_name}. Skipping.")
+                            print(f"  Error: Missing required columns ('Indicator', 'm1', or 'm0') in CSV data for {base_raster_name}. Skipping.")
                             coeff_row = pd.DataFrame() # Make it empty so next check fails
 
                         if not coeff_row.empty:
-                            # Find the single row with the highest 'R2 Value'
-                            best_R2_row = coeff_row.loc[coeff_row['R2 Value'].idxmax()]
+                            # --- MODIFIED LINE START ---
+                            # Find rows where 'Indicator' is 2
+                            indicator_2_rows = coeff_row[coeff_row['Indicator'] == 2]
+
+                            if not indicator_2_rows.empty:
+                                # If multiple rows have Indicator = 2, choose the one with the highest R2 (or any other tie-breaker)
+                                # For now, let's assume if there are multiple '2's, taking the first is acceptable, or you could add a tie-breaker.
+                                # If you want to tie-break by highest R^2 among Indicator 2 rows:
+                                # best_fit_row = indicator_2_rows.loc[indicator_2_rows['R2 Value'].idxmax()]
+                                # Otherwise, just take the first one if there are multiple:
+                                best_fit_row = indicator_2_rows.iloc[0] 
+                            else:
+                                print(f"  No row with 'Indicator' = 2 found for {base_raster_name} in {csv_file}. Skipping raster.")
+                                continue # Skip to the next raster_name in the outer loop
+                            # --- MODIFIED LINE END ---
                             
-                            m1 = best_R2_row['m1']
-                            m0 = best_R2_row['m0']
+                            m1 = best_fit_row['m1']
+                            m0 = best_fit_row['m0']
 
                         else:
-                            print(f" No valid rows with R2, m1, m0 found after filtering for {base_raster_name} in {csv_file}. Skipping raster.")
+                            print(f" No valid rows with Indicator, m1, m0 found after filtering for {base_raster_name} in {csv_file}. Skipping raster.")
                             continue # Skip to the next raster_name in the outer loop
 
                         
@@ -1294,15 +1332,13 @@ csv_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results"
 output_folder = r"E:\Thesis Stuff\SDB"
 
 
-
-
 create_sdb_rasters(raster_folder, csv_folder, output_folder)
 
 
 ##############################################################################
 ##############################################################################
 
-### Merge SDB red and green together ###
+"""Merge SDB red and green together"""
 
 
 def create_sdb_raster(sdb_red, sdb_green):
@@ -1411,6 +1447,7 @@ process_sdb_folder(input_folder)
 
 
 """Processes all matching SDBred and SDBgreen rasters in a folder, merging only if R² ≥ threshold."""
+
 # def process_sdb_folder(input_folder, csv_folder, r2_threshold=0.7):
 
 
@@ -1479,7 +1516,39 @@ process_sdb_folder(input_folder)
 ##############################################################################################################
 ##############################################################################################################
 
-### Extract SDB values at reference point locations ###
+"""Mask ODW with red-edge band"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##############################################################################################################
+##############################################################################################################
+
+"""Extract SDB values at reference point locations"""
 
 
 def extract_raster_values(val_csv_file, raster_folder, output_folder):
@@ -1569,7 +1638,7 @@ extract_raster_values(val_csv_file, raster_folder, output_folder)
 ##############################################################################################################
 ##############################################################################################################
 
-### Perform linear regressions between SDB and other reference data for accuracy ###
+"""Perform linear regressions between SDB and other reference data for accuracy"""
 
 
 def process_csv_files(input_folder, output_folder):
@@ -1706,22 +1775,6 @@ output_folder = r"E:\Thesis Stuff\SDB_ExtractedPts_Results"
 
 
 process_csv_files(input_folder, output_folder)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

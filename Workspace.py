@@ -194,79 +194,231 @@ import re
 
 """Takes ICESat files from Slide Rule and prepares them for SDB_Time (Changes to UTM, reorganizes)"""
 
+# import os
+# import pandas as pd
+# from pyproj import CRS, Transformer
+# from glob import glob
+# from difflib import get_close_matches
+
+# def process_and_transform_csvs(input_folder, 
+#                                 epsg_csv_path, # This argument needs to be here
+#                                 lat_col_in='lat_ph', lon_col_in='lon_ph', ortho_col_in='ortho_h',
+#                                 new_northing_col='Northing', new_easting_col='Easting', new_ortho_col='Geoid_Corrected_Ortho_Height',
+#                                 epsg_aoi_col='Name', epsg_code_col='EPSG code',
+#                                 new_file_suffix='_processed'): # New parameter for suffix
+   
+#     print("--- Starting CSV Processing and Transformation ---")
+#     print(f"Input/Output Folder: {input_folder}")
+#     print(f"EPSG CSV Path: {epsg_csv_path}")
+
+#     if not os.path.exists(input_folder):
+#         print(f"Error: Input folder not found: {input_folder}")
+#         return
+
+#     if not os.path.exists(epsg_csv_path):
+#         print(f"Error: EPSG codes CSV file not found: {epsg_csv_path}")
+#         return
+
+#     try:
+#         epsg_df = pd.read_csv(epsg_csv_path)
+#         if epsg_aoi_col not in epsg_df.columns or epsg_code_col not in epsg_df.columns:
+#             print(f"Error: EPSG CSV must contain '{epsg_aoi_col}' and '{epsg_code_col}' columns.")
+#             return
+        
+#         epsg_map_full_names = epsg_df.set_index(epsg_aoi_col)[epsg_code_col].to_dict()
+        
+#         print(f"Loaded {len(epsg_map_full_names)} EPSG codes from {epsg_csv_path}")
+
+#         simplified_epsg_names_for_matching = {}
+#         for full_name_key in epsg_map_full_names.keys():
+#             simplified_name_base = full_name_key.split('_ATL03_')[0] 
+#             temp_name = simplified_name_base.replace('_', ' ').replace('-', ' ').strip()
+#             words = [word for word in temp_name.split(' ') if word]
+
+#             clean_for_matching_candidate = ""
+            
+#             if words:
+#                 clean_for_matching_candidate = words[0]
+
+#             if len(words) > 1 and len(words[1]) > 1:
+#                 two_word_candidate = f"{words[0]} {words[1]}"
+#                 if 'portoscuso' in two_word_candidate.lower() or 'spigolo' in two_word_candidate.lower() \
+#                    or 'fuerteventura' in two_word_candidate.lower() or 'norway' in two_word_candidate.lower():
+#                     clean_for_matching_candidate = two_word_candidate
+            
+#             if "North_Fuerteventura" in full_name_key:
+#                 clean_for_matching_candidate = "NorthFeut"
+#             elif "St_Catherines_Bay" in full_name_key:
+#                 clean_for_matching_candidate = "St Catherines"
+#             elif "Bum_Bum_Island" in full_name_key:
+#                  clean_for_matching_candidate = "Bum Bum"
+
+#             if clean_for_matching_candidate:
+#                  simplified_epsg_names_for_matching[clean_for_matching_candidate] = full_name_key 
+#             else:
+#                  print(f"Warning: Could not simplify EPSG name '{full_name_key}'. Skipping for matching.")
+#                  continue
+            
+#         print(f"First 5 Simplified EPSG Names for Matching (Keys): {list(simplified_epsg_names_for_matching.keys())[:5]}")
+#         print(f"First 5 Original Full EPSG Map Keys: {list(epsg_map_full_names.keys())[:5]}")
+
+#     except Exception as e:
+#         print(f"Error loading EPSG codes CSV: {e}")
+#         return
+
+#     csv_files = glob(os.path.join(input_folder, "*.csv"))
+
+#     if not csv_files:
+#         print(f"No CSV files found in: {input_folder}")
+#         return
+
+#     print(f"Found {len(csv_files)} CSV files to process.")
+
+#     crs_wgs84 = CRS("EPSG:4326") 
+
+#     matching_cutoff = 0.5 
+
+#     for file_path in csv_files:
+#         file_name = os.path.basename(file_path)
+#         print(f"\n--- Processing file: {file_name} ---")
+
+#         aoi_name_from_file = os.path.splitext(file_name)[0]
+        
+#         if aoi_name_from_file.lower().endswith('_sr_cal'):
+#             aoi_name_from_file = aoi_name_from_file[:-7]
+#         elif aoi_name_from_file.lower().endswith('_sr_acc'):
+#             aoi_name_from_file = aoi_name_from_file[:-7]
+#         elif aoi_name_from_file.lower().endswith('_sr'):
+#             aoi_name_from_file = aoi_name_from_file[:-3]
+        
+#         aoi_name_for_match_normalized = aoi_name_from_file.replace('_', ' ').strip()
+        
+#         print(f"  Cleaned input filename AOI for matching: '{aoi_name_from_file}' (Normalized for match: '{aoi_name_for_match_normalized}')")
+
+#         target_epsg_code = None
+        
+#         if aoi_name_for_match_normalized in simplified_epsg_names_for_matching:
+#             best_match_original_full_key = simplified_epsg_names_for_matching[aoi_name_for_match_normalized]
+#             target_epsg_code = epsg_map_full_names[best_match_original_full_key]
+#             print(f"  Directly matched normalized file AOI to simplified EPSG name: '{aoi_name_for_match_normalized}' -> '{best_match_original_full_key}'. Code: {target_epsg_code}.")
+#         else:
+#             fuzzy_matches = get_close_matches(aoi_name_for_match_normalized, 
+#                                               list(simplified_epsg_names_for_matching.keys()), 
+#                                               n=1, cutoff=matching_cutoff)
+            
+#             if fuzzy_matches:
+#                 simplified_matched_key = fuzzy_matches[0]
+#                 best_match_original_full_key = simplified_epsg_names_for_matching[simplified_matched_key]
+#                 target_epsg_code = epsg_map_full_names[best_match_original_full_key]
+#                 print(f"  Fuzzy matched normalized input AOI '{aoi_name_for_match_normalized}' to simplified EPSG name '{simplified_matched_key}' (Original full: '{best_match_original_full_key}'). Code: {target_epsg_code}.")
+#             else:
+#                 print(f"  Warning: No close matching EPSG code found for AOI '{aoi_name_from_file}' (normalized: '{aoi_name_for_match_normalized}') in {file_name} with cutoff {matching_cutoff}. Skipping.")
+#                 continue 
+        
+#         try:
+#             target_epsg_code = int(target_epsg_code)
+#             crs_utm = CRS(f"EPSG:{target_epsg_code}")
+#             transformer = Transformer.from_crs(crs_wgs84, crs_utm, always_xy=True)
+#         except Exception as e:
+#             print(f"  Error: Invalid EPSG code '{target_epsg_code}' for {aoi_name_from_file}. Skipping {file_name}. Error: {e}")
+#             continue
+
+#         try:
+#             df = pd.read_csv(file_path)
+
+#             # This is the line that was problematic in your error message!
+#             # Ensure these are the actual column names from your input CSVs.
+#             required_input_cols = [lon_col_in, lat_col_in, ortho_col_in] 
+#             if not all(col in df.columns for col in required_input_cols):
+#                 print(f"  Error: Missing one or more required input columns ({required_input_cols}) in {file_name}. Skipping.")
+#                 print(f"  Available columns in {file_name}: {df.columns.tolist()}") # Add this to debug available columns
+#                 continue
+
+#             easting, northing = transformer.transform(df[lon_col_in].values, df[lat_col_in].values)
+            
+#             df[lon_col_in] = easting
+#             df[lat_col_in] = northing
+
+#             print(f"  Coordinates in '{lon_col_in}' and '{lat_col_in}' transformed to UTM (EPSG:{target_epsg_code}).")
+
+#             # --- RENAME COLUMNS ---
+#             df = df.rename(columns={lon_col_in: new_easting_col, 
+#                                     lat_col_in: new_northing_col, 
+#                                     ortho_col_in: new_ortho_col})
+#             print(f"  Columns renamed: '{lon_col_in}' to '{new_easting_col}', '{lat_col_in}' to '{new_northing_col}', '{ortho_col_in}' to '{new_ortho_col}'.")
+
+#             # --- REORGANIZE COLUMNS ---
+#             fixed_order_cols = [new_easting_col, new_northing_col, new_ortho_col]
+#             other_cols = [col for col in df.columns if col not in fixed_order_cols]
+#             new_column_order = fixed_order_cols + other_cols
+#             df = df[new_column_order]
+#             print(f"  Columns reordered with {fixed_order_cols} placed first.")
+
+#             # --- GENERATE NEW FILENAME ---
+#             base_name, ext = os.path.splitext(file_name)
+#             new_file_name = f"{base_name}{new_file_suffix}{ext}"
+#             output_file_path = os.path.join(input_folder, new_file_name)
+
+#             # Save to the new file
+#             df.to_csv(output_file_path, index=False)
+#             print(f"  Processed and saved to new file: {output_file_path}")
+
+#         except Exception as e:
+#             print(f"  Error processing {file_name}: {e}")
+#             continue
+
+#     print("\n--- All specified CSV files processed. ---")
+
+# # --- Example Usage ---
+# # Define your input folder (which will also be the output folder)
+# # and the path to your EPSG codes CSV.
+# input_folder = r"B:\Thesis Project\Reference Data\SlideRule_ICESat" # Replace with your actual input folder path
+# epsg_csv_path = r"B:\Thesis Project\Reference Data\Refraction Correction\UTM_epsg_codes.csv" # Replace with your actual EPSG codes CSV path
+
+# # Call the function to process your files
+# process_and_transform_csvs(
+#     input_folder,
+#     epsg_csv_path,
+#     # You can customize input/output column names and the new file suffix here:
+#     # lat_col_in='Original_Latitude', 
+#     # lon_col_in='Original_Longitude', 
+#     # ortho_col_in='Original_Height',
+#     # new_northing_col='UTM_Northing', 
+#     # new_easting_col='UTM_Easting', 
+#     # new_ortho_col='Adjusted_Height',
+#     # new_file_suffix='_UTM' # Example: Anegada_sr_UTM.csv
+# )
+
+
+
+#################################################################################################################
+#################################################################################################################
+
 import os
 import pandas as pd
-from pyproj import CRS, Transformer
-from glob import glob
-from difflib import get_close_matches
+import glob
 
-def process_and_transform_csvs(input_folder, 
-                                epsg_csv_path, # This argument needs to be here
-                                lat_col_in='lat_ph', lon_col_in='lon_ph', ortho_col_in='ortho_h',
-                                new_northing_col='Northing', new_easting_col='Easting', new_ortho_col='Geoid_Corrected_Ortho_Height',
-                                epsg_aoi_col='Name', epsg_code_col='EPSG code',
-                                new_file_suffix='_processed'): # New parameter for suffix
-   
-    print("--- Starting CSV Processing and Transformation ---")
-    print(f"Input/Output Folder: {input_folder}")
-    print(f"EPSG CSV Path: {epsg_csv_path}")
+def filter_csv_columns(input_folder, output_folder, columns_to_keep):
+    """
+    Reads CSV files from an input folder, keeps only specified columns,
+    and saves the modified CSVs to an output folder.
 
-    if not os.path.exists(input_folder):
+    Args:
+        input_folder (str): Path to the folder containing the input CSV files.
+        output_folder (str): Path to the folder where processed CSV files will be saved.
+        columns_to_keep (list): A list of column names to keep.
+    """
+    if not os.path.exists(input_folder): # Checks input_folder
         print(f"Error: Input folder not found: {input_folder}")
         return
 
-    if not os.path.exists(epsg_csv_path):
-        print(f"Error: EPSG codes CSV file not found: {epsg_csv_path}")
-        return
+    # If input_folder and output_folder are the same, this check is fine.
+    # The folder will already exist. If it's a new output_folder, it will be created.
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+        print(f"Created output folder: {output_folder}")
 
-    try:
-        epsg_df = pd.read_csv(epsg_csv_path)
-        if epsg_aoi_col not in epsg_df.columns or epsg_code_col not in epsg_df.columns:
-            print(f"Error: EPSG CSV must contain '{epsg_aoi_col}' and '{epsg_code_col}' columns.")
-            return
-        
-        epsg_map_full_names = epsg_df.set_index(epsg_aoi_col)[epsg_code_col].to_dict()
-        
-        print(f"Loaded {len(epsg_map_full_names)} EPSG codes from {epsg_csv_path}")
-
-        simplified_epsg_names_for_matching = {}
-        for full_name_key in epsg_map_full_names.keys():
-            simplified_name_base = full_name_key.split('_ATL03_')[0] 
-            temp_name = simplified_name_base.replace('_', ' ').replace('-', ' ').strip()
-            words = [word for word in temp_name.split(' ') if word]
-
-            clean_for_matching_candidate = ""
-            
-            if words:
-                clean_for_matching_candidate = words[0]
-
-            if len(words) > 1 and len(words[1]) > 1:
-                two_word_candidate = f"{words[0]} {words[1]}"
-                if 'portoscuso' in two_word_candidate.lower() or 'spigolo' in two_word_candidate.lower() \
-                   or 'fuerteventura' in two_word_candidate.lower() or 'norway' in two_word_candidate.lower():
-                    clean_for_matching_candidate = two_word_candidate
-            
-            if "North_Fuerteventura" in full_name_key:
-                clean_for_matching_candidate = "NorthFeut"
-            elif "St_Catherines_Bay" in full_name_key:
-                clean_for_matching_candidate = "St Catherines"
-            elif "Bum_Bum_Island" in full_name_key:
-                 clean_for_matching_candidate = "Bum Bum"
-
-            if clean_for_matching_candidate:
-                 simplified_epsg_names_for_matching[clean_for_matching_candidate] = full_name_key 
-            else:
-                 print(f"Warning: Could not simplify EPSG name '{full_name_key}'. Skipping for matching.")
-                 continue
-            
-        print(f"First 5 Simplified EPSG Names for Matching (Keys): {list(simplified_epsg_names_for_matching.keys())[:5]}")
-        print(f"First 5 Original Full EPSG Map Keys: {list(epsg_map_full_names.keys())[:5]}")
-
-    except Exception as e:
-        print(f"Error loading EPSG codes CSV: {e}")
-        return
-
-    csv_files = glob(os.path.join(input_folder, "*.csv"))
+    csv_files = glob.glob(os.path.join(input_folder, "*.csv"))
 
     if not csv_files:
         print(f"No CSV files found in: {input_folder}")
@@ -274,128 +426,72 @@ def process_and_transform_csvs(input_folder,
 
     print(f"Found {len(csv_files)} CSV files to process.")
 
-    crs_wgs84 = CRS("EPSG:4326") 
-
-    matching_cutoff = 0.5 
-
     for file_path in csv_files:
         file_name = os.path.basename(file_path)
         print(f"\n--- Processing file: {file_name} ---")
 
-        aoi_name_from_file = os.path.splitext(file_name)[0]
-        
-        if aoi_name_from_file.lower().endswith('_sr_cal'):
-            aoi_name_from_file = aoi_name_from_file[:-7]
-        elif aoi_name_from_file.lower().endswith('_sr_acc'):
-            aoi_name_from_file = aoi_name_from_file[:-7]
-        elif aoi_name_from_file.lower().endswith('_sr'):
-            aoi_name_from_file = aoi_name_from_file[:-3]
-        
-        aoi_name_for_match_normalized = aoi_name_from_file.replace('_', ' ').strip()
-        
-        print(f"  Cleaned input filename AOI for matching: '{aoi_name_from_file}' (Normalized for match: '{aoi_name_for_match_normalized}')")
-
-        target_epsg_code = None
-        
-        if aoi_name_for_match_normalized in simplified_epsg_names_for_matching:
-            best_match_original_full_key = simplified_epsg_names_for_matching[aoi_name_for_match_normalized]
-            target_epsg_code = epsg_map_full_names[best_match_original_full_key]
-            print(f"  Directly matched normalized file AOI to simplified EPSG name: '{aoi_name_for_match_normalized}' -> '{best_match_original_full_key}'. Code: {target_epsg_code}.")
-        else:
-            fuzzy_matches = get_close_matches(aoi_name_for_match_normalized, 
-                                              list(simplified_epsg_names_for_matching.keys()), 
-                                              n=1, cutoff=matching_cutoff)
-            
-            if fuzzy_matches:
-                simplified_matched_key = fuzzy_matches[0]
-                best_match_original_full_key = simplified_epsg_names_for_matching[simplified_matched_key]
-                target_epsg_code = epsg_map_full_names[best_match_original_full_key]
-                print(f"  Fuzzy matched normalized input AOI '{aoi_name_for_match_normalized}' to simplified EPSG name '{simplified_matched_key}' (Original full: '{best_match_original_full_key}'). Code: {target_epsg_code}.")
-            else:
-                print(f"  Warning: No close matching EPSG code found for AOI '{aoi_name_from_file}' (normalized: '{aoi_name_for_match_normalized}') in {file_name} with cutoff {matching_cutoff}. Skipping.")
-                continue 
-        
-        try:
-            target_epsg_code = int(target_epsg_code)
-            crs_utm = CRS(f"EPSG:{target_epsg_code}")
-            transformer = Transformer.from_crs(crs_wgs84, crs_utm, always_xy=True)
-        except Exception as e:
-            print(f"  Error: Invalid EPSG code '{target_epsg_code}' for {aoi_name_from_file}. Skipping {file_name}. Error: {e}")
+        # Avoid re-processing already filtered files if script is run multiple times
+        if file_name.endswith("_filtered.csv"):
+            print(f"  Skipping already filtered file: {file_name}")
             continue
 
         try:
             df = pd.read_csv(file_path)
+            print(f"  Original columns: {df.columns.tolist()}")
 
-            # This is the line that was problematic in your error message!
-            # Ensure these are the actual column names from your input CSVs.
-            required_input_cols = [lon_col_in, lat_col_in, ortho_col_in] 
-            if not all(col in df.columns for col in required_input_cols):
-                print(f"  Error: Missing one or more required input columns ({required_input_cols}) in {file_name}. Skipping.")
-                print(f"  Available columns in {file_name}: {df.columns.tolist()}") # Add this to debug available columns
+            existing_cols_to_keep = [col for col in columns_to_keep if col in df.columns]
+
+            if not existing_cols_to_keep:
+                print(f"  Warning: None of the specified columns to keep {columns_to_keep} were found in {file_name}. Skipping file.")
                 continue
-
-            easting, northing = transformer.transform(df[lon_col_in].values, df[lat_col_in].values)
             
-            df[lon_col_in] = easting
-            df[lat_col_in] = northing
+            # Check if all desired columns are already the only columns
+            if len(existing_cols_to_keep) == len(df.columns) and all(col in df.columns for col in existing_cols_to_keep):
+                print(f"  File {file_name} already contains only the specified columns. No changes needed, but saving with new name for consistency if output differs from input or to mark as processed.")
+                # Decide if you still want to save a copy with "_filtered.csv" 
+                # or skip saving entirely in this case. For now, it will save a copy.
 
-            print(f"  Coordinates in '{lon_col_in}' and '{lat_col_in}' transformed to UTM (EPSG:{target_epsg_code}).")
+            df_filtered = df[existing_cols_to_keep]
+            print(f"  Columns kept: {df_filtered.columns.tolist()}")
 
-            # --- RENAME COLUMNS ---
-            df = df.rename(columns={lon_col_in: new_easting_col, 
-                                    lat_col_in: new_northing_col, 
-                                    ortho_col_in: new_ortho_col})
-            print(f"  Columns renamed: '{lon_col_in}' to '{new_easting_col}', '{lat_col_in}' to '{new_northing_col}', '{ortho_col_in}' to '{new_ortho_col}'.")
+            output_file_name = f"{os.path.splitext(file_name)[0]}_filtered.csv"
+            output_file_path = os.path.join(output_folder, output_file_name)
 
-            # --- REORGANIZE COLUMNS ---
-            fixed_order_cols = [new_easting_col, new_northing_col, new_ortho_col]
-            other_cols = [col for col in df.columns if col not in fixed_order_cols]
-            new_column_order = fixed_order_cols + other_cols
-            df = df[new_column_order]
-            print(f"  Columns reordered with {fixed_order_cols} placed first.")
+            # Safety check if input and output filenames become identical
+            # This shouldn't happen with "_filtered.csv" suffix unless original already had it
+            if os.path.abspath(file_path) == os.path.abspath(output_file_path):
+                print(f"  Warning: Input and output file paths are identical ('{output_file_path}').") 
+                # Add further logic here if you want to prevent this, e.g., by adding another suffix
+                # or by having a separate output folder as originally designed.
+                # For now, it will overwrite if the names somehow became identical.
+                # However, the "_filtered.csv" suffix should prevent this.
 
-            # --- GENERATE NEW FILENAME ---
-            base_name, ext = os.path.splitext(file_name)
-            new_file_name = f"{base_name}{new_file_suffix}{ext}"
-            output_file_path = os.path.join(input_folder, new_file_name)
+            df_filtered.to_csv(output_file_path, index=False)
+            print(f"  Saved filtered file to: {output_file_path}")
 
-            # Save to the new file
-            df.to_csv(output_file_path, index=False)
-            print(f"  Processed and saved to new file: {output_file_path}")
-
+        except pd.errors.EmptyDataError:
+            print(f"  Warning: File {file_name} is empty. Skipping.")
         except Exception as e:
             print(f"  Error processing {file_name}: {e}")
-            continue
 
-    print("\n--- All specified CSV files processed. ---")
+    print("\n--- All CSV files processed. ---")
 
-# --- Example Usage ---
-# Define your input folder (which will also be the output folder)
-# and the path to your EPSG codes CSV.
-input_folder = r"B:\Thesis Project\Reference Data\SlideRule_ICESat" # Replace with your actual input folder path
-epsg_csv_path = r"B:\Thesis Project\Reference Data\Refraction Correction\UTM_epsg_codes.csv" # Replace with your actual EPSG codes CSV path
-
-# Call the function to process your files
-process_and_transform_csvs(
-    input_folder,
-    epsg_csv_path,
-    # You can customize input/output column names and the new file suffix here:
-    # lat_col_in='Original_Latitude', 
-    # lon_col_in='Original_Longitude', 
-    # ortho_col_in='Original_Height',
-    # new_northing_col='UTM_Northing', 
-    # new_easting_col='UTM_Easting', 
-    # new_ortho_col='Adjusted_Height',
-    # new_file_suffix='_UTM' # Example: Anegada_sr_UTM.csv
-)
+# --- Configuration ---
+# Specify the folder containing your input CSV files AND where outputs will go
+shared_folder_path = r"B:\Thesis Project\Reference Data\Processed_ICESat" # <--- !!! REPLACE THIS !!!
 
 
+# Define the exact column names you want to keep
+columns_to_keep = ["Easting", "Northing", "Geoid_Corrected_Ortho_Height"]
 
 
-
-
-
-
+# --- Run the script ---
+if __name__ == "__main__":
+    if shared_folder_path != r"B:\Thesis Project\Reference Data\Processed_ICESat":
+        print("Please update 'shared_folder_path' variable with your actual path.")
+    else:
+        # Pass the same path for both input and output
+        filter_csv_columns(shared_folder_path, shared_folder_path, columns_to_keep)
 
 
 

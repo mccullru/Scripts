@@ -138,10 +138,10 @@ which corresponds to a depth range so points are stratified.
 
 
 % % Define the input folder containing the CSV files
-% inputFolder = "E:\Thesis Stuff\ReferenceData\Topobathy";  % Change to your folder path
+% inputFolder = "E:\Thesis Stuff\ReferenceData\Topobathy";  
 % 
 % % Define the output folder
-% outputFolder = "E:\Thesis Stuff\ReferenceData\Topobathy";  % Change to your desired output folder path
+% outputFolder = "E:\Thesis Stuff\ReferenceData\Topobathy";  
 % 
 % % Get list of all CSV files in the folder
 % fileList = dir(fullfile(inputFolder, '*.csv'));
@@ -200,105 +200,231 @@ which corresponds to a depth range so points are stratified.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 % Folder path containing LAS files
-lasFolder = "B:\Thesis Project\Reference Data\test_topo";  
+lasFolder = "B:\Thesis Project\Reference Data\Full_topo_data\Marathon, Florida\ITRF_EGM\las\2019";
+
+
+% Define Rectangular AOI Bounding Box
+% !!! REPLACE THESE VALUES WITH YOUR ACTUAL EXTENT COORDINATES !!!
+ 
+
+% These coordinates MUST be in the same projected CRS as your LAS files.
+% % Homer
+% xmin_aoi = 576083; % Replace with your minimum Easting/X
+% xmax_aoi = 585176; % Replace with your maximum Easting/X
+% ymin_aoi = 6610194; % Replace with your minimum Northing/Y
+% ymax_aoi = 6613556; % Replace with your maximum Northing/Y      
+
+% Marathon
+xmin_aoi = 492987; % Replace with your minimum Easting/X
+xmax_aoi = 496807; % Replace with your maximum Easting/X
+ymin_aoi = 2730923; % Replace with your minimum Northing/Y
+ymax_aoi = 2734593; % Replace with your maximum Northing/Y
+    
+
+% % Hyannis
+% xmin_aoi = 390098; % Replace with your minimum Easting/X
+% xmax_aoi = 395013; % Replace with your maximum Easting/X
+% ymin_aoi = 4606601; % Replace with your minimum Northing/Y
+% ymax_aoi = 4610135; % Replace with your maximum Northing/Y
+
+% Define the ROI for readPointCloud [xmin xmax ymin ymax zmin zmax]
+% Use -Inf Inf for Z unless you also want to filter by elevation/depth
+roi = [xmin_aoi xmax_aoi ymin_aoi ymax_aoi -Inf Inf];
+disp('Using manually defined rectangular AOI for filtering.');
+disp(['  Xmin: ', num2str(xmin_aoi), ', Xmax: ', num2str(xmax_aoi)]);
+disp(['  Ymin: ', num2str(ymin_aoi), ', Ymax: ', num2str(ymax_aoi)]);
+
 
 % Get list of all LAS files in the folder
 lasFiles = dir(fullfile(lasFolder, '*.las'));
+if isempty(lasFiles)
+    error('No LAS files found in the specified folder: %s', lasFolder);
+end
 
-% Initialize an empty list to store all XYZ points
+numLasFiles = length(lasFiles); 
+
+fprintf('Found %d LAS files in %s\n', length(lasFiles), lasFolder);
+
+% Initialize an empty list to store all XYZ points *within the AOI*
 allXYZ = [];
 
 % Parameters
-numBins = 10;  % Number of depth bins
-voxelSize = 50; % Voxel grid size in meters
-splitRatio = 0.7;  % 70% calibration
+numBins = 10;       % Number of depth bins
+cellSize = 10;     % 2D grid cell size in meters
+splitRatio = 0.7;   % 70% calibration
 
-% Loop through each LAS file and concatenate all data
+% Loop through each LAS file and concatenate data *within ROI*
+disp('Reading LAS files and filtering points by ROI...');
+point_count_total = 0; % Optional: Count total points read before filter
+point_count_aoi = 0;
+
+% Initialize waitbar for LAS file processing
+h_las_waitbar = waitbar(0, 'Processing LAS files... Please wait...');
+
+
 for i = 1:length(lasFiles)
     
-    % Full path to the current LAS file
-    lasFile = fullfile(lasFolder, lasFiles(i).name);
+    % Update waitbar for LAS file processing
+    waitbar(i/numLasFiles, h_las_waitbar, sprintf('Processing LAS file: %d/%d (%s)', i, numLasFiles, lasFiles(i).name));
 
-    % Read LAS file
-    reader = lasFileReader(lasFile);
-    ptCloud = readPointCloud(reader);
-    xyz = ptCloud.Location;  % Nx3 matrix: X, Y, Z
+    
+    lasFile = fullfile(lasFiles(i).folder, lasFiles(i).name);
+    fprintf('Processing: %s\n', lasFiles(i).name);
+    try
+        reader = lasFileReader(lasFile);
+        % Read only points within the defined ROI
+        ptCloud = readPointCloud(reader, 'ROI', roi);
 
-    % Concatenate the XYZ data from this file to the combined dataset
-    allXYZ = [allXYZ; xyz];
-end
+        point_count_total = point_count_total + reader.Count; % Count points in original file
 
-% Check if allXYZ is populated
+        % Check if any points were found within the ROI for this file
+        if ptCloud.Count > 0
+            xyz = ptCloud.Location;  % Nx3 matrix: X, Y, Z (already filtered by ROI)
+            allXYZ = [allXYZ; xyz];  % Concatenate filtered points
+            points_added = ptCloud.Count;
+            point_count_aoi = point_count_aoi + points_added;
+            fprintf('  Added %d points from this file (within ROI).\n', points_added);
+        % else % Optional message if file is completely outside ROI
+             % fprintf('  No points found within ROI in this file.\n');
+        end
+    catch ME
+        fprintf('  Error reading or processing file %s: %s\n', lasFiles(i).name, ME.message);
+    end
+end 
+
+% Close the LAS processing waitbar
+close(h_las_waitbar);
+
+
+% Check if any data was loaded after ROI filtering ---
 if isempty(allXYZ)
-    error('No data was successfully read from the LAS files. Exiting.');
+    error('No data points were found within the specified ROI in any of the processed LAS files.');
 end
+fprintf('\nTotal points read from all files (approx): %d\n', point_count_total); % Note: reader.Count might be approximate before full read
+fprintf('Total points within specified ROI: %d\n', point_count_aoi);
 
-% Extract coordinates from all combined data
+
+% --- Extract X, Y, Z (These are now points ONLY within the AOI) ---
 X = allXYZ(:,1);
 Y = allXYZ(:,2);
-Z = allXYZ(:,3);  % Assume Z is bathymetric depth (positive or negative)
+Z = allXYZ(:,3);
 
-% Stratify by depth across the combined dataset
-[~, binEdges] = histcounts(Z, numBins);
-binIdx = discretize(Z, binEdges);  % Bin index for each point
+% --- 2D Grid-Based Downsampling (Applied only to points within AOI) ---
+disp('Performing 2D grid-based downsampling...');
+% Compute min bounds based on filtered data
+minX = min(X);
+minY = min(Y);
 
-% Initialize outputs
+% Convert coordinates to grid indices
+rowIdx = floor((X - minX) / cellSize) + 1;
+colIdx = floor((Y - minY) / cellSize) + 1;
+gridIDs = rowIdx + 1i * colIdx;  % Complex numbers as unique IDs
+
+% Unique cells
+uniqueCells = unique(gridIDs);
+numUniqueCells = length(uniqueCells);
+downsampledXYZ = zeros(numUniqueCells, 3); % Preallocate
+
+% Initialize waitbar for downsampling ---
+h_downsample_waitbar = waitbar(0, 'Downsampling points per grid cell... Please wait...');
+
+
+
+% Pick 1 random point per 2D cell
+for j = 1:numUniqueCells
+    
+    % Update waitbar for downsampling 
+    if mod(j, 100) == 0 || j == numUniqueCells % Update every 100 cells or on the last cell
+        waitbar(j/numUniqueCells, h_downsample_waitbar, sprintf('Downsampling cell: %d/%d', j, numUniqueCells));
+    end
+    
+    cellPointsIdx = find(gridIDs == uniqueCells(j));
+    randIdx = cellPointsIdx(randi(length(cellPointsIdx)));
+    downsampledXYZ(j, :) = allXYZ(randIdx, :);
+end
+fprintf('Downsampled to %d points (one per %d x %d m cell within AOI).\n', size(downsampledXYZ, 1), cellSize, cellSize);
+
+% Close the downsampling waitbar
+close(h_downsample_waitbar);
+
+% --- Stratify by depth bins and split (Applied to downsampled AOI points) ---
+disp('Stratifying downsampled points by depth and splitting...');
+Z_down = downsampledXYZ(:,3);
+valid_Z_down = Z_down(isfinite(Z_down)); % Use only finite values for binning
+if isempty(valid_Z_down), error('No valid finite depth values after downsampling.'); end
+
+% Calculate bins based on the range of valid downsampled depths
+[~, binEdges] = histcounts(valid_Z_down, numBins);
+
+% Ensure edges cover the full range
+if length(binEdges) > 1
+    binEdges(1) = -Inf; binEdges(end) = Inf;
+else % Handle case where all points might be in one bin
+    binEdges = [-Inf, Inf];
+end
+% Assign each point to a bin
+
+binIdx = discretize(Z_down, binEdges);
+
+% Initialize
 calibrationPts = [];
 validationPts = [];
 
-% Process each depth bin
+% Initialize waitbar for stratification/splitting ---
+h_stratify_waitbar = waitbar(0, 'Stratifying and splitting points... Please wait...');
+
+% Loop through bins, shuffle points within bin, split according to ratio
 for i = 1:numBins
     
-    % Get indices in current bin
-    binPoints = find(binIdx == i);
+    % Update waitbar for stratification/splitting ---
+    waitbar(i/numBins, h_stratify_waitbar, sprintf('Processing depth bin: %d/%d', i, numBins));
     
-    if isempty(binPoints)
-        continue;
+    binPointsIdx = find(binIdx == i); % Indices (relative to downsampledXYZ) of points in this bin
+    numInBin = length(binPointsIdx);
+    if numInBin == 0, continue; end % Skip empty bins
+    
+    % Shuffle indices
+    shuffledIdx = binPointsIdx(randperm(numInBin));
+    
+    % Calculate split point
+    nCal = round(splitRatio * numInBin);
+    
+    % Ensure validation set gets at least one point if possible
+    if nCal == numInBin && numInBin > 1
+        nCal = nCal - 1;
     end
     
-    % Extract XYZ for current bin
-    binXYZ = allXYZ(binPoints, :);
-
-    % Optional: Downsample using voxel grid
-    ptCloudBin = pointCloud(binXYZ);
-    ptCloudDown = pcdownsample(ptCloudBin, 'gridAverage', voxelSize);
-    downXYZ = ptCloudDown.Location;
-
-    % Randomize point order
-    n = size(downXYZ, 1);
-    shuffledIdx = randperm(n);
-
-    % Split into calibration and validation sets
-    nCal = round(splitRatio * n);
+    % Get indices for each set
     calIdx = shuffledIdx(1:nCal);
     valIdx = shuffledIdx(nCal+1:end);
-
-    % Append to final lists
-    calibrationPts = [calibrationPts; downXYZ(calIdx, :)];
-    validationPts = [validationPts; downXYZ(valIdx, :)];
+    
+    % Add points to output arrays
+    if ~isempty(calIdx), calibrationPts = [calibrationPts; downsampledXYZ(calIdx, :)]; end
+    if ~isempty(valIdx), validationPts = [validationPts; downsampledXYZ(valIdx, :)]; end
 end
 
-% Create table for calibration points with column headers
-calibrationTable = array2table(calibrationPts, 'VariableNames', {'Easting', 'Northing', 'Geoid_Corrected_Ortho_Height'});
+% Close the stratification waitbar
+close(h_stratify_waitbar);
 
-% Create table for validation points with column headers
-validationTable = array2table(validationPts, 'VariableNames', {'Easting', 'Northing', 'Geoid_Corrected_Ortho_Height'});
 
-% Save to CSV in the same folder as the input LAS files
-outputCalibFile = fullfile(lasFolder, 'calibration_points.csv');
-outputValFile = fullfile(lasFolder, 'validation_points.csv');
+fprintf('Split into %d calibration points and %d validation points.\n', size(calibrationPts, 1), size(validationPts, 1));
 
-% Write tables to CSV
-writetable(calibrationTable, outputCalibFile);
-writetable(validationTable, outputValFile);
+% --- Write output tables (Using original filenames) ---
+disp('Writing output CSV files...');
+calTable = array2table(calibrationPts, 'VariableNames', {'Easting', 'Northing', 'Geoid_Corrected_Ortho_Height'});
+valTable = array2table(validationPts, 'VariableNames', {'Easting', 'Northing', 'Geoid_Corrected_Ortho_Height'});
 
-disp('Stratified downsampling and splitting complete for all LAS files together.');
+% Output files saved in the original LAS folder
+outputCalibFile = fullfile(lasFolder, 'calibration_points_dense.csv'); % Original name
+outputValFile = fullfile(lasFolder, 'validation_points_dense.csv'); % Original name
+
+writetable(calTable, outputCalibFile);
+writetable(valTable, outputValFile);
+
+disp('2D grid-based downsampling and stratified splitting complete (using manual AOI extent).');
 disp(['Calibration points saved to: ', outputCalibFile]);
 disp(['Validation points saved to: ', outputValFile]);
-
 
 
 

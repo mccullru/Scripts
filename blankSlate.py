@@ -5,8 +5,13 @@ Created on Mon May 26 10:13:28 2025
 @author: mccullru
 """
 
+
+""" Deletes all files within the main workspace folders 
+    NOTE: The RGB files folder also has a separate deletion function in SDB_Time
+"""
+
+
 import os
-import shutil # Used for deleting non-empty directories if needed, but os.remove is for files
 
 def delete_files_in_folders(folder_list, delete_subfolders_content=False, delete_empty_subfolders=False):
     """
@@ -115,9 +120,9 @@ def delete_files_in_folder_recursive(folder_path, delete_empty_subfolders_flag):
 
 # --- How to use the function ---
 if __name__ == "__main__":
-    # !!! CRITICAL: DEFINE YOUR FOLDER PATHS HERE !!!
-    # Make sure these are correct. Double and triple check.
-    # It is highly recommended to test with dummy folders and files first.
+    
+    # !! CRITICAL: DEFINE YOUR FOLDER PATHS HERE !!
+
     folders_to_clear = [
         r"E:\Thesis Stuff\pSDB",
         r"E:\Thesis Stuff\pSDB_ExtractedPts",
@@ -127,7 +132,8 @@ if __name__ == "__main__":
         r"E:\Thesis Stuff\RGBCompositOutput_ODWbinarymasks",
         r"E:\Thesis Stuff\SDB",
         r"E:\Thesis Stuff\SDB_ExtractedPts",
-        r"E:\Thesis Stuff\SDB_ExtractedPts_Results"
+        r"E:\Thesis Stuff\SDB_ExtractedPts_Results",
+        r"E:\Thesis Stuff\SDB_ExtractedPts_maxR2_results"
     ]
 
     if not folders_to_clear:

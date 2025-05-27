@@ -398,109 +398,242 @@ import os
 import pandas as pd
 import glob
 
-def filter_csv_columns(input_folder, output_folder, columns_to_keep):
-    """
-    Reads CSV files from an input folder, keeps only specified columns,
-    and saves the modified CSVs to an output folder.
+# def filter_csv_columns(input_folder, output_folder, columns_to_keep):
+#     """
+#     Reads CSV files from an input folder, keeps only specified columns,
+#     and saves the modified CSVs to an output folder.
 
-    Args:
-        input_folder (str): Path to the folder containing the input CSV files.
-        output_folder (str): Path to the folder where processed CSV files will be saved.
-        columns_to_keep (list): A list of column names to keep.
-    """
-    if not os.path.exists(input_folder): # Checks input_folder
-        print(f"Error: Input folder not found: {input_folder}")
-        return
+#     Args:
+#         input_folder (str): Path to the folder containing the input CSV files.
+#         output_folder (str): Path to the folder where processed CSV files will be saved.
+#         columns_to_keep (list): A list of column names to keep.
+#     """
+#     if not os.path.exists(input_folder): # Checks input_folder
+#         print(f"Error: Input folder not found: {input_folder}")
+#         return
 
-    # If input_folder and output_folder are the same, this check is fine.
-    # The folder will already exist. If it's a new output_folder, it will be created.
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-        print(f"Created output folder: {output_folder}")
+#     # If input_folder and output_folder are the same, this check is fine.
+#     # The folder will already exist. If it's a new output_folder, it will be created.
+#     if not os.path.exists(output_folder):
+#         os.makedirs(output_folder)
+#         print(f"Created output folder: {output_folder}")
 
-    csv_files = glob.glob(os.path.join(input_folder, "*.csv"))
+#     csv_files = glob.glob(os.path.join(input_folder, "*.csv"))
 
-    if not csv_files:
-        print(f"No CSV files found in: {input_folder}")
-        return
+#     if not csv_files:
+#         print(f"No CSV files found in: {input_folder}")
+#         return
 
-    print(f"Found {len(csv_files)} CSV files to process.")
+#     print(f"Found {len(csv_files)} CSV files to process.")
 
-    for file_path in csv_files:
-        file_name = os.path.basename(file_path)
-        print(f"\n--- Processing file: {file_name} ---")
+#     for file_path in csv_files:
+#         file_name = os.path.basename(file_path)
+#         print(f"\n--- Processing file: {file_name} ---")
 
-        # Avoid re-processing already filtered files if script is run multiple times
-        if file_name.endswith("_filtered.csv"):
-            print(f"  Skipping already filtered file: {file_name}")
-            continue
+#         # Avoid re-processing already filtered files if script is run multiple times
+#         if file_name.endswith("_filtered.csv"):
+#             print(f"  Skipping already filtered file: {file_name}")
+#             continue
 
-        try:
-            df = pd.read_csv(file_path)
-            print(f"  Original columns: {df.columns.tolist()}")
+#         try:
+#             df = pd.read_csv(file_path)
+#             print(f"  Original columns: {df.columns.tolist()}")
 
-            existing_cols_to_keep = [col for col in columns_to_keep if col in df.columns]
+#             existing_cols_to_keep = [col for col in columns_to_keep if col in df.columns]
 
-            if not existing_cols_to_keep:
-                print(f"  Warning: None of the specified columns to keep {columns_to_keep} were found in {file_name}. Skipping file.")
-                continue
+#             if not existing_cols_to_keep:
+#                 print(f"  Warning: None of the specified columns to keep {columns_to_keep} were found in {file_name}. Skipping file.")
+#                 continue
             
-            # Check if all desired columns are already the only columns
-            if len(existing_cols_to_keep) == len(df.columns) and all(col in df.columns for col in existing_cols_to_keep):
-                print(f"  File {file_name} already contains only the specified columns. No changes needed, but saving with new name for consistency if output differs from input or to mark as processed.")
-                # Decide if you still want to save a copy with "_filtered.csv" 
-                # or skip saving entirely in this case. For now, it will save a copy.
+#             # Check if all desired columns are already the only columns
+#             if len(existing_cols_to_keep) == len(df.columns) and all(col in df.columns for col in existing_cols_to_keep):
+#                 print(f"  File {file_name} already contains only the specified columns. No changes needed, but saving with new name for consistency if output differs from input or to mark as processed.")
+#                 # Decide if you still want to save a copy with "_filtered.csv" 
+#                 # or skip saving entirely in this case. For now, it will save a copy.
 
-            df_filtered = df[existing_cols_to_keep]
-            print(f"  Columns kept: {df_filtered.columns.tolist()}")
+#             df_filtered = df[existing_cols_to_keep]
+#             print(f"  Columns kept: {df_filtered.columns.tolist()}")
 
-            output_file_name = f"{os.path.splitext(file_name)[0]}_filtered.csv"
-            output_file_path = os.path.join(output_folder, output_file_name)
+#             output_file_name = f"{os.path.splitext(file_name)[0]}_filtered.csv"
+#             output_file_path = os.path.join(output_folder, output_file_name)
 
-            # Safety check if input and output filenames become identical
-            # This shouldn't happen with "_filtered.csv" suffix unless original already had it
-            if os.path.abspath(file_path) == os.path.abspath(output_file_path):
-                print(f"  Warning: Input and output file paths are identical ('{output_file_path}').") 
-                # Add further logic here if you want to prevent this, e.g., by adding another suffix
-                # or by having a separate output folder as originally designed.
-                # For now, it will overwrite if the names somehow became identical.
-                # However, the "_filtered.csv" suffix should prevent this.
+#             # Safety check if input and output filenames become identical
+#             # This shouldn't happen with "_filtered.csv" suffix unless original already had it
+#             if os.path.abspath(file_path) == os.path.abspath(output_file_path):
+#                 print(f"  Warning: Input and output file paths are identical ('{output_file_path}').") 
+#                 # Add further logic here if you want to prevent this, e.g., by adding another suffix
+#                 # or by having a separate output folder as originally designed.
+#                 # For now, it will overwrite if the names somehow became identical.
+#                 # However, the "_filtered.csv" suffix should prevent this.
 
-            df_filtered.to_csv(output_file_path, index=False)
-            print(f"  Saved filtered file to: {output_file_path}")
+#             df_filtered.to_csv(output_file_path, index=False)
+#             print(f"  Saved filtered file to: {output_file_path}")
 
-        except pd.errors.EmptyDataError:
-            print(f"  Warning: File {file_name} is empty. Skipping.")
-        except Exception as e:
-            print(f"  Error processing {file_name}: {e}")
+#         except pd.errors.EmptyDataError:
+#             print(f"  Warning: File {file_name} is empty. Skipping.")
+#         except Exception as e:
+#             print(f"  Error processing {file_name}: {e}")
 
-    print("\n--- All CSV files processed. ---")
+#     print("\n--- All CSV files processed. ---")
 
-# --- Configuration ---
-# Specify the folder containing your input CSV files AND where outputs will go
-shared_folder_path = r"B:\Thesis Project\Reference Data\Processed_ICESat" # <--- !!! REPLACE THIS !!!
-
-
-# Define the exact column names you want to keep
-columns_to_keep = ["Easting", "Northing", "Geoid_Corrected_Ortho_Height"]
+# # --- Configuration ---
+# # Specify the folder containing your input CSV files AND where outputs will go
+# shared_folder_path = r"B:\Thesis Project\Reference Data\Processed_ICESat" # <--- !!! REPLACE THIS !!!
 
 
-# --- Run the script ---
-if __name__ == "__main__":
-    if shared_folder_path != r"B:\Thesis Project\Reference Data\Processed_ICESat":
-        print("Please update 'shared_folder_path' variable with your actual path.")
+# # Define the exact column names you want to keep
+# columns_to_keep = ["Easting", "Northing", "Geoid_Corrected_Ortho_Height"]
+
+
+# # --- Run the script ---
+# if __name__ == "__main__":
+#     if shared_folder_path != r"B:\Thesis Project\Reference Data\Processed_ICESat":
+#         print("Please update 'shared_folder_path' variable with your actual path.")
+#     else:
+#         # Pass the same path for both input and output
+#         filter_csv_columns(shared_folder_path, shared_folder_path, columns_to_keep)
+
+
+
+
+
+#################################################################################################################
+#################################################################################################################
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import os
+
+def heatscatter(ax, x, y,
+                bins, title, cmap,
+                xlabel, ylabel, identity_line=False,
+                xlim=None, ylim=None, # <<< Assume these will ALWAYS be provided as valid tuples
+                **kwargs):
+    """
+    Create a 2D histogram plot of x and y data.
+    Applies provided xlim and ylim directly.
+
+    Parameters
+    ----------
+    ax : matplotlib axis
+    x : numpy ndarray
+    y : numpy ndarray
+    bins : int or tuple(int,int)
+    title : str
+    cmap : str
+    xlabel: str
+    ylabel: str
+    identity_line : bool, optional
+    xlim : tuple
+        Tuple (xmin, xmax) to set the x-axis limits. MUST be provided.
+    ylim : tuple
+        Tuple (ymin, ymax) to set the y-axis limits. MUST be provided.
+    **kwargs:
+        Additional keyword arguments passed to matplotlib.hist2d
+
+    Returns
+    -------
+    hs: tuple or None
+    """
+    x = np.asarray(x)
+    y = np.asarray(y)
+    
+    finite_mask = np.isfinite(x) & np.isfinite(y)
+    x_finite = x[finite_mask]
+    y_finite = y[finite_mask]
+
+    # Set limits FIRST, so even an empty plot has the desired frame
+    ax.set_xlim(xlim) # <<< Always applies xlim
+    ax.set_ylim(ylim) # <<< Always applies ylim
+
+    if len(x_finite) == 0 or len(y_finite) == 0:
+        print("Warning: No finite data points left after filtering NaNs/Infs. Cannot plot hist2d.")
+        ax.set_title(title)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        if identity_line:
+            # Draw identity line based on the explicitly set limits
+            lim_min_plot = max(xlim[0], ylim[0])
+            lim_max_plot = min(xlim[1], ylim[1])
+            if lim_min_plot < lim_max_plot:
+                ax.plot([lim_min_plot, lim_max_plot], [lim_min_plot, lim_max_plot], 'k--', linewidth=1)
+            else: # Fallback if limits don't allow for a good diagonal
+                ax.plot([xlim[0], xlim[1]], [ylim[0], ylim[1]], 'k--', linewidth=1) # Or use ax.transAxes
+        return None
+
+    hs = ax.hist2d(x_finite, y_finite, bins=bins, cmin=1, cmap=cmap, 
+                   range=[[xlim[0], xlim[1]], [ylim[0], ylim[1]]], # Ensure hist2d also respects limits for binning
+                   **kwargs)
+    
+    if identity_line:
+        lim_min_plot = max(xlim[0], ylim[0])
+        lim_max_plot = min(xlim[1], ylim[1])
+        if lim_min_plot < lim_max_plot:
+            ax.plot([lim_min_plot, lim_max_plot], [lim_min_plot, lim_max_plot], 'k--', linewidth=1)
+        else:
+             ax.plot([xlim[0], xlim[1]], [ylim[0], ylim[1]], 'k--', linewidth=1)
+
+
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    
+    # xlim and ylim are already set at the beginning of the function
+    return hs
+
+# Define CSV file path and column names
+csv_file_path = r"E:\Thesis Stuff\SDB_ExtractedPts\S2A_MSI_2023_03_20_15_41_27_T19TCG_L2W_RGB_m1_SDB_merged_extracted.csv"
+x_column_name = "Raster_Value"
+y_column_name = "Geoid_Corrected_Ortho_Height"
+
+# Define desired axis limits - these will always be used
+manual_xlim = (0, 10)
+manual_ylim = (0, 10)
+
+try:
+    data_df = pd.read_csv(csv_file_path)
+except FileNotFoundError: # Gracefully handle file not found
+    print(f"Error: CSV file not found at {csv_file_path}")
+    exit()
+except Exception as e: # Catch other potential errors during CSV read
+    print(f"Error reading CSV file: {e}")
+    exit()
+
+if not (x_column_name in data_df.columns and y_column_name in data_df.columns):
+    print(f"Error: One or both specified columns ('{x_column_name}', '{y_column_name}') not found in the CSV.")
+    print(f"Available columns: {data_df.columns.tolist()}")
+    exit()
+
+x_data_from_csv = pd.to_numeric(data_df[x_column_name], errors='coerce').values
+y_data_from_csv = pd.to_numeric(data_df[y_column_name], errors='coerce').values
+
+
+# Create the Plot
+fig, ax = plt.subplots(figsize=(8, 6))
+
+# Call your heatscatter function, passing the limits
+hist_output = heatscatter(ax, x_data_from_csv, y_data_from_csv,
+                          bins=100,
+                          title="Density Heatmap",
+                          cmap='viridis',
+                          xlabel=f"{x_column_name} Values",
+                          ylabel=f"{y_column_name} Values",
+                          identity_line=True,
+                          xlim=manual_xlim, # Pass manual_xlim
+                          ylim=manual_ylim  # Pass manual_ylim
+                          )
+
+if hist_output is not None:
+    if isinstance(hist_output, tuple) and len(hist_output) == 4:
+        plt.colorbar(hist_output[3], ax=ax, label='Counts per Bin')
     else:
-        # Pass the same path for both input and output
-        filter_csv_columns(shared_folder_path, shared_folder_path, columns_to_keep)
+        try:
+            plt.colorbar(hist_output, ax=ax, label='Counts per Bin')
+        except TypeError:
+            print("Note: Could not automatically create colorbar from hist_output.")
 
-
-
-
-
-
-
-
-
+plt.tight_layout()
+plt.show()
 
 
 

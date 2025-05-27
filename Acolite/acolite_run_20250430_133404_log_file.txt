@@ -1,0 +1,6 @@
+2025-04-30 13:34:04: Running ACOLITE processing - Generic GitHub Clone
+2025-04-30 13:34:04: Python - win32 - 3.10.12 | packaged by conda-forge | (main, Jun 23 2023, 22:34:57) [MSC v.1936 64 bit (AMD64)]
+2025-04-30 13:34:04: Platform - Windows 10 - AMD64 - 10.0.22621
+2025-04-30 13:34:04: Run ID - 20250430_133404
+2025-04-30 13:34:04: Nothing to do. Did you provide a settings file or inputfile? Exiting.
+2025-04-30 13:34:04: Images succesfully preprocessed with Acolite atmospheric correction processor

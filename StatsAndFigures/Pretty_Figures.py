@@ -12,16 +12,490 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import glob
 import mplcursors
-import mplcursors # Ensure this is imported
 
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
-
 from scipy.stats import gaussian_kde, skew, kurtosis
 
 
 ##############################################################################################################
 ##############################################################################################################
+
+"""Histogram scatter heat map"""
+
+
+# def heatscatter(ax, x, y,
+#                 bins, title, cmap,
+#                 xlabel, ylabel, identity_line=False,
+#                 xlim=None, ylim=None, # User-provided limits, can contain None
+#                 **kwargs):
+#     x_arr = np.asarray(x)
+#     y_arr = np.asarray(y)
+    
+#     finite_mask = np.isfinite(x_arr) & np.isfinite(y_arr)
+#     x_finite = x_arr[finite_mask]
+#     y_finite = y_arr[finite_mask]
+
+#     # Apply user-specified limits (or None for autoscaling) to the axes.
+#     ax.set_xlim(xlim) 
+#     ax.set_ylim(ylim)
+
+#     # Retrieve the actual numeric limits that Matplotlib has set.
+#     current_plot_xlim = ax.get_xlim() 
+#     current_plot_ylim = ax.get_ylim()
+
+#     # Set titles and labels.
+#     ax.set_title(title)
+#     ax.set_xlabel(xlabel)
+#     ax.set_ylabel(ylabel)
+
+#     if len(x_finite) == 0 or len(y_finite) == 0:
+#         # Generalized warning message
+#         print(f"  Warning for plot '{title}': No finite data points left after filtering NaNs/Infs. Cannot plot hist2d.")
+#         if identity_line:
+#             lim_min_plot = max(current_plot_xlim[0], current_plot_ylim[0])
+#             lim_max_plot = min(current_plot_xlim[1], current_plot_ylim[1])
+#             if lim_min_plot < lim_max_plot:
+#                 ax.plot([lim_min_plot, lim_max_plot], [lim_min_plot, lim_max_plot], 'k--', linewidth=1)
+#         return None
+
+#     # Step 3: Use the resolved current_plot_xlim and current_plot_ylim for the 'range' of hist2d.
+#     hs = ax.hist2d(x_finite, y_finite, bins=bins, cmin=1, cmap=cmap, 
+#                     range=[current_plot_xlim, current_plot_ylim], # Pass resolved limits
+#                     **kwargs)
+    
+#     if identity_line:
+#         lim_min_plot = max(current_plot_xlim[0], current_plot_ylim[0])
+#         lim_max_plot = min(current_plot_xlim[1], current_plot_ylim[1])
+#         if lim_min_plot < lim_max_plot:
+#             ax.plot([lim_min_plot, lim_max_plot], [lim_min_plot, lim_max_plot], 'k--', linewidth=1)
+    
+#     return hs
+
+
+# # Define FOLDER path containing CSV files and column names
+# csv_folder_path = r"E:\Thesis Stuff\zquick save\SDB_ExtractedPts_s2" 
+# x_column_name = "Raster_Value"
+# y_column_name = "Geoid_Corrected_Ortho_Height"
+
+# # Define desired axis limits - these will be applied to EACH plot
+# manual_xlim = (0, 10)
+# manual_ylim = (0, 10)
+
+
+# # Find all CSV files in the specified folder
+# csv_files = glob.glob(os.path.join(csv_folder_path, "*.csv"))
+
+# if not csv_files:
+#     print(f"Error: No CSV files found in the folder: {csv_folder_path}")
+# else:
+#     print(f"Found {len(csv_files)} CSV files. Generating a separate heatmap for each.\n")
+
+#     for file_path in csv_files:
+#         print(f"Processing file: {os.path.basename(file_path)}")
+#         try:
+#             data_df = pd.read_csv(file_path)
+            
+#             if not (x_column_name in data_df.columns and y_column_name in data_df.columns):
+#                 print(f"  Warning: Skipping file. One or both specified columns ('{x_column_name}', '{y_column_name}') not found.")
+#                 print(f"    Available columns in this file: {data_df.columns.tolist()}")
+#                 continue # Skip to the next file
+
+#             x_data_from_file = pd.to_numeric(data_df[x_column_name], errors='coerce').values
+#             y_data_from_file = pd.to_numeric(data_df[y_column_name], errors='coerce').values
+            
+#             # Check if there's any valid numeric data to plot for this file after coercion
+#             # np.isfinite checks for not NaN and not Inf.
+#             valid_points_mask = np.isfinite(x_data_from_file) & np.isfinite(y_data_from_file)
+#             if not np.any(valid_points_mask): # If no points are finite
+#                   print(f"  Warning: No valid numeric data pairs found in columns '{x_column_name}' and '{y_column_name}' for file {os.path.basename(file_path)}. Skipping plot.")
+#                   continue
+
+#             # Create a new figure and axis for each plot
+#             fig, ax = plt.subplots(figsize=(8, 6)) # Adjust figsize as needed
+
+#             plot_title = f"Density Heatmap: {os.path.basename(file_path)}"
+
+#             # Call your heatscatter function with data from the current file
+#             hist_output = heatscatter(ax, x_data_from_file, y_data_from_file,
+#                                       bins=100, # Or adjust as needed for individual plots
+#                                       title=plot_title,
+#                                       cmap='viridis',
+#                                       xlabel=f"{x_column_name} Values",
+#                                       ylabel=f"{y_column_name} Values",
+#                                       identity_line=True,
+#                                       xlim=manual_xlim, 
+#                                       ylim=manual_ylim  
+#                                       )
+
+#             if hist_output is not None:
+#                 # hist_output from ax.hist2d is (counts, xedges, yedges, image)
+#                 # The image (QuadMesh) is the fourth element, needed for plt.colorbar.
+#                 if isinstance(hist_output, tuple) and len(hist_output) == 4:
+#                     plt.colorbar(hist_output[3], ax=ax, label='Counts per Bin')
+#                 else:
+  
+#                     print(f"  Note: Could not create colorbar for {os.path.basename(file_path)}. hist_output type: {type(hist_output)}")
+            
+#             plt.tight_layout()
+#             plt.show() 
+
+#         except FileNotFoundError: # This specific error should be rare if glob.glob worked
+#             print(f"  Error: CSV file not found at {file_path} (unexpected).")
+#         except pd.errors.EmptyDataError:
+#             print(f"  Warning: Skipping empty CSV file: {os.path.basename(file_path)}")
+#         except Exception as e:
+#             print(f"  An error occurred while processing file {os.path.basename(file_path)}: {e}")
+#             # import traceback # Uncomment for detailed debugging
+#             # traceback.print_exc() # Uncomment for detailed debugging
+#         print("-" * 30) # Separator between file processing logs
+
+# if csv_files: 
+#     print("\nFinished processing all files.")
+
+##############################################################################################################
+##############################################################################################################
+
+
+""" A single plot with multiple Kernel Density Estimates (KDE) which represent the histogram values without
+cluttering the chart. Also adds an average line from all the plotted lines """
+
+
+""" 
+!! NOTE !!: If you want to be able to use the interactive plot settings to look at individual line info, have
+            to go to Preferences > IPython console > Graphics tab > Backend: "Inline" for plot placement on right, 
+            "Automatic" for a separate window to pop-up and allow interactions
+
+!! OTHER WEIRD NOTE !!: When in interactive mode, in order to look at the name for each individual line, don't
+                        just click on it, you have to hold the mouse button down and hover over the line.
+                        It's weird, I know
+
+"""
+
+
+# Configuration 
+# Specify the folder containing your input CSV files
+input_csv_folder_path = r"E:\Thesis Stuff\SDB_ExtractedPts"
+
+AOI = 'Marathon' 
+
+SDB_type = 'SDBall' 
+
+#Sensor = 'SuperDove' 
+Sensor = 'Sentinel-2'
+
+output_plot_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\Final5\Extracted Pts\New folder\test_output"
+combined_plot_filename = "combined_error_kdes_with_average_stats.png"
+
+# Define column names
+ref_col = "Geoid_Corrected_Ortho_Height"
+SDB_col = "Raster_Value"
+error_col_name = "Error"
+
+# Plot settings
+plot_xlim = (-4, 4)
+plot_ylim = (0, 800)
+
+# Individual KDE line style
+individual_kde_color = 'gray'
+individual_kde_linestyle = '-'
+individual_kde_linewidth = 1.0
+
+# Define fixed_bin_width for consistent scaling
+fixed_bin_width = 0.1 # 
+# This 'fixed_bin_width' will serve as the 'common_bin_width_for_scaling'
+
+
+
+# Create Output Folder if it Doesn't Exist ---
+if not os.path.exists(output_plot_folder_path):
+    os.makedirs(output_plot_folder_path)
+    print(f"Created output folder: {output_plot_folder_path}")
+
+# Load Data from ALL CSV Files ---
+all_error_data_for_overall_range = []
+datasets_for_kde = []
+
+csv_files = glob.glob(os.path.join(input_csv_folder_path, "*.csv"))
+
+if not csv_files:
+    print(f"No CSV files found in the folder: {input_csv_folder_path}")
+else:
+    print(f"Found {len(csv_files)} CSV files to process in: {input_csv_folder_path}")
+
+for i, csv_file_path in enumerate(csv_files):
+    print(f"\n--- Reading file: {csv_file_path} ---")
+    base_filename = os.path.basename(csv_file_path)
+    filename_no_ext = os.path.splitext(base_filename)[0]
+
+    try:
+        df = pd.read_csv(csv_file_path)
+        if ref_col not in df.columns or SDB_col not in df.columns:
+            print(f"Warning: Required columns ('{ref_col}', '{SDB_col}') not found in {base_filename}. Skipping.")
+            continue
+        df[ref_col] = pd.to_numeric(df[ref_col], errors='coerce')
+        df[SDB_col] = pd.to_numeric(df[SDB_col], errors='coerce')
+        df = df.dropna(subset=[ref_col, SDB_col])
+        if df.empty:
+            print(f"Warning: No valid numeric data after coercion/NaN removal in {base_filename}. Skipping.")
+            continue
+
+        df[error_col_name] = df[SDB_col] - df[ref_col]
+        error_data = df[error_col_name].dropna()
+
+        if error_data.empty:
+            print(f"Warning: No error data to process for {base_filename} after dropna. Skipping.")
+            continue
+        if len(error_data) < 2:
+            print(f"Warning: Not enough data points ({len(error_data)}) for KDE in {base_filename}. Skipping.")
+            continue
+
+        all_error_data_for_overall_range.extend(error_data.values)
+        datasets_for_kde.append({'label': filename_no_ext, 'data': error_data, 'N': len(error_data)})
+        print(f"Loaded {len(error_data)} error values from '{base_filename}'.")
+    except Exception as e:
+        print(f"An error occurred while processing {csv_file_path}: {e}")
+
+
+# Plot Multiple Scaled KDEs on a Single Figure ---
+if datasets_for_kde: # Make sure datasets_for_kde is populated before this block
+    fig, ax = plt.subplots(figsize=(12, 7))
+
+    common_bin_width_for_scaling = fixed_bin_width
+    print(f"Using fixed common bin_width for KDE scaling: {common_bin_width_for_scaling:.4f}")
+
+    max_scaled_kde_y = 0
+    all_scaled_kde_y_arrays = []
+    common_kde_x = None
+    
+    plotted_lines_info = [] # For mplcursors tooltips
+    interactive_kde_lines = [] # For click-to-highlight line interaction
+
+    # Define highlight styles (used when a line is clicked)
+    HIGHLIGHT_COLOR = 'blue'
+    HIGHLIGHT_LINEWIDTH = 3.0 # Make it noticeably thicker
+    HIGHLIGHT_ALPHA = 1.0     # Fully opaque
+    HIGHLIGHT_ZORDER = 10     # Ensure highlighted line is on top
+    # Note: DIMMED_ALPHA and DIMMED_LINEWIDTH_FACTOR are removed as per your request
+    # to revert non-highlighted lines to original, not dim them further.
+
+    for i, dataset_info in enumerate(datasets_for_kde):
+        label = dataset_info['label']
+        error_values = dataset_info['data']
+        N = dataset_info['N']
+
+        try:
+            bw_factor = 0.25
+            kde = gaussian_kde(error_values, bw_method=bw_factor)
+
+            if common_kde_x is None:
+                x_min_kde = plot_xlim[0] - (plot_xlim[1] - plot_xlim[0]) * 0.1
+                x_max_kde = plot_xlim[1] + (plot_xlim[1] - plot_xlim[0]) * 0.1
+                common_kde_x = np.linspace(x_min_kde, x_max_kde, 400)
+
+            kde_y_density = kde(common_kde_x)
+            scaled_kde_y = kde_y_density * N * common_bin_width_for_scaling
+            all_scaled_kde_y_arrays.append(scaled_kde_y)
+
+            if scaled_kde_y.size > 0:
+                current_max_y = np.max(scaled_kde_y)
+                if current_max_y > max_scaled_kde_y:
+                    max_scaled_kde_y = current_max_y
+            
+            # Plot individual KDE and make it pickable
+            line, = ax.plot(common_kde_x, scaled_kde_y,
+                            color=individual_kde_color,
+                            linestyle=individual_kde_linestyle,
+                            linewidth=individual_kde_linewidth,
+                            alpha=0.7, # Original alpha for individual lines
+                            picker=True,
+                            pickradius=5) 
+            
+            plotted_lines_info.append({'line': line, 'label': label.replace("_", " ")})
+            interactive_kde_lines.append({
+                'line': line,
+                'original_color': individual_kde_color,
+                'original_linewidth': individual_kde_linewidth,
+                'original_alpha': 0.7, # Store initial alpha
+                'original_zorder': line.get_zorder()
+            })
+
+        except Exception as e_kde:
+            print(f"Warning: Could not compute or plot KDE for {label}. Error: {e_kde}")
+
+    average_line_handle = None
+    average_kde_stats_text = "Average KDE Stats:\nN/A" # Initialize
+
+    if all_scaled_kde_y_arrays and common_kde_x is not None:
+        if len(all_scaled_kde_y_arrays) > 0:
+            stacked_kdes = np.array(all_scaled_kde_y_arrays)
+            average_kde_y = np.mean(stacked_kdes, axis=0)
+
+            if average_kde_y.size > 0:
+                current_max_avg_y = np.max(average_kde_y)
+                if current_max_avg_y > max_scaled_kde_y:
+                    max_scaled_kde_y = current_max_avg_y
+            
+            avg_line_plots = ax.plot(common_kde_x, average_kde_y,
+                            color='red',
+                            linestyle='-.',
+                            linewidth=2.5,
+                            label=f'Average KDE (of {len(all_scaled_kde_y_arrays)} datasets)',
+                            zorder=len(interactive_kde_lines) + 10) # Ensure average is well above individuals
+            if avg_line_plots:
+                average_line_handle = avg_line_plots[0]
+                plotted_lines_info.append({'line': average_line_handle, 'label': average_line_handle.get_label()})
+            print("Plotted Average KDE line.")
+            
+            if all_error_data_for_overall_range:
+                pooled_errors = np.array(all_error_data_for_overall_range)
+                avg_kde_mean = np.mean(pooled_errors); avg_kde_min = np.min(pooled_errors)
+                avg_kde_max = np.max(pooled_errors); avg_kde_std = np.std(pooled_errors)
+                avg_kde_kurtosis = kurtosis(pooled_errors, fisher=True)
+                avg_kde_skewness = skew(pooled_errors)
+                average_kde_stats_text = (
+                    f"Summary Stats (All Data):\n\n"
+                    f"Mean = {avg_kde_mean:.3f} m\nMin = {avg_kde_min:.2f} m\nMax = {avg_kde_max:.2f} m\n"
+                    f"Std Dev = {avg_kde_std:.2f} m\nSkewness = {avg_kde_skewness:.2f}\nKurtosis = {avg_kde_kurtosis:.2f}\n"
+                    f"Total Pts = {len(pooled_errors)}"
+                )
+            else: 
+                average_kde_stats_text = "Average KDE Stats:\n(No pooled data for stats)"
+
+    # --- Axis and Title Setup ---
+    ax.set_xlabel(error_col_name + " (m)", fontsize=14) # Use defined error_col_name
+    ax.set_ylabel("Smoothed Frequency Estimate (Scaled Density)", fontsize=14)
+    ax.set_title(f"Distribution of {Sensor} {SDB_type} Error Values: {AOI}", fontsize=16)
+    ax.set_xlim(plot_xlim)
+    if plot_ylim is not None: 
+        ax.set_ylim(plot_ylim)
+    elif max_scaled_kde_y > 0 : 
+        ax.set_ylim(0, max_scaled_kde_y * 1.1)
+    else: 
+        ax.set_ylim(0, 10) # Fallback if no data
+
+    if all_scaled_kde_y_arrays : # Check if there's data before trying to place text
+        text_x_pos = plot_xlim[0] + (plot_xlim[1] - plot_xlim[0]) * 0.02
+        current_ax_ylim = ax.get_ylim() # Get current y-limits after they are set
+        text_y_pos = current_ax_ylim[1] * 0.98 
+        ax.text(text_x_pos, text_y_pos, average_kde_stats_text,
+                fontsize=12, color='black', ha='left', va='top',
+                bbox=dict(boxstyle='round,pad=0.4', facecolor='wheat', alpha=0.75))
+
+    # --- Event Handler for Highlighting Lines (Pick Event) ---
+    def on_pick(event):
+        picked_line_artist = event.artist
+        
+        is_interactive_target = False
+        for item_check in interactive_kde_lines:
+            if item_check['line'] == picked_line_artist:
+                is_interactive_target = True
+                break
+        
+        if not is_interactive_target:
+            return 
+
+        for item in interactive_kde_lines:
+            line_obj = item['line']
+            if line_obj == picked_line_artist:
+                line_obj.set_color(HIGHLIGHT_COLOR)
+                line_obj.set_linewidth(HIGHLIGHT_LINEWIDTH)
+                line_obj.set_alpha(HIGHLIGHT_ALPHA)
+                line_obj.set_zorder(HIGHLIGHT_ZORDER)
+            else:
+                # Revert other individual KDE lines to their original style
+                line_obj.set_color(item['original_color'])
+                line_obj.set_linewidth(item['original_linewidth'])
+                line_obj.set_alpha(item['original_alpha']) # Use stored original alpha
+                line_obj.set_zorder(item['original_zorder'])
+        
+        fig.canvas.draw_idle()
+
+    fig.canvas.mpl_connect('pick_event', on_pick)
+    # --- End Pick Event Handler ---
+
+    # --- Event Handler for Mouse Wheel Zoom ---
+    def on_scroll(event):
+        if event.inaxes != ax: # Process scroll only if cursor is over the axes
+            return
+        base_scale = 1.1 # Zoom sensitivity
+        cur_xlim = ax.get_xlim()
+        cur_ylim = ax.get_ylim()
+        xdata = event.xdata 
+        ydata = event.ydata
+
+        if xdata is None or ydata is None: # If outside data limits, zoom to center
+            xdata = (cur_xlim[0] + cur_xlim[1]) / 2
+            ydata = (cur_ylim[0] + cur_ylim[1]) / 2
+
+        if event.button == 'up': # Scroll up, zoom in
+            scale_factor = 1 / base_scale
+        elif event.button == 'down': # Scroll down, zoom out
+            scale_factor = base_scale
+        else: # Other scroll events
+            return
+
+        # New x-axis limits centered on mouse
+        new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+        relx = (xdata - cur_xlim[0]) / (cur_xlim[1] - cur_xlim[0])
+        ax.set_xlim([xdata - new_width * relx, xdata + new_width * (1 - relx)])
+
+        # New y-axis limits centered on mouse
+        new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+        rely = (ydata - cur_ylim[0]) / (cur_ylim[1] - cur_ylim[0])
+        ax.set_ylim([ydata - new_height * rely, ydata + new_height * (1 - rely)])
+
+        ax.figure.canvas.draw_idle() # Redraw the plot
+
+    fig.canvas.mpl_connect('scroll_event', on_scroll)
+    # --- End Mouse Wheel Zoom Handler ---
+
+    # Setup mplcursors (for click tooltips)
+    line_to_label_map = {item['line']: item['label'] for item in plotted_lines_info if item['line'] is not None}
+    lines_for_cursor_interaction = [item['line'] for item in plotted_lines_info if item['line'] is not None]
+
+    if lines_for_cursor_interaction:
+        cursor = mplcursors.cursor(lines_for_cursor_interaction, hover=False) # hover=False for click
+        
+        @cursor.connect("add")
+        def on_add(sel):
+            label_for_line = line_to_label_map.get(sel.artist, "Unknown Line")
+            # Customize tooltip text based on whether it's the average line or an individual file
+            if average_line_handle and sel.artist == average_line_handle:
+                 sel.annotation.set_text(f"{label_for_line}\nError: {sel.target[0]:.2f}\nAvg. Scaled Density: {sel.target[1]:.2f}")
+            else:
+                 sel.annotation.set_text(f"File: {label_for_line}\nError: {sel.target[0]:.2f}\nScaled Density: {sel.target[1]:.2f}")
+            sel.annotation.get_bbox_patch().set(alpha=0.85, facecolor='lightyellow')
+    
+    # Legend (only for the average line, as individual lines are too many)
+    if average_line_handle:
+        ax.legend(handles=[average_line_handle], fontsize=12, loc='best')
+
+    ax.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    
+    output_plot_full_path = os.path.join(output_plot_folder_path, combined_plot_filename)
+    
+    # try:
+    #     plt.savefig(output_plot_full_path) 
+    #     print(f"\nSUCCESS: Combined KDE plot saved to: {output_plot_full_path}")
+    # except Exception as e_save:
+    #     print(f"\nERROR: Failed to save combined KDE plot {output_plot_full_path}. Error: {e_save}")
+    
+    plt.show()
+    # plt.close(fig) # Close the figure if running in a loop or non-interactively
+
+else:
+    print("\nNo datasets were successfully processed to generate a combined KDE plot.")
+
+# This print statement was outside the if block, moved it for clarity or remove if not needed at the end
+# print("\n--- All CSV files processed. ---")
+
+
+##############################################################################################################
+##############################################################################################################
+
+
 
 """Linear Regressions"""
 
@@ -138,7 +612,7 @@ from scipy.stats import gaussian_kde, skew, kurtosis
 # from scipy.stats import gaussian_kde
 
 # # Specify the folder containing your input CSV files
-# input_csv_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\SuperDove\Final5\Extracted Pts\New folder"  
+# input_csv_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Hyannis\Sentinel-2\Extracted Pts\SDB\merged"
 
 # # Specify the folder where you want to save the output plots
 # output_plot_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\SuperDove\Final5\Extracted Pts\New folder\test_output" 
@@ -147,9 +621,9 @@ from scipy.stats import gaussian_kde, skew, kurtosis
 # SDB_col = "Raster_Value"
 # error_col_name = "Error" 
 
-# # --- MODIFICATION: Define a FIXED BIN WIDTH ---
+# #  Define a FIXED BIN WIDTH ---
 # fixed_bin_width = 0.1  # Adjust this value based on your data's typical error range and desired resolution
-# # --- END MODIFICATION ---
+
 
 # # Histogram plot settings
 # hist_xlim = (-2, 2)
@@ -314,258 +788,6 @@ from scipy.stats import gaussian_kde, skew, kurtosis
 ##############################################################################################################
 
 
-""" A single plot with multiple Kernel Density Estimates (KDE) which represent the histogram values without
-cluttering the chart. Also adds an average line from all the plotted lines """
-
-
-""" 
-
-!!! NOTE !!!: If you want to be able to use the interactive plot settings to look at individual line info, have
-to go to Preferences > IPython console > Graphics tab > Backend: "Inline" for plot placement on right, 
-"Automatic" for a separate window to pop-up and allow interactions
-
-"""
-
-
-# Configuration 
-# Specify the folder containing your input CSV files
-input_csv_folder_path = r"E:\Thesis Stuff\test\extracted pts\New folder S2\Merged" 
-
-AOI = 'Bum Bum' 
-
-SDB_type = 'SDBmerged' 
-
-#Sensor = 'SuperDove' 
-Sensor = 'Sentinel-2'
-
-output_plot_folder_path = r"B:\Thesis Project\SDB_Time\Results_main\Marathon\Sentinel-2\Final5\Extracted Pts\New folder\test_output"
-combined_plot_filename = "combined_error_kdes_with_average_stats.png"
-
-# Define column names
-ref_col = "Geoid_Corrected_Ortho_Height"
-SDB_col = "Raster_Value"
-error_col_name = "Error"
-
-# Plot settings
-plot_xlim = (-2, 2)
-plot_ylim = (0, 2000)
-
-# Individual KDE line style
-individual_kde_color = 'gray'
-individual_kde_linestyle = '-'
-individual_kde_linewidth = 1.0
-
-# Define fixed_bin_width for consistent scaling
-fixed_bin_width = 0.1 # 
-# This 'fixed_bin_width' will serve as the 'common_bin_width_for_scaling'
-
-
-
-# 2. Create Output Folder if it Doesn't Exist ---
-if not os.path.exists(output_plot_folder_path):
-    os.makedirs(output_plot_folder_path)
-    print(f"Created output folder: {output_plot_folder_path}")
-
-# Load Data from ALL CSV Files ---
-all_error_data_for_overall_range = []
-datasets_for_kde = []
-
-csv_files = glob.glob(os.path.join(input_csv_folder_path, "*.csv"))
-
-if not csv_files:
-    print(f"No CSV files found in the folder: {input_csv_folder_path}")
-else:
-    print(f"Found {len(csv_files)} CSV files to process in: {input_csv_folder_path}")
-
-for i, csv_file_path in enumerate(csv_files):
-    print(f"\n--- Reading file: {csv_file_path} ---")
-    base_filename = os.path.basename(csv_file_path)
-    filename_no_ext = os.path.splitext(base_filename)[0]
-
-    try:
-        df = pd.read_csv(csv_file_path)
-        if ref_col not in df.columns or SDB_col not in df.columns:
-            print(f"Warning: Required columns ('{ref_col}', '{SDB_col}') not found in {base_filename}. Skipping.")
-            continue
-        df[ref_col] = pd.to_numeric(df[ref_col], errors='coerce')
-        df[SDB_col] = pd.to_numeric(df[SDB_col], errors='coerce')
-        df = df.dropna(subset=[ref_col, SDB_col])
-        if df.empty:
-            print(f"Warning: No valid numeric data after coercion/NaN removal in {base_filename}. Skipping.")
-            continue
-
-        df[error_col_name] = df[SDB_col] - df[ref_col]
-        error_data = df[error_col_name].dropna()
-
-        if error_data.empty:
-            print(f"Warning: No error data to process for {base_filename} after dropna. Skipping.")
-            continue
-        if len(error_data) < 2:
-            print(f"Warning: Not enough data points ({len(error_data)}) for KDE in {base_filename}. Skipping.")
-            continue
-
-        all_error_data_for_overall_range.extend(error_data.values)
-        datasets_for_kde.append({'label': filename_no_ext, 'data': error_data, 'N': len(error_data)})
-        print(f"Loaded {len(error_data)} error values from '{base_filename}'.")
-    except Exception as e:
-        print(f"An error occurred while processing {csv_file_path}: {e}")
-
-
-# Plot Multiple Scaled KDEs on a Single Figure ---
-if datasets_for_kde:
-    fig, ax = plt.subplots(figsize=(12, 7))
-
-    # Use the defined fixed_bin_width for scaling
-    common_bin_width_for_scaling = fixed_bin_width
-    print(f"Using fixed common bin_width for KDE scaling: {common_bin_width_for_scaling:.4f}")
-
-    max_scaled_kde_y = 0
-    all_scaled_kde_y_arrays = []
-    common_kde_x = None
-    
-    plotted_lines_info = [] # <<< Store dicts of {'line': line_object, 'label': filename_label}
-
-    for i, dataset_info in enumerate(datasets_for_kde):
-        label = dataset_info['label']
-        error_values = dataset_info['data']
-        N = dataset_info['N']
-
-        try:
-            kde = gaussian_kde(error_values)
-
-            if common_kde_x is None:
-                x_min_kde = plot_xlim[0] - (plot_xlim[1] - plot_xlim[0]) * 0.1
-                x_max_kde = plot_xlim[1] + (plot_xlim[1] - plot_xlim[0]) * 0.1
-                common_kde_x = np.linspace(x_min_kde, x_max_kde, 400)
-
-            kde_y_density = kde(common_kde_x)
-            # Use common_bin_width_for_scaling (which is fixed_bin_width)
-            scaled_kde_y = kde_y_density * N * common_bin_width_for_scaling
-
-            all_scaled_kde_y_arrays.append(scaled_kde_y)
-
-            if scaled_kde_y.size > 0:
-                current_max_y = np.max(scaled_kde_y)
-                if current_max_y > max_scaled_kde_y:
-                    max_scaled_kde_y = current_max_y
-            
-            # Plot individual KDE and store the line object and its label
-            line, = ax.plot(common_kde_x, scaled_kde_y,
-                            color=individual_kde_color,
-                            linestyle=individual_kde_linestyle,
-                            linewidth=individual_kde_linewidth,
-                            alpha=0.7)
-            plotted_lines_info.append({'line': line, 'label': label.replace("_", " ")}) # Store line and its original label
-            # print(f"Plotted KDE for: {label}")
-
-        except Exception as e_kde:
-            print(f"Warning: Could not compute or plot KDE for {label}. Error: {e_kde}")
-
-    average_line_handle = None
-    average_kde_stats_text = "Average KDE Stats:\nN/A"
-
-    if all_scaled_kde_y_arrays and common_kde_x is not None:
-        if len(all_scaled_kde_y_arrays) > 0:
-            stacked_kdes = np.array(all_scaled_kde_y_arrays)
-            average_kde_y = np.mean(stacked_kdes, axis=0)
-
-            if average_kde_y.size > 0:
-                current_max_avg_y = np.max(average_kde_y)
-                if current_max_avg_y > max_scaled_kde_y:
-                    max_scaled_kde_y = current_max_avg_y
-            
-            avg_line_plots = ax.plot(common_kde_x, average_kde_y,
-                    color='red',
-                    linestyle='-.',
-                    linewidth=2.5,
-                    label=f'Average KDE (of {len(all_scaled_kde_y_arrays)} datasets)',
-                    zorder=len(datasets_for_kde) + 2)
-            if avg_line_plots:
-                average_line_handle = avg_line_plots[0]
-                # --- CORRECTION: Add average line info to plotted_lines_info for mplcursors if desired ---
-                plotted_lines_info.append({'line': average_line_handle, 'label': average_line_handle.get_label()})
-                # --- END CORRECTION ---
-            print("Plotted Average KDE line.")
-            
-            if all_error_data_for_overall_range:
-                # ... (statistics calculation as before) ...
-                pooled_errors = np.array(all_error_data_for_overall_range)
-                avg_kde_mean = np.mean(pooled_errors); avg_kde_min = np.min(pooled_errors)
-                avg_kde_max = np.max(pooled_errors); avg_kde_std = np.std(pooled_errors)
-                avg_kde_kurtosis = kurtosis(pooled_errors, fisher=True)
-                avg_kde_skewness = skew(pooled_errors)
-                average_kde_stats_text = (
-                    f"Summary Stats (All Data):\n"
-                    f"Mean = {avg_kde_mean:.3f} m\nMin = {avg_kde_min:.2f} m\nMax = {avg_kde_max:.2f} m\n"
-                    f"Std Dev = {avg_kde_std:.2f} m\nSkewness = {avg_kde_skewness:.2f}\nKurtosis = {avg_kde_kurtosis:.2f}\n"
-                    f"Total Pts = {len(pooled_errors)}"
-                )
-            else: average_kde_stats_text = "Average KDE Stats:\n(No pooled data)"
-
-
-    ax.set_xlabel("Error (m)", fontsize=14) # Using generic "Error (m)" as error_col_name might not be defined here
-    ax.set_ylabel("Smoothed Frequency Estimate (Scaled Density)", fontsize=14)
-    ax.set_title(f"Distribution of {Sensor} {SDB_type} Error Values: {AOI}", fontsize=16)
-    ax.set_xlim(plot_xlim)
-    if plot_ylim is not None: ax.set_ylim(plot_ylim)
-    elif max_scaled_kde_y > 0 : ax.set_ylim(0, max_scaled_kde_y * 1.1)
-    else: ax.set_ylim(0, 10)
-
-    if all_scaled_kde_y_arrays:
-        text_x_pos = plot_xlim[0] + (plot_xlim[1] - plot_xlim[0]) * 0.02
-        text_y_pos_current_ylim = ax.get_ylim()
-        text_y_pos = text_y_pos_current_ylim[1] * 0.98
-        ax.text(text_x_pos, text_y_pos, average_kde_stats_text,
-                fontsize=9, color='black', ha='left', va='top',
-                bbox=dict(boxstyle='round,pad=0.4', facecolor='wheat', alpha=0.75))
-
-    # Setup mplcursors 
-    line_to_label_map = {item['line']: item['label'] for item in plotted_lines_info if item['line'] is not None}
-    
-    # Create list of actual Line2D objects for mplcursors ---
-    lines_for_cursor_interaction = [item['line'] for item in plotted_lines_info if item['line'] is not None]
-
-
-    if lines_for_cursor_interaction: # Check if there are any lines to make interactive
-        cursor = mplcursors.cursor(lines_for_cursor_interaction, hover=True) # Changed to hover=True for example
-        @cursor.connect("add")
-        def on_add(sel):
-            label_for_line = line_to_label_map.get(sel.artist, "Unknown Line")
-            sel.annotation.set_text(f"File: {label_for_line}\nError: {sel.target[0]:.2f}\nScaled Density: {sel.target[1]:.2f}")
-            sel.annotation.get_bbox_patch().set(alpha=0.85, facecolor='lightyellow') # Ensure alpha is applied
-    
-    # Legend 
-    if average_line_handle:
-        ax.legend(handles=[average_line_handle], fontsize=12, loc='best')
-    # If you want all lines in legend (even gray ones), you need to add labels to their plot calls
-    # or build a custom legend. For now, only average is explicitly labeled.
-
-    ax.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.tight_layout()
-
-    output_plot_full_path = os.path.join(output_plot_folder_path, combined_plot_filename)
-    
-    # try:
-    #     plt.savefig(output_plot_full_path) # Ensure this is uncommented to save
-    #     print(f"\nSUCCESS: Combined KDE plot saved to: {output_plot_full_path}")
-    # except Exception as e_save:
-    #     print(f"\nERROR: Failed to save combined KDE plot {output_plot_full_path}. Error: {e_save}")
-    
-    plt.show()
-    #plt.close(fig)
-
-else:
-    print("\nNo datasets were successfully processed to generate a combined KDE plot.")
-
-print("\n--- All CSV files processed. ---")
-
-
-
-
-
-
-##############################################################################################################
-##############################################################################################################
 
 """ Single Histogram chart for viewing multiple SuperDove and Sentinel-2 error values for a single site """
 

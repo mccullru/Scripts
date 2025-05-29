@@ -19,8 +19,6 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 from difflib import get_close_matches
 
-
-
 ##############################################################################
 ##############################################################################
 
@@ -117,7 +115,7 @@ def combine_bands_to_rgb(input_folder, output_folder):
 
 ################# CHECK DIRECTORIES/INPUTS #####################
 
-input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_Sentinel2\S2_Hyannis_output"
+input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_Homer_output"
 output_folder = r"E:\Thesis Stuff\RGBCompositOutput"
 
 
@@ -239,7 +237,7 @@ def mask_optically_deep_water(input_rgb_folder,
 
 ################# CHECK DIRECTORIES/INPUTS #####################
 
-raw_bands_input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_Sentinel2\S2_Hyannis_output"
+raw_bands_input_folder = r"E:\Thesis Stuff\AcoliteWithPython\Corrected_Imagery\All_SuperDove\SD_Homer_output"
 
 rgb_and_masked_folder = r"E:\Thesis Stuff\RGBCompositOutput"
 
@@ -491,124 +489,109 @@ process_rgb_geotiffs(input_folder, output_folder)
 """ Specifically choose reference data file"""
 
 
-def extract_raster_values(cal_csv_file, raster_folder, output_folder):
+import os
+import pandas as pd
+import geopandas as gpd
+import rasterio
+from rasterio.sample import sample_gen
+from shapely.geometry import box
+
+def extract_raster_values_optimized(cal_csv_file, raster_folder, output_folder):
     """
-    Extracts raster values at the locations provided in the CSV file and saves the results.
+    Extracts raster values at specified locations using optimized vectorized operations.
 
     Args:
-        cal_csv_file (str): Path to the CSV file containing latitude, longitude, and elevation.
+        cal_csv_file (str): Path to the CSV file with point coordinates.
         raster_folder (str): Path to the folder containing GeoTIFF raster files.
-        output_folder (str): Path to the folder where the results will be saved.
+        output_folder (str): Path to the folder for saving results.
     """
-    # Ensure output folder exists
+    # Ensure the output folder exists
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    # Load the CSV file
+    # --- 1. Load and Prepare Point Data (Done Once) ---
+    print("Loading and preparing reference points...")
     df = pd.read_csv(cal_csv_file)
+    
+    # Assuming first col is Easting, second is Northing, third is Elevation
+    easting_col, northing_col, elev_col = df.columns[0], df.columns[1], df.columns[2]
 
-    # Multiply the height column by -1 to change from elevation to depth values
-    print(f"Multiplying height column '{df.columns[2]}' (index 2) by -1.")
-    # Make sure the column is positive before multiplying
-    df.iloc[:, 2] = pd.to_numeric(df.iloc[:, 2], errors='coerce') * -1
-   
-    # Remove rows where final depth < 0 
+    # Convert elevation to depth and filter out invalid points
+    df[elev_col] = pd.to_numeric(df[elev_col], errors='coerce') * -1
     original_rows = len(df)
-    
-    # Removes rows that became NaN during `to_numeric` conversion
-    df = df[df.iloc[:, 2] >= 1]
+    df.dropna(subset=[elev_col], inplace=True)
+    df = df[df[elev_col] >= 1] # Keep only valid depths
     rows_removed = original_rows - len(df)
-    if rows_removed > 0: # Added print for feedback
-         print(f"Removed {rows_removed} rows with negative or NaN depth values.")
+    if rows_removed > 0:
+        print(f"Removed {rows_removed} rows with invalid or negative depth values.")
 
-    
-    # Easting has to be first column, northing second, and ortho heights third
-    easting = df.iloc[:, 0]
-    northing = df.iloc[:, 1]
-    
-    # Convert to GeoDataFrame
-    gdf = gpd.GeoDataFrame(df, geometry=gpd.GeoSeries.from_xy(easting, northing))
-    
-    # Loop through all raster files in the folder
+    # Create a GeoDataFrame from the points
+    gdf = gpd.GeoDataFrame(
+        df, geometry=gpd.points_from_xy(df[easting_col], df[northing_col])
+    )
+
+    # --- 2. Process Each Raster File ---
     for raster_file in os.listdir(raster_folder):
-        if raster_file.endswith(".tif"):  # Assuming GeoTIFF raster files
+        if raster_file.lower().endswith(".tif"):
             raster_path = os.path.join(raster_folder, raster_file)
-            print(f"Processing raster: {raster_file}")
+            print(f"\nProcessing raster: {raster_file}")
 
-            # Open the raster file using rasterio
             with rasterio.open(raster_path) as src:
-                
-                # Filter reference points that are within the raster bounds
-                raster_bounds = src.bounds
-                gdf_in_bounds = gdf[gdf.geometry.apply(lambda point: is_point_within_bounds(point, raster_bounds))]
+                # Set the CRS of the points to match the raster's CRS
+                # This is crucial for accurate alignment!
+                if gdf.crs != src.crs:
+                    print(f"Assigning raster CRS ({src.crs}) to points.")
+                    gdf.set_crs(src.crs, inplace=True)
 
-                # Ensure there are points within the bounds
+                # --- OPTIMIZATION 1: Fast Filtering with a Spatial Index ---
+                # Create a bounding box from the raster's extent
+                raster_bbox = box(*src.bounds)
+                
+                # Use a spatial clip, which is much faster than .apply()
+                gdf_in_bounds = gdf.clip(raster_bbox)
+
                 if gdf_in_bounds.empty:
                     print(f"No points overlap with raster: {raster_file}")
                     continue
                 
-                # Extract the raster values at each valid location
-                gdf_in_bounds.loc[:, 'Raster_Value'] = gdf_in_bounds.geometry.apply(lambda point: get_raster_value_at_point(src, point))
-            
-            # Check if 'Raster_Value' exists and drop rows with NaN (NoData or out-of-bounds)
-            if 'Raster_Value' in gdf_in_bounds.columns:
-                gdf_filtered = gdf_in_bounds.dropna(subset=['Raster_Value'])
-            else:
-                print(f"No valid raster values found for raster: {raster_file}")
-                continue
-            
-            # Save the results to a new CSV file
-            output_filename = os.path.splitext(raster_file)[0] + "_extracted.csv"
-            output_path = os.path.join(output_folder, output_filename)
-            gdf_filtered.to_csv(output_path, index=False)
-            print(f"Results saved to: {output_path}")
+                print(f"Found {len(gdf_in_bounds)} points within the raster bounds.")
 
-def get_raster_value_at_point(src, point):
-    """
-    Gets the raster value at a specific point (latitude, longitude).
-    Returns None if the value is NoData.
-    """
-    try:
-        # Convert point to raster coordinates (row, column)
-        row, col = src.index(point.x, point.y)
-        value = src.read(1)[row, col]
-        
-        # Check if value is NoData and return None if so
-        if value == src.nodata:
-            return None  # Return None for NoData
-        else:
-            return value
-    except (IndexError, ValueError):
-        # If an error occurs (e.g., point is out of bounds), return None
-        return None
+                # --- OPTIMIZATION 2: Vectorized Value Extraction ---
+                # Get the coordinates of the valid points for sampling
+                coords = [(p.x, p.y) for p in gdf_in_bounds.geometry]
 
-def is_point_within_bounds(point, bounds):
-    """
-    Checks if a point is within raster bounds.
-    """
-    return bounds.left <= point.x <= bounds.right and bounds.bottom <= point.y <= bounds.top
+                # Use rasterio.sample.sample_gen for efficient, bulk extraction
+                # It returns a generator, so we convert it to a list
+                raster_values = [val[0] for val in src.sample(coords)]
 
+                # Add the extracted values to the GeoDataFrame
+                gdf_in_bounds = gdf_in_bounds.copy()
+                gdf_in_bounds.loc[:, 'Raster_Value'] = raster_values
+                
+                # --- 3. Clean and Save Results ---
+                # Remove points where the raster has NoData values
+                gdf_in_bounds.dropna(subset=['Raster_Value'], inplace=True)
 
+                if gdf_in_bounds.empty:
+                    print(f"No valid raster values found for raster: {raster_file}")
+                    continue
 
-      #################  CHECK DIRECTORIES/INPUTS #####################
+                # Save the results to a new CSV
+                output_filename = os.path.splitext(raster_file)[0] + "_extracted.csv"
+                output_path = os.path.join(output_folder, output_filename)
+                gdf_in_bounds.to_csv(output_path, index=False)
+                print(f"Results saved to: {output_path}")
 
-cal_csv_file = r"B:\Thesis Project\Reference Data\Processed_Topobathy\Hyannis_calibration_points_dense.csv"     # Calibration reference data
+# #################  CHECK DIRECTORIES/INPUTS #####################
+# It is recommended to use absolute paths or ensure your working directory is correct
+cal_csv_file = r"B:\Thesis Project\Reference Data\Full_topo_data\Homer\ITRF_EGM08\2019\las\Homer_calibration_points_dense_25.csv"
 
-### Save Results Path ###
-#raster_folder = r"B:\Thesis Project\SDB_Time\Results_main\Hyannis\SuperDove\pSDB"
-
-### Workspace Path ###
 raster_folder = r"E:\Thesis Stuff\pSDB"
 
-
-### Save Results Path ###
-#output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Hyannis\SuperDove\Extracted Pts\pSDB"
-
-### Workspace Path ###
 output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts"
 
-extract_raster_values(cal_csv_file, raster_folder, output_folder)
-
+# Run the optimized function
+extract_raster_values_optimized(cal_csv_file, raster_folder, output_folder)
 
 
 ##############################################################################
@@ -1445,10 +1428,9 @@ process_sdb_folder(input_folder)
 
 
 
+""" Only merge if R² is above a given threshold."""
 
-"""Processes all matching SDBred and SDBgreen rasters in a folder, merging only if R² ≥ threshold."""
-
-# def process_sdb_folder(input_folder, csv_folder, r2_threshold=0.7):
+# def process_sdb_folder(input_folder, csv_folder, r2_threshold=0.3):
 
 
 #     # Get lists of all SDBred and SDBgreen files
@@ -1499,8 +1481,8 @@ process_sdb_folder(input_folder)
 
 #         # Save the new merged raster
 #         with rasterio.open(output_path, 'w', driver='GTiff', count=1, dtype=sdb_merged.dtype,
-#                            height=sdb_merged.shape[0], width=sdb_merged.shape[1],
-#                            crs=red_dataset.crs, transform=red_dataset.transform) as dst:
+#                             height=sdb_merged.shape[0], width=sdb_merged.shape[1],
+#                             crs=red_dataset.crs, transform=red_dataset.transform) as dst:
 #             dst.write(sdb_merged, 1)
 
 #         print(f"Saved merged SDB raster: {output_path}")
@@ -1510,7 +1492,9 @@ process_sdb_folder(input_folder)
 # input_folder = r"E:\Thesis Stuff\SDB"  # Folder with input rasters
 # csv_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_Results"  # Folder containing regression results
 
-# process_sdb_folder(input_folder, csv_folder, r2_threshold=0.7)
+# process_sdb_folder(input_folder, csv_folder, r2_threshold=0.3)
+
+
 
 
 ##############################################################################################################
@@ -1531,109 +1515,105 @@ process_sdb_folder(input_folder)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ##############################################################################################################
 ##############################################################################################################
 
 """Extract SDB values at reference point locations"""
 
 
-def extract_raster_values(val_csv_file, raster_folder, output_folder):
+import os
+import pandas as pd
+import geopandas as gpd
+import rasterio
+from rasterio.sample import sample_gen
+from shapely.geometry import box
+
+def extract_raster_values_optimized(val_csv_file, raster_folder, output_folder):
     """
-    Extracts raster values at the locations provided in the CSV file and saves the results.
+    Extracts raster values at specified locations using optimized vectorized operations.
 
     Args:
-        val_csv_file (str): Path to the CSV file containing latitude, longitude, and elevation.
+        val_csv_file (str): Path to the CSV file with point coordinates.
         raster_folder (str): Path to the folder containing GeoTIFF raster files.
-        output_folder (str): Path to the folder where the results will be saved.
+        output_folder (str): Path to the folder for saving results.
     """
-    # Ensure output folder exists
+    # Ensure the output folder exists
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    # Load the CSV file
+    # --- 1. Load and Prepare Point Data (Done Once) ---
+    print("Loading and preparing validation points...")
     df = pd.read_csv(val_csv_file)
     
+    # Assign clear column names
     df.columns = ['Easting(m)', 'Northing(m)', 'Geoid_Corrected_Ortho_Height']
-   
-    # Multiply the 'Geoid_Corrected_Ortho_Height' column by -1 DON"T DO IT IF ALREADY POSITIVE
-    print("Multiplying 'Geoid_Corrected_Ortho_Height' column by -1.")
-    # Ensure the column is numeric before multiplying
     height_col_name = 'Geoid_Corrected_Ortho_Height'
-    df[height_col_name] = pd.to_numeric(df[height_col_name], errors='coerce') * -1
-   
-    # Convert the CSV to GeoDataFrame
-    gdf = gpd.GeoDataFrame(df, geometry=gpd.GeoSeries.from_xy(df['Easting(m)'], df['Northing(m)']))
+
+    # Convert height to depth: only multiply negative values by -1
+    print(f"Converting negative values in '{height_col_name}' to positive depth.")
+    df[height_col_name] = pd.to_numeric(df[height_col_name], errors='coerce')
+    # Use .loc to ensure we are modifying the actual DataFrame
+    df.loc[df[height_col_name] < 0, height_col_name] *= -1
     
-    # Loop through all raster files in the folder
+    # Create a GeoDataFrame from the points
+    gdf = gpd.GeoDataFrame(
+        df, geometry=gpd.points_from_xy(df['Easting(m)'], df['Northing(m)'])
+    )
+
+    # --- 2. Process Each Raster File ---
     for raster_file in os.listdir(raster_folder):
-        if raster_file.endswith(".tif"):  # Assuming GeoTIFF raster files
+        if raster_file.lower().endswith(".tif"):
             raster_path = os.path.join(raster_folder, raster_file)
-            print(f"Processing raster: {raster_file}")
+            print(f"\nProcessing raster: {raster_file}")
 
-            # Open the raster file using rasterio
             with rasterio.open(raster_path) as src:
-                
-                # Filter reference points that are within the raster bounds
-                raster_bounds = src.bounds
-                gdf_in_bounds = gdf[gdf.geometry.apply(lambda point: is_point_within_bounds(point, raster_bounds))]
+                # Set the CRS of the points to match the raster's CRS
+                if gdf.crs != src.crs:
+                    print(f"Assigning raster CRS ({src.crs}) to points.")
+                    gdf.set_crs(src.crs, inplace=True)
 
-                # Ensure there are points within the bounds
+                # --- OPTIMIZATION 1: Fast Filtering with a Spatial Index ---
+                raster_bbox = box(*src.bounds)
+                gdf_in_bounds = gdf.clip(raster_bbox)
+
                 if gdf_in_bounds.empty:
                     print(f"No points overlap with raster: {raster_file}")
                     continue
                 
-                # Extract the raster values at each valid location
-                gdf_in_bounds.loc[:, 'Raster_Value'] = gdf_in_bounds.geometry.apply(lambda point: get_raster_value_at_point(src, point))
-            
-            # Check if 'Raster_Value' exists and drop rows with NaN
-            if 'Raster_Value' in gdf_in_bounds.columns:
-                gdf_filtered = gdf_in_bounds.dropna(subset=['Raster_Value'])
-            else:
-                print(f"No valid raster values found for raster: {raster_file}")
-                continue
-            
-            # Save the results to a new CSV file
-            output_filename = os.path.splitext(raster_file)[0] + "_extracted.csv"
-            output_path = os.path.join(output_folder, output_filename)
-            gdf_filtered.to_csv(output_path, index=False)
-            print(f"Results saved to: {output_path}")
+                print(f"Found {len(gdf_in_bounds)} points within the raster bounds.")
 
+                # --- OPTIMIZATION 2: Vectorized Value Extraction ---
+                coords = [(p.x, p.y) for p in gdf_in_bounds.geometry]
+                raster_values = [val[0] for val in src.sample(coords, nodata=src.nodata)]
 
-######################  CHECK DIRECTORIES/INPUTS #####################
+                # Add the extracted values back to the GeoDataFrame
+                gdf_in_bounds = gdf_in_bounds.copy()
+                gdf_in_bounds.loc[:, 'Raster_Value'] = raster_values
+                
+                # --- 3. Clean and Save Results ---
+                # Remove points where the raster value is the NoData value or NaN
+                # This handles cases where sample_gen might return the nodata value
+                if src.nodata is not None:
+                    gdf_in_bounds = gdf_in_bounds[gdf_in_bounds['Raster_Value'] != src.nodata]
+                gdf_in_bounds.dropna(subset=['Raster_Value'], inplace=True)
 
-val_csv_file = r"B:\Thesis Project\Reference Data\Processed_Topobathy\Hyannis_validation_points_dense.csv"
+                if gdf_in_bounds.empty:
+                    print(f"No valid raster values found for raster: {raster_file}")
+                    continue
 
+                # Save the results to a new CSV
+                output_filename = os.path.splitext(raster_file)[0] + "_extracted.csv"
+                output_path = os.path.join(output_folder, output_filename)
+                gdf_in_bounds.to_csv(output_path, index=False)
+                print(f"Results saved to: {output_path}")
 
-### Save Results Path ###
-#raster_folder = r"B:\Thesis Project\SDB_Time\Results_main\Hyannis\SuperDove\SDB"
-
-### Workspace Path ###
+# ######################  CHECK DIRECTORIES/INPUTS #####################
+val_csv_file = r"B:\Thesis Project\Reference Data\Full_topo_data\Homer\ITRF_EGM08\2019\las\Homer_validation_points_dense_25.csv"
 raster_folder = r"E:\Thesis Stuff\SDB"
-
-
-### Save Results Path ###
-#output_folder = r"B:\Thesis Project\SDB_Time\Results_main\Hyannis\SuperDove\Extracted Pts\SDB"
-
-### Workspace Path ###
 output_folder = r"E:\Thesis Stuff\SDB_ExtractedPts"
 
-
-
-extract_raster_values(val_csv_file, raster_folder, output_folder)
+# Run the optimized function
+extract_raster_values_optimized(val_csv_file, raster_folder, output_folder)
 
 ##############################################################################################################
 ##############################################################################################################
@@ -1783,6 +1763,9 @@ process_csv_files(input_folder, output_folder)
 
 """Better Optically Deep finder: Perform another linear regression but this time find the best line of fit 
    with the highest R^2 value """
+
+
+
 
 
 ### Save Results Path ###
@@ -2165,7 +2148,8 @@ for data_name_full_path in csv_files:
                     seen_labels.add(label)
             ax.legend(handles=unique_handles, loc='best', fontsize=8)
 
-
+        ax.set_xlim(left=0)  # Sets the minimum x-axis value to 0, right limit autoscales
+        ax.set_ylim(bottom=0)
         plt.tight_layout()
         plot_filename = f"{just_the_filename_for_output_csv}_plot_dual_highlight.png" # New filename
         plot_save_path = os.path.join(output_save_folder_path, plot_filename)

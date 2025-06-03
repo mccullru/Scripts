@@ -4,12 +4,230 @@ Created on Thu May 22 11:25:38 2025
 
 @author: mccullru
 """
+
 import os
 import glob
 import rasterio
 import numpy as np
 import re
 
+
+#################################################################################################################
+#################################################################################################################
+
+""" Flags pSDB that has R^2 values below a set threshold, saves them to csv file """
+
+#input_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results"
+
+#output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results\Flagged Results"
+
+import pandas as pd
+import os
+import glob
+import numpy as np
+
+def process_r2_with_indicator_fallback(input_folder_path, output_csv_path,
+                                       r2_threshold=0.6,
+                                       indicator_col="Indicator",
+                                       r2_col="R2 Value",
+                                       image_name_col="Image Name",
+                                       flag_col_name="R2_Threshold_Outcome_Flag"):
+    """
+    Processes CSV files to evaluate R2 values based on an 'Indicator' column.
+    Prioritizes Indicator=2 rows. If an Indicator=2 row's R2 (rounded) meets
+    the threshold, its R2 is used and flag is 1.
+    If Indicator=2 row's R2 fails, it checks the corresponding Indicator=1 row.
+    If Indicator=1 row's R2 (rounded) meets threshold, its R2 is used and flag is 1.
+    Otherwise, the Indicator=2 row's R2 is used and flag is 0 (if R2 was valid) or NaN.
+    Only outputs data for Image Names that have an Indicator=2 row.
+
+    Args:
+        input_folder_path (str): Path to the folder containing input CSV files.
+        output_csv_path (str): Full path for the output CSV file.
+        r2_threshold (float, optional): R2 threshold. Defaults to 0.6.
+        indicator_col (str, optional): Name of the Indicator column. Defaults to "Indicator".
+        r2_col (str, optional): Name of the R2 Value column. Defaults to "R2 Value".
+        image_name_col (str, optional): Name of the Image Name column. Defaults to "Image Name".
+        flag_col_name (str, optional): Name for the new flag column.
+                                        Defaults to "R2_Threshold_Outcome_Flag".
+
+    Returns:
+        bool: True if successful, False otherwise.
+    """
+    results_to_save = []
+    output_column_names = [image_name_col, r2_col, flag_col_name]
+
+    if not os.path.isdir(input_folder_path):
+        print(f"Error: Input folder not found at '{input_folder_path}'")
+        return False
+
+    csv_files = glob.glob(os.path.join(input_folder_path, "*.csv"))
+
+    if not csv_files:
+        print(f"No CSV files found in '{input_folder_path}'.")
+        if output_csv_path:
+            output_dir = os.path.dirname(output_csv_path)
+            if output_dir and not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            pd.DataFrame(columns=output_column_names).to_csv(output_csv_path, index=False)
+            print(f"No input CSVs, empty output file with headers created at '{output_csv_path}'")
+        return True
+
+    print(f"Found {len(csv_files)} CSV files to process in '{input_folder_path}'.")
+
+    for file_path in csv_files:
+        print(f"\nProcessing '{os.path.basename(file_path)}'...")
+        try:
+            df = pd.read_csv(file_path)
+            if df.empty:
+                print(f"  Warning: File '{os.path.basename(file_path)}' is empty. Skipping.")
+                continue
+
+            required_cols = [indicator_col, r2_col, image_name_col]
+            if not all(col in df.columns for col in required_cols):
+                print(f"  Warning: File '{os.path.basename(file_path)}' is missing one or more required columns: {required_cols}. Skipping.")
+                continue
+
+            df[indicator_col] = pd.to_numeric(df[indicator_col], errors='coerce')
+            df[r2_col] = pd.to_numeric(df[r2_col], errors='coerce')
+            df.dropna(subset=[indicator_col], inplace=True)
+
+            for name_of_image, group in df.groupby(image_name_col):
+                row_ind2 = group[group[indicator_col] == 2].copy()
+                row_ind1 = group[group[indicator_col] == 1].copy()
+
+                r2_to_report = np.nan
+                flag_for_report = np.nan
+                image_name_for_report = name_of_image
+
+                if not row_ind2.empty:
+                    ind2_data = row_ind2.iloc[0]
+                    r2_original_ind2 = ind2_data[r2_col]
+                    r2_check_ind2 = round(r2_original_ind2, 2) if pd.notna(r2_original_ind2) else np.nan
+                    
+                    ind2_passes_threshold = pd.notna(r2_check_ind2) and r2_check_ind2 >= r2_threshold
+
+                    if ind2_passes_threshold:
+                        r2_to_report = r2_original_ind2
+                        flag_for_report = 1
+                    else: 
+                        if not row_ind1.empty:
+                            ind1_data = row_ind1.iloc[0]
+                            r2_original_ind1 = ind1_data[r2_col]
+                            r2_check_ind1 = round(r2_original_ind1, 2) if pd.notna(r2_original_ind1) else np.nan
+                            
+                            ind1_passes_threshold = pd.notna(r2_check_ind1) and r2_check_ind1 >= r2_threshold
+
+                            if ind1_passes_threshold:
+                                r2_to_report = r2_original_ind1
+                                flag_for_report = 1
+                            else: 
+                                r2_to_report = r2_original_ind2 
+                                flag_for_report = 0 if pd.notna(r2_check_ind2) else np.nan
+                        else: 
+                            r2_to_report = r2_original_ind2
+                            flag_for_report = 0 if pd.notna(r2_check_ind2) else np.nan
+                    
+                    results_to_save.append({
+                        image_name_col: image_name_for_report,
+                        r2_col: r2_to_report,
+                        flag_col_name: flag_for_report
+                    })
+
+        except pd.errors.EmptyDataError:
+            print(f"  Warning: File '{os.path.basename(file_path)}' became empty after initial processing. Skipping.")
+        except Exception as e:
+            print(f"  Error processing file '{os.path.basename(file_path)}': {e}. Skipping.")
+
+    if results_to_save:
+        output_df = pd.DataFrame(results_to_save, columns=output_column_names)
+        try:
+            output_dir = os.path.dirname(output_csv_path)
+            if output_dir and not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            output_df.to_csv(output_csv_path, index=False, float_format='%.4f')
+            print(f"\nSuccessfully saved {len(output_df)} entries to '{output_csv_path}'.")
+        except Exception as e:
+            print(f"\nError saving output CSV to '{output_csv_path}': {e}")
+            return False
+    else:
+        print("\nNo Image Names with an Indicator 2 row were found, or no data to report based on logic.")
+        try:
+            output_dir = os.path.dirname(output_csv_path)
+            if output_dir and not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            pd.DataFrame(columns=output_column_names).to_csv(output_csv_path, index=False)
+            print(f"Empty results file with headers created at '{output_csv_path}'.")
+        except Exception as e:
+            print(f"\nError saving empty output CSV to '{output_csv_path}': {e}")
+            return False
+    return True
+
+# --- How to use with your specific paths ---
+if __name__ == "__main__":
+    # Your provided paths
+    input_data_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results"
+    output_save_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results\Flagged Results"
+
+    # Define the full path for the output CSV file
+    output_filename = "Flagged R^2 Summary.csv" # You can change this name
+    full_output_csv_path = os.path.join(output_save_folder, output_filename)
+
+    # Make sure the output directory exists
+    if not os.path.exists(output_save_folder):
+        os.makedirs(output_save_folder)
+        print(f"Created output directory: {output_save_folder}")
+
+    # Call the function
+    success = process_r2_with_indicator_fallback(
+        input_folder_path=input_data_folder,
+        output_csv_path=full_output_csv_path,
+        r2_threshold=0.7,   # R2 >= 0.7 is considered "meeting threshold"
+    )
+
+    if success:
+        print("\nProcess completed successfully.")
+        if os.path.exists(full_output_csv_path):
+            try:
+                summary_df = pd.read_csv(full_output_csv_path)
+                if not summary_df.empty:
+                    print(f"\nFirst 5 rows of the output file ('{full_output_csv_path}'):")
+                    print(summary_df.head())
+                    print(f"\nValue counts for '{summary_df.columns[-1]}' (the flag column):") # Assumes flag is last
+                    print(summary_df[summary_df.columns[-1]].value_counts(dropna=False))
+                else:
+                    print(f"\nOutput file '{full_output_csv_path}' is empty.")
+            except pd.errors.EmptyDataError:
+                 print(f"\nOutput file '{full_output_csv_path}' is empty (pd.errors.EmptyDataError).")
+            except Exception as e:
+                print(f"Could not read or display output CSV: {e}")
+    else:
+        print("\nProcess encountered an error.")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#################################################################################################################
+#################################################################################################################
 
 # # --- Helper function to extract Rrs wavelength ---
 # def extract_rrs_number(file_name):
@@ -398,6 +616,9 @@ import os
 import pandas as pd
 import glob
 
+
+""" More reference data csv filtering"""
+
 # def filter_csv_columns(input_folder, output_folder, columns_to_keep):
 #     """
 #     Reads CSV files from an input folder, keeps only specified columns,
@@ -499,141 +720,185 @@ import glob
 
 #################################################################################################################
 #################################################################################################################
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-import os
 
-def heatscatter(ax, x, y,
-                bins, title, cmap,
-                xlabel, ylabel, identity_line=False,
-                xlim=None, ylim=None, # <<< Assume these will ALWAYS be provided as valid tuples
-                **kwargs):
-    """
-    Create a 2D histogram plot of x and y data.
-    Applies provided xlim and ylim directly.
+""" Simple optically deep finder [(Rrs_green)^2/(Rrs_blue)]"""
 
-    Parameters
-    ----------
-    ax : matplotlib axis
-    x : numpy ndarray
-    y : numpy ndarray
-    bins : int or tuple(int,int)
-    title : str
-    cmap : str
-    xlabel: str
-    ylabel: str
-    identity_line : bool, optional
-    xlim : tuple
-        Tuple (xmin, xmax) to set the x-axis limits. MUST be provided.
-    ylim : tuple
-        Tuple (ymin, ymax) to set the y-axis limits. MUST be provided.
-    **kwargs:
-        Additional keyword arguments passed to matplotlib.hist2d
+# import rasterio
+# import numpy as np
+# import os
+# import glob # Added for finding files
+# # import matplotlib.pyplot as plt # Keep if you re-add SHOW_PREVIEW functionality
 
-    Returns
-    -------
-    hs: tuple or None
-    """
-    x = np.asarray(x)
-    y = np.asarray(y)
+# def calculate_osi(rgb_tif_path, output_osi_tif_path, green_band_idx=1, blue_band_idx=2):
+#     """
+#     Calculates the Optically Shallow Index (OSI) from an RGB TIFF image.
+#     OSI = (Rrs_green)^2 / (Rrs_blue)
+
+#     The band indices are 0-based (e.g., for a standard RGB TIFF where
+#     Band 1=Red, Band 2=Green, Band 3=Blue in GIS software, you would use:
+#     green_band_idx = 1 (for the second band)
+#     blue_band_idx = 2 (for the third band)
+#     which are the defaults for this function).
+
+#     Parameters:
+#     - rgb_tif_path (str): Path to the input RGB TIFF file.
+#     - output_osi_tif_path (str): Path to save the output single-band OSI TIFF file.
+#     - green_band_idx (int): 0-based index of the green band. Default is 1.
+#     - blue_band_idx (int): 0-based index of the blue band. Default is 2.
     
-    finite_mask = np.isfinite(x) & np.isfinite(y)
-    x_finite = x[finite_mask]
-    y_finite = y[finite_mask]
+#     Returns:
+#     - bool: True if successful, False otherwise.
+#     """
+#     print(f"\n--- Processing file: {os.path.basename(rgb_tif_path)} ---")
+#     try:
+#         with rasterio.open(rgb_tif_path) as src:
+#             # print(f"Reading input: {rgb_tif_path}") # Path is printed above
 
-    # Set limits FIRST, so even an empty plot has the desired frame
-    ax.set_xlim(xlim) # <<< Always applies xlim
-    ax.set_ylim(ylim) # <<< Always applies ylim
+#             min_required_bands = max(green_band_idx, blue_band_idx) + 1
+#             if src.count < min_required_bands:
+#                 print( # Changed from raise to print error and return False
+#                     f"  Error: Input TIFF '{os.path.basename(rgb_tif_path)}' has {src.count} band(s), but needs "
+#                     f"{min_required_bands} for green (0-idx: {green_band_idx}) "
+#                     f"and blue (0-idx: {blue_band_idx}). Skipping this file."
+#                 )
+#                 return False
+            
+#             profile = src.profile
+#             # print(f"  Reading Green band (file band {green_band_idx + 1}) and Blue band (file band {blue_band_idx + 1}).")
+#             rrs_green_raw = src.read(green_band_idx + 1)
+#             rrs_blue_raw = src.read(blue_band_idx + 1)
+#             rrs_green = rrs_green_raw.astype(np.float32)
+#             rrs_blue = rrs_blue_raw.astype(np.float32)
+#             source_nodata = src.nodata
+#             if source_nodata is not None:
+#                 # print(f"  Source NoData value: {source_nodata}. Converting to NaN.")
+#                 rrs_green[rrs_green_raw == source_nodata] = np.nan
+#                 rrs_blue[rrs_blue_raw == source_nodata] = np.nan
+            
+#             profile.update(
+#                 dtype=rasterio.float32,
+#                 count=1,
+#                 driver='GTiff',
+#                 nodata=np.nan,
+#                 compress='lzw'
+#             )
+            
+#             # print("  Calculating OSI = (Green^2) / Blue ...")
+#             with np.errstate(divide='ignore', invalid='ignore'):
+#                 osi = (rrs_green**2) / rrs_blue
+#             osi[np.isinf(osi)] = np.nan
+            
+#             # Ensure output directory for this specific file exists
+#             current_output_dir = os.path.dirname(output_osi_tif_path)
+#             if not os.path.exists(current_output_dir):
+#                 os.makedirs(current_output_dir)
+#                 print(f"  Created output directory: {current_output_dir}")
 
-    if len(x_finite) == 0 or len(y_finite) == 0:
-        print("Warning: No finite data points left after filtering NaNs/Infs. Cannot plot hist2d.")
-        ax.set_title(title)
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        if identity_line:
-            # Draw identity line based on the explicitly set limits
-            lim_min_plot = max(xlim[0], ylim[0])
-            lim_max_plot = min(xlim[1], ylim[1])
-            if lim_min_plot < lim_max_plot:
-                ax.plot([lim_min_plot, lim_max_plot], [lim_min_plot, lim_max_plot], 'k--', linewidth=1)
-            else: # Fallback if limits don't allow for a good diagonal
-                ax.plot([xlim[0], xlim[1]], [ylim[0], ylim[1]], 'k--', linewidth=1) # Or use ax.transAxes
-        return None
+#             # print(f"  Writing OSI raster to: {output_osi_tif_path}")
+#             with rasterio.open(output_osi_tif_path, 'w', **profile) as dst:
+#                 dst.write(osi.astype(rasterio.float32), 1)
+#             print(f"  Successfully created OSI: {os.path.basename(output_osi_tif_path)}")
+#             return True
 
-    hs = ax.hist2d(x_finite, y_finite, bins=bins, cmin=1, cmap=cmap, 
-                   range=[[xlim[0], xlim[1]], [ylim[0], ylim[1]]], # Ensure hist2d also respects limits for binning
-                   **kwargs)
+#     except FileNotFoundError: # Should not happen if glob found it
+#         print(f"  Error: Input RGB TIFF file not found at '{rgb_tif_path}'. Skipping.")
+#     except rasterio.errors.RasterioIOError as e:
+#         print(f"  Rasterio I/O Error for '{os.path.basename(rgb_tif_path)}': {e}. Skipping.")
+#     except ValueError as ve: # Catch ValueErrors from band check etc.
+#         print(f"  ValueError for '{os.path.basename(rgb_tif_path)}': {ve}. Skipping.")
+#     except Exception as e:
+#         print(f"  An unexpected error occurred with '{os.path.basename(rgb_tif_path)}': {e}. Skipping.")
+#         # import traceback # Uncomment for detailed debugging if needed
+#         # traceback.print_exc()
+#     return False
+
+# if __name__ == '__main__':
+
+#     # Define the INPUT FOLDER containing RGB TIFF files
+#     rgb_input_folder_path = r"E:\Thesis Stuff\RGBCompositOutput\New folder" 
     
-    if identity_line:
-        lim_min_plot = max(xlim[0], ylim[0])
-        lim_max_plot = min(xlim[1], ylim[1])
-        if lim_min_plot < lim_max_plot:
-            ax.plot([lim_min_plot, lim_max_plot], [lim_min_plot, lim_max_plot], 'k--', linewidth=1)
-        else:
-             ax.plot([xlim[0], xlim[1]], [ylim[0], ylim[1]], 'k--', linewidth=1)
+#     # Define the OUTPUT FOLDER for the single-band OSI TIFFs
+#     osi_output_folder_path = r"E:\Thesis Stuff\RGBCompositOutput\New folder"
+
+#     # Define the 0-based indices for the green and blue bands in your RGB TIFFs
+#     GREEN_BAND_INDEX = 1  # Corresponds to the 2nd band in the file (e.g., typical RGB)
+#     BLUE_BAND_INDEX = 2   # Corresponds to the 3rd band in the file (e.g., typical RGB)
 
 
-    ax.set_title(title)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+#     # Create the main output folder if it doesn't exist
+#     if not os.path.exists(osi_output_folder_path):
+#         os.makedirs(osi_output_folder_path)
+#         print(f"Created main output folder: {osi_output_folder_path}")
+
+#     # Find all .tif files in the input folder
+#     # You can add more extensions if needed, e.g., "*.tiff"
+#     search_pattern = os.path.join(rgb_input_folder_path, "*.tif")
+#     tiff_files = glob.glob(search_pattern)
     
-    # xlim and ylim are already set at the beginning of the function
-    return hs
+#     # Also search for .tiff (case-insensitive for extension is harder with glob, often handled by checking both)
+#     search_pattern_tiff = os.path.join(rgb_input_folder_path, "*.tiff")
+#     tiff_files.extend(glob.glob(search_pattern_tiff))
+#     tiff_files = list(set(tiff_files)) # Remove duplicates if both patterns match same files
 
-# Define CSV file path and column names
-csv_file_path = r"E:\Thesis Stuff\SDB_ExtractedPts\S2A_MSI_2023_03_20_15_41_27_T19TCG_L2W_RGB_m1_SDB_merged_extracted.csv"
-x_column_name = "Raster_Value"
-y_column_name = "Geoid_Corrected_Ortho_Height"
+#     if not tiff_files:
+#         print(f"No TIFF files found in '{rgb_input_folder_path}'. Please check the path and file extensions.")
+#     else:
+#         print(f"Found {len(tiff_files)} TIFF files to process in: {rgb_input_folder_path}")
+        
+#         successful_count = 0
+#         failed_count = 0
 
-# Define desired axis limits - these will always be used
-manual_xlim = (0, 10)
-manual_ylim = (0, 10)
+#         for current_rgb_tif_path in tiff_files:
+#             # Construct the output path for the OSI TIFF
+#             base_name = os.path.basename(current_rgb_tif_path)
+#             file_name_part, file_ext_part = os.path.splitext(base_name)
+            
+#             # Create a descriptive output filename
+#             output_file_name = f"{file_name_part}_OSI{file_ext_part}"
+#             current_output_osi_path = os.path.join(osi_output_folder_path, output_file_name)
 
-try:
-    data_df = pd.read_csv(csv_file_path)
-except FileNotFoundError: # Gracefully handle file not found
-    print(f"Error: CSV file not found at {csv_file_path}")
-    exit()
-except Exception as e: # Catch other potential errors during CSV read
-    print(f"Error reading CSV file: {e}")
-    exit()
+#             success = calculate_osi(current_rgb_tif_path, current_output_osi_path,
+#                                     green_band_idx=GREEN_BAND_INDEX,
+#                                     blue_band_idx=BLUE_BAND_INDEX)
+#             if success:
+#                 successful_count += 1
+#                 # if SHOW_PREVIEW:
+#                 #    # Add preview logic here if desired, similar to previous versions
+#                 #    # e.g., open current_output_osi_path and plot with matplotlib
+#                 #    pass 
+#             else:
+#                 failed_count += 1
+        
+#         print(f"\n--- Processing Summary ---")
+#         print(f"Successfully processed: {successful_count} files.")
+#         print(f"Failed to process: {failed_count} files.")
+#         print(f"OSI outputs saved in: {osi_output_folder_path}")
 
-if not (x_column_name in data_df.columns and y_column_name in data_df.columns):
-    print(f"Error: One or both specified columns ('{x_column_name}', '{y_column_name}') not found in the CSV.")
-    print(f"Available columns: {data_df.columns.tolist()}")
-    exit()
-
-x_data_from_csv = pd.to_numeric(data_df[x_column_name], errors='coerce').values
-y_data_from_csv = pd.to_numeric(data_df[y_column_name], errors='coerce').values
 
 
-# Create the Plot
-fig, ax = plt.subplots(figsize=(8, 6))
 
-# Call your heatscatter function, passing the limits
-hist_output = heatscatter(ax, x_data_from_csv, y_data_from_csv,
-                          bins=100,
-                          title="Density Heatmap",
-                          cmap='viridis',
-                          xlabel=f"{x_column_name} Values",
-                          ylabel=f"{y_column_name} Values",
-                          identity_line=True,
-                          xlim=manual_xlim, # Pass manual_xlim
-                          ylim=manual_ylim  # Pass manual_ylim
-                          )
 
-if hist_output is not None:
-    if isinstance(hist_output, tuple) and len(hist_output) == 4:
-        plt.colorbar(hist_output[3], ax=ax, label='Counts per Bin')
-    else:
-        try:
-            plt.colorbar(hist_output, ax=ax, label='Counts per Bin')
-        except TypeError:
-            print("Note: Could not automatically create colorbar from hist_output.")
 
-plt.tight_layout()
-plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

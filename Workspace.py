@@ -10,6 +10,107 @@ import glob
 import rasterio
 import numpy as np
 import re
+import pandas as pd
+
+
+#################################################################################################################
+#################################################################################################################
+
+""" Only saves Slide Rule csv rows where confidence is greater than 0.70"""
+
+
+def filter_csvs_by_confidence(input_folder_path):
+    """
+    Processes all CSV files in a given folder. For each file, it filters rows
+    where the 'confidence' column is >= 0.7 and saves the result to a new
+    CSV file in the same folder with '_filtered' appended to the original name.
+
+    Args:
+        input_folder_path (str): The path to the folder containing CSV files.
+    """
+    # Check if the input folder exists
+    if not os.path.isdir(input_folder_path):
+        print(f"Error: Input folder not found at '{input_folder_path}'")
+        return
+
+    # Find all CSV files in the specified folder
+    csv_files = glob.glob(os.path.join(input_folder_path, "*.csv"))
+
+    if not csv_files:
+        print(f"No CSV files found in '{input_folder_path}'.")
+        return
+
+    print(f"Found {len(csv_files)} CSV files to process in '{input_folder_path}'.\n")
+
+    for file_path in csv_files:
+        try:
+            # Get the base name of the file and its extension
+            directory = os.path.dirname(file_path)
+            filename = os.path.basename(file_path)
+            name_part, ext_part = os.path.splitext(filename)
+
+            # Skip already processed files to avoid re-processing if script is run multiple times
+            if name_part.endswith("_filtered"):
+                print(f"Skipping already filtered file: {filename}")
+                continue
+            
+            print(f"Processing file: {filename}...")
+
+            # Read the CSV file
+            df = pd.read_csv(file_path)
+
+            # Check if the 'confidence' column exists
+            if 'confidence' not in df.columns:
+                print(f"  Warning: 'confidence' column not found in {filename}. Skipping this file.")
+                continue
+
+            # Check if 'confidence' column is numeric, attempt conversion if not
+            if not pd.api.types.is_numeric_dtype(df['confidence']):
+                print(f"  Info: 'confidence' column in {filename} is not numeric. Attempting conversion...")
+                try:
+                    df['confidence'] = pd.to_numeric(df['confidence'], errors='coerce')
+                except Exception as e:
+                    print(f"  Warning: Could not convert 'confidence' column to numeric in {filename}. Error: {e}. Skipping this file.")
+                    continue
+            
+            # Drop rows where 'confidence' could not be converted to numeric (became NaN)
+            df.dropna(subset=['confidence'], inplace=True)
+
+            # Filter rows where 'confidence' is >= 0.7
+            # The problem statement columns 'ortho_h', 'lat_ph', 'lon_ph' are implicitly kept if they exist,
+            # as we are only filtering rows, not selecting specific columns.
+            filtered_df = df[df['confidence'] >= 0.7].copy() # Use .copy() to avoid SettingWithCopyWarning
+
+            if filtered_df.empty:
+                print(f"  No rows met the confidence threshold (>= 0.7) in {filename}. No output file created.")
+            else:
+                # Construct the output file name and path
+                output_filename = f"{name_part}_filtered{ext_part}"
+                output_filepath = os.path.join(directory, output_filename)
+
+                # Save the filtered DataFrame to a new CSV file
+                filtered_df.to_csv(output_filepath, index=False)
+                print(f"  Successfully filtered {filename}. Output saved to: {output_filename}")
+                print(f"  Original rows: {len(df)}, Filtered rows: {len(filtered_df)}")
+
+        except pd.errors.EmptyDataError:
+            print(f"  Warning: {filename} is empty. Skipping this file.")
+        except Exception as e:
+            print(f"  An error occurred while processing {filename}: {e}")
+        finally:
+            print("-" * 30) # Separator for better readability
+
+    print("\nAll CSV files processed.")
+
+if __name__ == "__main__":
+
+    
+    folder_to_process = r"B:\Thesis Project\Reference Data\Full_SlideRule_ICESat"
+
+    if folder_to_process == "your_csv_folder_path_here":
+        print("Please update the 'folder_to_process' variable in the script with the actual path to your CSV folder.")
+    else:
+        filter_csvs_by_confidence(folder_to_process)
 
 
 #################################################################################################################

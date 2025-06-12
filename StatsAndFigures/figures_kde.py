@@ -37,7 +37,13 @@ cluttering the chart. Also adds an average line from all the plotted lines """
 
 
 
-def generate_kde_plots(input_folder, stats_folder, output_folder, aoi, sensor, config):
+def generate_kde_plots(input_folder, 
+                       stats_folder, 
+                       output_folder, 
+                       aoi, 
+                       sensor, 
+                       config, 
+                       exclusion_path):
     
     # --- Configuration ---
     input_csv_folder_path = input_folder
@@ -79,6 +85,31 @@ def generate_kde_plots(input_folder, stats_folder, output_folder, aoi, sensor, c
         os.makedirs(output_plot_folder_path)
         print(f"Created output folder: {output_plot_folder_path}")
     
+    # --- NEW: LOAD EXCLUSION LIST FROM CSV ---
+    excluded_files = set()
+    if os.path.exists(exclusion_path):
+        try:
+            df_exclude = pd.read_csv(exclusion_path)
+            # Check if the specified column exists in the CSV
+            if 'exclusion_list' in df_exclude.columns:
+                # Create a set of lowercase filenames from that specific column
+                # .dropna() handles any empty cells in your CSV column
+                excluded_files = set(df_exclude['exclusion_list'].dropna().str.lower().tolist())
+                print(f"Loaded {len(excluded_files)} files to exclude from '{os.path.basename(exclusion_path)}'.")
+            else:
+                print(f"Warning: Column 'exclusion_list' not found in {exclusion_path}. No files will be excluded.")
+        except Exception as e:
+            print(f"Warning: Could not read exclusion CSV file '{exclusion_path}'. Error: {e}")
+    else:
+        print(f"Warning: No exclusion list found at '{exclusion_path}'. Processing all files.")
+    # --- END OF NEW LOGIC ---
+    
+    
+    
+    
+    
+    
+    
     # --- Outer loop to process each SDB_type category ---
     for current_sdb_type in SDB_TYPES_TO_PROCESS:
         print(f"\n======== Processing SDB_type: {current_sdb_type} ========")
@@ -105,6 +136,25 @@ def generate_kde_plots(input_folder, stats_folder, output_folder, aoi, sensor, c
                 local_apply_depth_filter = False
     
         all_input_csv_files_in_folder = glob.glob(os.path.join(input_csv_folder_path, "*.csv"))
+    
+    
+    
+        # --- NEW: APPLY THE EXCLUSION LIST FILTER ---
+        # First, we remove any files that are on our manual exclusion list.
+        original_count = len(all_input_csv_files_in_folder)
+        all_input_csv_files_in_folder = [
+            fpath for fpath in all_input_csv_files_in_folder 
+            if os.path.splitext(os.path.basename(fpath))[0].lower() not in excluded_files
+        ]
+        files_removed = original_count - len(all_input_csv_files_in_folder)
+        if files_removed > 0:
+            print(f"Filtered out {files_removed} files based on the exclusion list.")
+        # --- END OF NEW LOGIC ---
+    
+    
+    
+    
+    
     
         # Determine which files to process based on the current SDB_type
         sdb_type_keyword_to_match = current_sdb_type.lower().replace("sdb_", "")
@@ -254,7 +304,8 @@ def generate_kde_plots(input_folder, stats_folder, output_folder, aoi, sensor, c
                 elif local_apply_depth_filter and selected_max_depth is None:
                     print(f"  Depth filtering was ON, but no Max Depth was selected for {base_data_filename}. This file will be SKIPPED for KDE.")
                     continue
-    
+                
+                # Errors are (Measured - Reference)
                 df[error_col_name] = df[SDB_col] - df[ref_col]
                 error_data_raw = df[error_col_name].dropna()
     
@@ -445,7 +496,7 @@ def generate_kde_plots(input_folder, stats_folder, output_folder, aoi, sensor, c
     
         ax.set_xlabel(error_col_name + " (m)", fontsize=15)
         ax.set_ylabel("Count", fontsize=15)
-        title_suffix = " (Depth Filtered by R² Criteria)" if local_apply_depth_filter and datasets_for_kde else ""
+        #title_suffix = " (Depth Filtered by R² Criteria)" if local_apply_depth_filter and datasets_for_kde else ""
         ax.set_title(f"Distributions of {Sensor} {current_sdb_type} Error: {AOI}", fontsize=25, fontweight='bold', y=1.05)
     
         ax.set_xlim(plot_xlim)
@@ -535,3 +586,6 @@ def generate_kde_plots(input_folder, stats_folder, output_folder, aoi, sensor, c
             print("No files had all or most of their lines removed or were skipped based on the specified criteria.")
     
     print("\n--- All SDB_type categories processed. ---")
+    
+    
+    

@@ -146,14 +146,16 @@ if __name__ == "__main__":
         r"E:\Thesis Stuff\pSDB",
         r"E:\Thesis Stuff\pSDB_ExtractedPts",
         r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results",
-        r"E:\Thesis Stuff\pSDB_ExtractedPts_Results",
         r"E:\Thesis Stuff\RGBCompositOutput",
-        r"E:\Thesis Stuff\RGBCompositOutput_ODWbinarymasks",
         r"E:\Thesis Stuff\SDB",
         r"E:\Thesis Stuff\SDB_ExtractedPts",
-        r"E:\Thesis Stuff\SDB_ExtractedPts_Results",
         r"E:\Thesis Stuff\SDB_ExtractedPts_maxR2_results",
-        r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results\Flagged Results"
+        r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results\Flagged Results",
+        r"E:\Thesis Stuff\Figures\Heatmap_Plots",
+        r"E:\Thesis Stuff\Figures\Individual_Histograms",
+        r"E:\Thesis Stuff\Figures\KDE_Plots",
+        r"E:\Thesis Stuff\Figures\Average_Depth_Ranges",
+        r"E:\Thesis Stuff\Figures"
     ]
 
     if not folders_to_clear:

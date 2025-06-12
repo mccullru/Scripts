@@ -348,8 +348,7 @@ def process_rgb_geotiffs(input_folder, output_folder, config):
 
 ##############################################################################
 ##############################################################################
-"""Extract pSDB values at reference point locations"""
-
+"""Extract pSDB/SDB values at reference point locations"""
 
 
 def extract_raster_values_optimized(points_csv_file, raster_folder, output_folder, points_type='Reference'):
@@ -410,7 +409,21 @@ def extract_raster_values_optimized(points_csv_file, raster_folder, output_folde
 
                     # 3. Also remove any other NaN values for safety.
                     gdf_in_bounds.dropna(subset=['Raster_Value'], inplace=True)
-                    # --- END OF THE FIX ---
+
+
+                    # --- NEW: Filter by depth < 40m ---
+                    print("Applying depth filter (SDB & Reference < 40m)...")
+                    initial_count_depth = len(gdf_in_bounds)
+                    
+                    # Keep rows where BOTH raster value AND reference elevation are less than 40
+                    gdf_in_bounds = gdf_in_bounds[
+                        (gdf_in_bounds['Raster_Value'] < 40) & (gdf_in_bounds[elev_col] < 40)
+                    ]
+                    
+                    removed_count = initial_count_depth - len(gdf_in_bounds)
+                    print(f"Removed {removed_count} points with depths >= 40m.")
+                    # --- END OF NEW FILTER ---
+                    
 
                     if gdf_in_bounds.empty:
                         print(f"No valid data points remain after filtering. Skipping save.")
@@ -444,6 +457,9 @@ def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, 
     data_folder_path = input_folder
     output_save_folder_path = output_folder
 
+    threshold_percent = 0.90
+    print(f"\nR2 Tolerable threshold is within {threshold_percent*100}% of peak threshold")
+
     if not os.path.exists(output_save_folder_path):
         os.makedirs(output_save_folder_path)
 
@@ -475,13 +491,21 @@ def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, 
 
             for depth_min_limit_regr in depth_min_regr_sets:
                 initial_depth_max = min(depth_min_limit_regr + step, overall_max_depth_data)
+                
                 if initial_depth_max <= depth_min_limit_regr:
                     depth_max_limits_to_test = np.array([overall_max_depth_data]) if overall_max_depth_data > depth_min_limit_regr else np.array([])
+                
                 else:
                     depth_max_limits_to_test = np.arange(initial_depth_max, overall_max_depth_data, step)
-                    if not np.isclose(depth_max_limits_to_test[-1], overall_max_depth_data):
+                    # ADDED CHECK HERE: Ensure array is not empty before attempting to access [-1]
+                    if depth_max_limits_to_test.size > 0 and not np.isclose(depth_max_limits_to_test[-1], overall_max_depth_data):
                         depth_max_limits_to_test = np.append(depth_max_limits_to_test, overall_max_depth_data)
+                
+                # IMPORTANT: This check is still necessary if the above logic results in an empty array
+                # (e.g., if overall_max_depth_data is very small or equal to depth_min_limit_regr)
                 depth_max_limits_to_test = np.unique(depth_max_limits_to_test[depth_max_limits_to_test >= depth_min_limit_regr])
+                
+                
                 if len(depth_max_limits_to_test) == 0: continue
 
                 for k_loop_idx, current_depth_max_limit in enumerate(depth_max_limits_to_test):
@@ -514,8 +538,9 @@ def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, 
                 peak_idx = positive_slope_df['R2 Value'].idxmax()
                 peak_R2_details = positive_slope_df.loc[peak_idx]
                 summary_df.loc[peak_idx, 'Indicator'] = 1
-
-                r2_threshold = peak_R2_details['R2 Value'] * 0.90
+                
+                
+                r2_threshold = peak_R2_details['R2 Value'] * threshold_percent
                 tolerable_fits = positive_slope_df[positive_slope_df['R2 Value'] >= r2_threshold]
                 
                 if not tolerable_fits.empty:
@@ -539,7 +564,7 @@ def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, 
                 ax.set_ylim(0, line_max)
 
 
-            # --- THIS IS THE FIX: Build and add the detailed text box ---
+            # --- Build and add the detailed text box ---
             annotation_lines = []
             if peak_R2_details is not None:
                 annotation_lines.append("Peak R² Fit:")
@@ -596,7 +621,7 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, config):
     m1_col = "m1"
     m0_col = "m0"
     nodata_value = -9999
-    apply_r2_filter = True
+    apply_r2_filter = False
     
     
     
@@ -949,19 +974,19 @@ def run_full_pipeline(config):
     for f in folders.values(): os.makedirs(f, exist_ok=True)
 
     # Execute Pipeline
-    print("\n[Step 1/8] Combining bands into RGB TIFFs...")
+    print("\n\n[Step 1/8] Combining single bands into RGB TIFFs...\n")
     combine_bands_to_rgb(config['raw_bands_folder'], folders['rgb_composites'], config)
 
-    print("\n[Step 2/8] Masking Optically Deep Water...")
+    print("\n\n[Step 2/8] Masking Optically Deep Water...\n")
     mask_optically_deep_water(folders['rgb_composites'], folders['masked_odw'], None, config)
 
-    print("\n[Step 3/8] Creating pSDB rasters...")
+    print("\n\n[Step 3/8] Creating pSDB rasters...\n")
     process_rgb_geotiffs(folders['masked_odw'], folders['psdb_rasters'], config)
 
-    print("\n[Step 4/8] Extracting pSDB values at Calibration points...")
+    print("\n\n[Step 4/8] Extracting pSDB values at Calibration points...\n")
     extract_raster_values_optimized(config['cal_points_csv'], folders['psdb_rasters'], folders['cal_extract'], 'Calibration')
     
-    print("\n[Step 5/9] Performing pSDB regression for coefficients...")
+    print("\n\n[Step 5/9] Performing pSDB regression for coefficients...\n")
     perform_regression_analysis(
         input_folder=folders['cal_extract'],
         output_folder=folders['regr_results'],
@@ -970,16 +995,16 @@ def run_full_pipeline(config):
         is_validation=False  # This will use auto-scaled axes
     )
 
-    print("\n[Step 6/9] Applying coefficients to create final SDB rasters...")
+    print("\n\n[Step 6/9] Applying coefficients to create final SDB rasters...\n")
     create_sdb_rasters(folders['psdb_rasters'], folders['regr_results'], folders['sdb_final'], config)
 
-    print("\n[Step 7/9] Merging SDB Red and Green rasters...")
+    print("\n\n[Step 7/9] Merging SDB Red and Green rasters...\n")
     process_sdb_folder(folders['sdb_final'], config)
 
-    print("\n[Step 8/9] Extracting final SDB values at Validation points...")
+    print("\n\n[Step 8/9] Extracting final SDB values at Validation points...\n")
     extract_raster_values_optimized(config['val_points_csv'], folders['sdb_final'], folders['val_extract'], 'Validation')
 
-    print("\n[Step 9/9] Performing final SDB regression analysis...")
+    print("\n\n[Step 9/9] Performing final SDB regression analysis...\n")
     perform_regression_analysis(
         input_folder=folders['val_extract'],
         output_folder=folders['val_analysis'],

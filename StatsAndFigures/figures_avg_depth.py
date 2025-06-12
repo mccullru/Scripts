@@ -176,6 +176,41 @@ def generate_depth_range_bar_chart(
     avg_red_depth = np.mean(sdb_red_depths) if sdb_red_depths else 0
     std_red_depth = np.std(sdb_red_depths) if sdb_red_depths else 0
 
+    # Generate and Save Summary CSV ---
+
+    if sdb_red_depths or sdb_green_depths:
+        # Create a DataFrame with the individual depth values first.
+        # This correctly handles unequal lengths and sets the required number of rows.
+        output_df = pd.DataFrame({
+            'SDBred_max_depths': pd.Series(sdb_red_depths),
+            'SDBgreen_max_depths': pd.Series(sdb_green_depths)
+        })
+        
+        # Create empty columns for the averages, filled with NaN (Not a Number)
+        output_df['SDBred_avg_max_depth'] = np.nan
+        output_df['SDBgreen_avg_max_depth'] = np.nan
+
+        # Now, place the calculated average ONLY in the first row (index 0) of the appropriate column.
+        if sdb_red_depths:
+            output_df.loc[0, 'SDBred_avg_max_depth'] = avg_red_depth
+        if sdb_green_depths:
+            output_df.loc[0, 'SDBgreen_avg_max_depth'] = avg_green_depth
+
+        # Reorder columns to the desired format
+        final_columns = [
+            'SDBred_max_depths', 'SDBred_avg_max_depth',
+            'SDBgreen_max_depths', 'SDBgreen_avg_max_depth'
+        ]
+        output_df = output_df[final_columns]
+
+        # Define file path and save the CSV
+        csv_filename = "max_depth_summary.csv"
+        csv_filepath = os.path.join(output_folder, csv_filename)
+        output_df.to_csv(csv_filepath, index=False, float_format='%.4f')
+        print(f"\nDepth summary data saved to: {csv_filepath}")
+    else:
+        print("\nSkipping CSV generation because no valid depth data was collected.")
+
     # Prepare data for plotting
     labels = []
     averages = []
@@ -209,6 +244,8 @@ def generate_depth_range_bar_chart(
     plt.ylabel('Average Max Depth Range (m)')
     plt.title(f'Average Max Depth Range for {aoi} ({sensor})')
     plt.grid(axis='y', linestyle='--', alpha=0.7)
+    
+    # Changes the x distance between bars (it's a little weird, but just mess around with it until something works)
     plt.xlim(-0.9, len(labels) + -0.1)
 
     # Display count (n=X) on top of bars

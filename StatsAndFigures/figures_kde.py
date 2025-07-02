@@ -34,12 +34,10 @@ cluttering the chart. Also adds an average line from all the plotted lines """
 
 """
 
-
-
-
 def generate_kde_plots(input_folder, 
                        stats_folder, 
-                       output_folder, 
+                       output_plot_folder, 
+                       output_csv_folder,
                        aoi, 
                        sensor, 
                        config, 
@@ -47,7 +45,8 @@ def generate_kde_plots(input_folder,
     
     # --- Configuration ---
     input_csv_folder_path = input_folder
-    output_plot_folder_path = output_folder
+    output_plot_folder_path = output_plot_folder
+    output_csv_folder_path = output_csv_folder
     stats_csv_folder_path = stats_folder
     AOI = aoi
     Sensor = sensor
@@ -85,15 +84,14 @@ def generate_kde_plots(input_folder,
         os.makedirs(output_plot_folder_path)
         print(f"Created output folder: {output_plot_folder_path}")
     
-    # --- NEW: LOAD EXCLUSION LIST FROM CSV ---
+    # --- Load exclusion list from csv ---
     excluded_files = set()
     if os.path.exists(exclusion_path):
         try:
             df_exclude = pd.read_csv(exclusion_path)
+            
             # Check if the specified column exists in the CSV
             if 'exclusion_list' in df_exclude.columns:
-                # Create a set of lowercase filenames from that specific column
-                # .dropna() handles any empty cells in your CSV column
                 excluded_files = set(df_exclude['exclusion_list'].dropna().str.lower().tolist())
                 print(f"Loaded {len(excluded_files)} files to exclude from '{os.path.basename(exclusion_path)}'.")
             else:
@@ -102,14 +100,7 @@ def generate_kde_plots(input_folder,
             print(f"Warning: Could not read exclusion CSV file '{exclusion_path}'. Error: {e}")
     else:
         print(f"Warning: No exclusion list found at '{exclusion_path}'. Processing all files.")
-    # --- END OF NEW LOGIC ---
-    
-    
-    
-    
-    
-    
-    
+
     # --- Outer loop to process each SDB_type category ---
     for current_sdb_type in SDB_TYPES_TO_PROCESS:
         print(f"\n======== Processing SDB_type: {current_sdb_type} ========")
@@ -122,7 +113,6 @@ def generate_kde_plots(input_folder,
         removed_file_names = []
     
         # Re-evaluate stats_csv_filenames and apply_depth_filter for each run
-        # (This section remains mostly as it was, but is now inside the loop)
         local_apply_depth_filter = apply_depth_filter # Use a local copy for potential modification
         stats_csv_filenames = []
         if local_apply_depth_filter:
@@ -139,8 +129,8 @@ def generate_kde_plots(input_folder,
     
     
     
-        # --- NEW: APPLY THE EXCLUSION LIST FILTER ---
-        # First, we remove any files that are on our manual exclusion list.
+        # Apply exclusion list filter
+        # Remove any files that are on our manual exclusion list.
         original_count = len(all_input_csv_files_in_folder)
         all_input_csv_files_in_folder = [
             fpath for fpath in all_input_csv_files_in_folder 
@@ -149,13 +139,7 @@ def generate_kde_plots(input_folder,
         files_removed = original_count - len(all_input_csv_files_in_folder)
         if files_removed > 0:
             print(f"Filtered out {files_removed} files based on the exclusion list.")
-        # --- END OF NEW LOGIC ---
-    
-    
-    
-    
-    
-    
+
         # Determine which files to process based on the current SDB_type
         sdb_type_keyword_to_match = current_sdb_type.lower().replace("sdb_", "")
         input_csv_files_to_process = []
@@ -177,7 +161,7 @@ def generate_kde_plots(input_folder,
             print(f"No input data CSV files to process for SDB_type '{current_sdb_type}' (after SDB_type filter if applied). Skipping plot generation for this type.")
             continue # Skip to the next SDB_type if no files for current one
     
-        # --- Data Processing Loop (original content, now inside the outer loop) ---
+        # --- Data Processing Loop  ---
         for i, data_csv_path in enumerate(input_csv_files_to_process):
             print(f"\n--- Processing data file: {os.path.basename(data_csv_path)} ---")
             base_data_filename = os.path.basename(data_csv_path)
@@ -333,7 +317,7 @@ def generate_kde_plots(input_folder,
                 if base_data_filename not in removed_file_names:
                     removed_file_names.append(base_data_filename)
     
-        # --- Plotting section (original content, now inside the outer loop) ---
+        # --- Plotting section  ---
         if not datasets_for_kde:
             print(f"\nNo datasets available for KDE plotting for SDB_type '{current_sdb_type}'. Skipping plot generation.")
             # Print final stats for this SDB_type even if no plot is generated
@@ -377,7 +361,7 @@ def generate_kde_plots(input_folder,
         red_files_count = 0
         green_files_count = 0
         merged_files_count = 0
-        other_files_count = 0 # This might be less relevant now since we filter by current_sdb_type earlier
+        other_files_count = 0 
     
         for dataset in datasets_for_kde:
             label = dataset['label'].lower()
@@ -391,7 +375,7 @@ def generate_kde_plots(input_folder,
                 other_files_count += 1
     
         # Only add to legend if files exist for the current SDB_type
-        if current_sdb_type == 'SDB': # All files (red, green, merged)
+        if current_sdb_type == 'SDB': # All files (red, green, and merged)
             for keyword, style in linestyle_map.items():
                 count = 0
                 if keyword == 'red': count = red_files_count
@@ -487,10 +471,28 @@ def generate_kde_plots(input_folder,
     
         if all_error_data_for_overall_range:
             pooled_errors = np.array(all_error_data_for_overall_range)
-            avg_kde_mean, avg_kde_min, avg_kde_max, avg_kde_std = np.mean(pooled_errors), np.min(pooled_errors), np.max(pooled_errors), np.std(pooled_errors)
-            avg_kde_kurtosis, avg_kde_skewness = kurtosis(pooled_errors, fisher=True), skew(pooled_errors)
-            average_kde_stats_text = (f"Summary Stats:\n\nMean = {avg_kde_mean:.3f} m\nMin = {avg_kde_min:.2f} m\nMax = {avg_kde_max:.2f} m\n"
-                                      f"Std Dev = {avg_kde_std:.2f} m\nSkewness = {avg_kde_skewness:.2f}\nKurtosis = {avg_kde_kurtosis:.2f}\nTotal Pts = {len(pooled_errors)}")
+            
+            avg_kde_mean = np.mean(pooled_errors)
+            avg_kde_min = np.min(pooled_errors)
+            avg_kde_max = np.max(pooled_errors)
+            avg_kde_std = np.std(pooled_errors)
+            avg_kde_kurtosis = kurtosis(pooled_errors, fisher=True) 
+            avg_kde_skewness = skew(pooled_errors)
+            avg_kde_MAE = np.mean(np.abs(pooled_errors))
+            avg_kde_MSE = np.mean(np.square(pooled_errors))
+            avg_kde_RMSE = np.sqrt(avg_kde_MSE)
+            
+            
+            average_kde_stats_text = (f"Summary Stats:\n\n"
+                                      f"Mean = {avg_kde_mean:.3f} m\n"
+                                      f"Min = {avg_kde_min:.2f} m\n"
+                                      f"Max = {avg_kde_max:.2f} m\n"
+                                      f"MAE = {avg_kde_MAE:.2f} m\n"
+                                      f"Std Dev = {avg_kde_std:.2f} m\n"
+                                      f"Skewness = {avg_kde_skewness:.2f}\n"
+                                      f"Kurtosis = {avg_kde_kurtosis:.2f}\n"
+                                      f"Total Pts = {len(pooled_errors)}")
+       
         else:
             average_kde_stats_text = "Summary Stats:\n(No data pooled)"
     
@@ -508,7 +510,7 @@ def generate_kde_plots(input_folder,
             ax.text(text_x_pos, text_y_pos, average_kde_stats_text, fontsize=18, color='black', ha='left', va='top',
                             bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.75))
     
-        # --- Interactive Plot Functions (Re-integrated) ---
+        # --- Interactive Plot Functions ---
         def on_pick_kde_plot(event):
             picked_line_artist = event.artist
             is_interactive_target = any(item['line'] == picked_line_artist for item in interactive_kde_lines)
@@ -528,16 +530,12 @@ def generate_kde_plots(input_folder,
             if xdata is None or ydata is None: xdata,ydata=(cur_xlim[0]+cur_xlim[1])/2,(cur_ylim[0]+cur_ylim[1])/2
             scale_factor=1/base_scale if event.button=='up' else base_scale if event.button=='down' else 1
             if scale_factor==1: return
-            # The following lines related to new_width/height and relx/rely for dynamic zooming are commented out
-            # as they interact with manual_xlim/ylim and might need careful adjustment based on desired behavior.
-            # Keeping ax.set_xlim(plot_xlim) and ax.set_ylim(plot_ylim) for now.
-            # new_width=(cur_xlim[1]-cur_xlim[0])*scale_factor;
-            # relx=((xdata-cur_xlim[0])/(cur_xlim[1]-cur_xlim[0])) if (cur_xlim[1]-cur_xlim[0])!=0 else 0.5;
+            
             ax.set_xlim(plot_xlim) # Re-applies fixed xlim
-            # new_height=(cur_ylim[1]-cur_ylim[0])*scale_factor;
-            # rely=((ydata-cur_ylim[0])/(cur_ylim[1]-cur_ylim[0])) if (cur_ylim[1]-cur_ylim[0])!=0 else 0.5;
             ax.set_ylim(plot_ylim) # Re-applies fixed ylim
+            
             ax.figure.canvas.draw_idle()
+        
         fig.canvas.mpl_connect('scroll_event', on_scroll_kde_plot)
     
         line_to_label_map_kde = {item['line']: item['label'] for item in plotted_lines_info if item['line'] is not None}
@@ -549,7 +547,6 @@ def generate_kde_plots(input_folder,
                 label_for_line = line_to_label_map_kde.get(sel.artist, "Unknown")
                 text = (f"{label_for_line}\nErr:{sel.target[0]:.2f}\nAvg.Dens:{sel.target[1]:.2f}" if average_line_handle and sel.artist == average_line_handle else f"File:{label_for_line}\nErr:{sel.target[0]:.2f}\nDens:{sel.target[1]:.2f}")
                 sel.annotation.set_text(text); sel.annotation.get_bbox_patch().set(alpha=0.85, facecolor='lightyellow')
-        # --- End Interactive Plot Functions ---
     
         if legend_handles: ax.legend(handles=legend_handles, fontsize=15, loc='best')
         ax.grid(True, linestyle='--', alpha=0.7)
@@ -559,7 +556,7 @@ def generate_kde_plots(input_folder,
         combined_plot_filename = f"{Sensor}_Combined_Error_KDE_{AOI}_{current_sdb_type}_DepthFiltered.png"
         output_plot_full_path = os.path.join(output_plot_folder_path, combined_plot_filename)
     
-        # --- NEW: Conditional Save and Show ---
+        # --- Conditional Save and Show ---
         if save_plots:
             try:
                 plt.savefig(output_plot_full_path, dpi=300)
@@ -571,7 +568,61 @@ def generate_kde_plots(input_folder,
             plt.show()
     
         # Close the figure to free memory, crucial for loops
-        plt.close(fig) 
+        #plt.close(fig) 
+    
+    
+    
+    
+        if current_sdb_type in ['SDB_red', 'SDB_green', 'SDB_merged']:
+            if all_error_data_for_overall_range:
+                # --- 1. Save the Pooled Error Values ---
+                pooled_errors_df = pd.DataFrame(all_error_data_for_overall_range, columns=['Error'])
+                errors_filename = f"pooled_errors_{aoi}_{sensor}_{current_sdb_type}.csv"
+                errors_output_path = os.path.join(output_csv_folder_path, errors_filename)
+                try:
+                    pooled_errors_df.to_csv(errors_output_path, index=False, float_format='%.4f')
+                    print(f"SUCCESS: Pooled error data saved to: {errors_output_path}")
+                except Exception as e:
+                    print(f"ERROR: Could not save pooled error data. Reason: {e}")
+    
+                # --- 2. Save the Summary Statistics ---
+                summary_stats_data = {
+                    'AOI': [aoi],
+                    'Sensor': [sensor],
+                    'SDB_Type': [current_sdb_type],
+                    'Mean': [avg_kde_mean],
+                    'Std Dev': [avg_kde_std],
+                    'Min': [avg_kde_min],
+                    'Max': [avg_kde_max],
+                    'MAE': [avg_kde_MAE],
+                    'MSE': [avg_kde_MSE],
+                    'RMSE': [avg_kde_RMSE],
+                    'Kurtosis': [avg_kde_kurtosis],
+                    'Skewness': [avg_kde_skewness],
+                    'Total Pts': [len(pooled_errors)],
+                    'Files Used': [len(datasets_for_kde)] 
+                }
+                
+                summary_stats_df = pd.DataFrame(summary_stats_data)
+                stats_filename = f"summary_stats_{aoi}_{sensor}_{current_sdb_type}.csv"
+                stats_output_path = os.path.join(output_csv_folder_path, stats_filename)
+                try:
+                    summary_stats_df.to_csv(stats_output_path, index=False, float_format='%.4f')
+                    print(f"SUCCESS: Summary statistics saved to: {stats_output_path}")
+                except Exception as e:
+                    print(f"ERROR: Could not save summary statistics. Reason: {e}")
+
+
+
+
+
+
+
+
+
+
+        # This is the final printout section for the current SDB_type
+        print(f"\n--- Final Stats for SDB_type: {current_sdb_type} ---")
     
         # Print final stats for the current SDB_type category
         print(f"\n--- Final Stats for SDB_type: {current_sdb_type} ---")

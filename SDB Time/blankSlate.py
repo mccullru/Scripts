@@ -7,12 +7,11 @@ Created on Mon May 26 10:13:28 2025
 
 
 """ Deletes all files within the main workspace folders 
-    NOTE: The RGB files folder also has a separate deletion function in SDB_Time
+    NOTE: The RGB files folder also has a separate deletion function in SDB_Time. Check that if funny business occurs
 """
 
 
 import os
-import shutil # Import shutil for rmtree to handle non-empty folder deletion if needed
 
 def delete_files_in_folders(folder_list, delete_subfolders_content=False, delete_empty_subfolders=False):
     """
@@ -46,7 +45,7 @@ def delete_files_in_folders(folder_list, delete_subfolders_content=False, delete
         print(f"\nProcessing folder: {folder_path}")
         item_count = 0
         deleted_files_count = 0
-        folder_errors_encountered = [] # List to collect errors for the current folder
+        folder_errors_encountered = [] 
 
         # Iterate through items in the current folder_path
         for item_name in os.listdir(folder_path):
@@ -62,6 +61,7 @@ def delete_files_in_folders(folder_list, delete_subfolders_content=False, delete
                     folder_errors_encountered.append(item_path)
             elif os.path.isdir(item_path) and delete_subfolders_content:
                 print(f"  Entering subfolder: {item_path}")
+                
                 # The recursive function now returns a list of its own failed deletions
                 sub_deleted_count, sub_failed_items = delete_files_in_folder_recursive(item_path, delete_empty_subfolders)
                 deleted_files_count += sub_deleted_count
@@ -88,7 +88,7 @@ def delete_files_in_folders(folder_list, delete_subfolders_content=False, delete
             print(f"Finished processing {folder_path}. Deleted {deleted_files_count} files. Encountered {len(folder_errors_encountered)} errors.")
             if folder_errors_encountered:
                 print(f"  Failed deletions in {folder_path}: {len(folder_errors_encountered)} items.")
-                # You could print more details here if desired, e.g., print(folder_errors_encountered)
+                
 
         all_failed_deletions.extend(folder_errors_encountered) # Accumulate errors from this folder
 
@@ -108,12 +108,13 @@ def delete_files_in_folder_recursive(folder_path, delete_empty_subfolders_flag):
         if os.path.isfile(item_path):
             try:
                 os.remove(item_path)
-                # print(f"    Deleted file (in subfolder): {item_path}") # Commented for less verbose output during recursion
                 deleted_count += 1
+            
             except Exception as e:
                 print(f"    Error deleting file (in subfolder) {item_path}: {e}")
                 failed_items_in_recursion.append(item_path)
         elif os.path.isdir(item_path):
+           
             # Recursive call for sub-subfolders etc.
             sub_deleted, sub_failed = delete_files_in_folder_recursive(item_path, delete_empty_subfolders_flag)
             deleted_count += sub_deleted
@@ -121,12 +122,12 @@ def delete_files_in_folder_recursive(folder_path, delete_empty_subfolders_flag):
 
             if delete_empty_subfolders_flag:
                 try:
+                    
                     # Check if subfolder is now empty *after* recursive deletion
                     if not os.listdir(item_path):
                         os.rmdir(item_path)
                         print(f"    Deleted empty subfolder: {item_path}")
-                    # else:
-                        # print(f"    Subfolder not empty, not deleted: {item_path}") # Commented for less verbose output
+                
                 except OSError as e: # Catch OSError specifically for rmdir issues
                     print(f"    Error deleting subfolder {item_path}: {e}")
                     failed_items_in_recursion.append(item_path)
@@ -137,12 +138,13 @@ def delete_files_in_folder_recursive(folder_path, delete_empty_subfolders_flag):
     return deleted_count, failed_items_in_recursion
 
 
-# --- How to use the function ---
 if __name__ == "__main__":
     
-    # !! CRITICAL: DEFINE YOUR FOLDER PATHS HERE !!
+    # !! DEFINE YOUR FOLDER PATHS HERE !!
 
     folders_to_clear = [
+        
+        ## SDB_Time
         r"E:\Thesis Stuff\pSDB",
         r"E:\Thesis Stuff\pSDB_ExtractedPts",
         r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results",
@@ -151,11 +153,15 @@ if __name__ == "__main__":
         r"E:\Thesis Stuff\SDB_ExtractedPts",
         r"E:\Thesis Stuff\SDB_ExtractedPts_maxR2_results",
         r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results\Flagged Results",
+        
+        ## Figures
         r"E:\Thesis Stuff\Figures\Heatmap_Plots",
         r"E:\Thesis Stuff\Figures\Individual_Histograms",
         r"E:\Thesis Stuff\Figures\KDE_Plots",
         r"E:\Thesis Stuff\Figures\Average_Depth_Ranges",
-        r"E:\Thesis Stuff\Figures"
+        r"E:\Thesis Stuff\Figures\Summary_Stats",
+        r"E:\Thesis Stuff\Figures",
+        
     ]
 
     if not folders_to_clear:
@@ -169,24 +175,17 @@ if __name__ == "__main__":
             print(f" - {folder}")
 
         # Set to True if you want to also delete files within immediate subfolders
-        process_subfolders_content = False # Default: only top-level files in listed folders
-        # Set to True if you want to delete empty subfolders (only if process_subfolders_content is True)
-        remove_empty_subfolders = False # Default: do not remove subfolders
-
-        # Example options:
-        # To delete files in top-level and also in immediate subfolders, and then remove empty subfolders:
-        # process_subfolders_content = True
-        # remove_empty_subfolders = True
-
-        # To delete only files in the top-level of the listed folders:
-        # process_subfolders_content = False
-        # remove_empty_subfolders = False (this setting won't matter if content isn't processed)
+        process_subfolders_content = False 
+        
+        # Set to True if you want to delete empty subfolders 
+        remove_empty_subfolders = False 
 
 
         confirmation = input("Are you absolutely sure you want to proceed? (yes/no): ").lower()
 
         if confirmation == 'yes':
             print("Proceeding with file deletion...")
+            
             # Capture the list of failed deletions
             unsuccessful_deletions = delete_files_in_folders(folders_to_clear, process_subfolders_content, remove_empty_subfolders)
             print("\n--- Deletion process finished. ---")

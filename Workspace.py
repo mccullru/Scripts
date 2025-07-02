@@ -12,6 +12,8 @@ import numpy as np
 import re
 import pandas as pd
 
+from pyproj import CRS, Transformer
+from difflib import get_close_matches
 
 #################################################################################################################
 #################################################################################################################
@@ -19,98 +21,111 @@ import pandas as pd
 """ Only saves Slide Rule csv rows where confidence is greater than 0.70"""
 
 
-def filter_csvs_by_confidence(input_folder_path):
-    """
-    Processes all CSV files in a given folder. For each file, it filters rows
-    where the 'confidence' column is >= 0.7 and saves the result to a new
-    CSV file in the same folder with '_filtered' appended to the original name.
+# def filter_csvs_by_confidence(input_folder_path):
+#     """
+    
 
-    Args:
-        input_folder_path (str): The path to the folder containing CSV files.
-    """
-    # Check if the input folder exists
-    if not os.path.isdir(input_folder_path):
-        print(f"Error: Input folder not found at '{input_folder_path}'")
-        return
+#     Parameters
+#     ----------
+#     input_folder_path : TYPE
+#         DESCRIPTION.
 
-    # Find all CSV files in the specified folder
-    csv_files = glob.glob(os.path.join(input_folder_path, "*.csv"))
+#     Returns
+#     -------
+#     None.
 
-    if not csv_files:
-        print(f"No CSV files found in '{input_folder_path}'.")
-        return
+#     """
+#     """
+#     Processes all CSV files in a given folder. For each file, it filters rows
+#     where the 'confidence' column is >= 0.7 and saves the result to a new
+#     CSV file in the same folder with '_filtered' appended to the original name.
 
-    print(f"Found {len(csv_files)} CSV files to process in '{input_folder_path}'.\n")
+#     Args:
+#         input_folder_path (str): The path to the folder containing CSV files.
+#     """
+#     # Check if the input folder exists
+#     if not os.path.isdir(input_folder_path):
+#         print(f"Error: Input folder not found at '{input_folder_path}'")
+#         return
 
-    for file_path in csv_files:
-        try:
-            # Get the base name of the file and its extension
-            directory = os.path.dirname(file_path)
-            filename = os.path.basename(file_path)
-            name_part, ext_part = os.path.splitext(filename)
+#     # Find all CSV files in the specified folder
+#     csv_files = glob.glob(os.path.join(input_folder_path, "*.csv"))
 
-            # Skip already processed files to avoid re-processing if script is run multiple times
-            if name_part.endswith("_filtered"):
-                print(f"Skipping already filtered file: {filename}")
-                continue
+#     if not csv_files:
+#         print(f"No CSV files found in '{input_folder_path}'.")
+#         return
+
+#     print(f"Found {len(csv_files)} CSV files to process in '{input_folder_path}'.\n")
+
+#     for file_path in csv_files:
+#         try:
+#             # Get the base name of the file and its extension
+#             directory = os.path.dirname(file_path)
+#             filename = os.path.basename(file_path)
+#             name_part, ext_part = os.path.splitext(filename)
+
+#             # Skip already processed files to avoid re-processing if script is run multiple times
+#             if name_part.endswith("_filtered"):
+#                 print(f"Skipping already filtered file: {filename}")
+#                 continue
             
-            print(f"Processing file: {filename}...")
+#             print(f"Processing file: {filename}...")
 
-            # Read the CSV file
-            df = pd.read_csv(file_path)
+#             # Read the CSV file
+#             df = pd.read_csv(file_path)
 
-            # Check if the 'confidence' column exists
-            if 'confidence' not in df.columns:
-                print(f"  Warning: 'confidence' column not found in {filename}. Skipping this file.")
-                continue
+#             # Check if the 'confidence' column exists
+#             if 'confidence' not in df.columns:
+#                 print(f"  Warning: 'confidence' column not found in {filename}. Skipping this file.")
+#                 continue
 
-            # Check if 'confidence' column is numeric, attempt conversion if not
-            if not pd.api.types.is_numeric_dtype(df['confidence']):
-                print(f"  Info: 'confidence' column in {filename} is not numeric. Attempting conversion...")
-                try:
-                    df['confidence'] = pd.to_numeric(df['confidence'], errors='coerce')
-                except Exception as e:
-                    print(f"  Warning: Could not convert 'confidence' column to numeric in {filename}. Error: {e}. Skipping this file.")
-                    continue
+#             # Check if 'confidence' column is numeric, attempt conversion if not
+#             if not pd.api.types.is_numeric_dtype(df['confidence']):
+#                 print(f"  Info: 'confidence' column in {filename} is not numeric. Attempting conversion...")
+#                 try:
+#                     df['confidence'] = pd.to_numeric(df['confidence'], errors='coerce')
+#                 except Exception as e:
+#                     print(f"  Warning: Could not convert 'confidence' column to numeric in {filename}. Error: {e}. Skipping this file.")
+#                     continue
             
-            # Drop rows where 'confidence' could not be converted to numeric (became NaN)
-            df.dropna(subset=['confidence'], inplace=True)
+#             # Drop rows where 'confidence' could not be converted to numeric (became NaN)
+#             df.dropna(subset=['confidence'], inplace=True)
 
-            # Filter rows where 'confidence' is >= 0.7
-            # The problem statement columns 'ortho_h', 'lat_ph', 'lon_ph' are implicitly kept if they exist,
-            # as we are only filtering rows, not selecting specific columns.
-            filtered_df = df[df['confidence'] >= 0.7].copy() # Use .copy() to avoid SettingWithCopyWarning
+#             # Filter rows where 'confidence' is >= 0.7
+#             # The problem statement columns 'ortho_h', 'lat_ph', 'lon_ph' are implicitly kept if they exist,
+#             # as we are only filtering rows, not selecting specific columns.
+#             filtered_df = df[df['confidence'] >= 0.7].copy() # Use .copy() to avoid SettingWithCopyWarning
 
-            if filtered_df.empty:
-                print(f"  No rows met the confidence threshold (>= 0.7) in {filename}. No output file created.")
-            else:
-                # Construct the output file name and path
-                output_filename = f"{name_part}_filtered{ext_part}"
-                output_filepath = os.path.join(directory, output_filename)
+#             if filtered_df.empty:
+#                 print(f"  No rows met the confidence threshold (>= 0.7) in {filename}. No output file created.")
+#             else:
+#                 # Construct the output file name and path
+#                 output_filename = f"{name_part}_filtered{ext_part}"
+#                 output_filepath = os.path.join(directory, output_filename)
 
-                # Save the filtered DataFrame to a new CSV file
-                filtered_df.to_csv(output_filepath, index=False)
-                print(f"  Successfully filtered {filename}. Output saved to: {output_filename}")
-                print(f"  Original rows: {len(df)}, Filtered rows: {len(filtered_df)}")
+#                 # Save the filtered DataFrame to a new CSV file
+#                 filtered_df.to_csv(output_filepath, index=False)
+#                 print(f"  Successfully filtered {filename}. Output saved to: {output_filename}")
+#                 print(f"  Original rows: {len(df)}, Filtered rows: {len(filtered_df)}")
 
-        except pd.errors.EmptyDataError:
-            print(f"  Warning: {filename} is empty. Skipping this file.")
-        except Exception as e:
-            print(f"  An error occurred while processing {filename}: {e}")
-        finally:
-            print("-" * 30) # Separator for better readability
+#         except pd.errors.EmptyDataError:
+#             print(f"  Warning: {filename} is empty. Skipping this file.")
+#         except Exception as e:
+#             print(f"  An error occurred while processing {filename}: {e}")
+#         finally:
+#             print("-" * 30) # Separator for better readability
 
-    print("\nAll CSV files processed.")
+#     print("\nAll CSV files processed.")
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
     
-    folder_to_process = r"B:\Thesis Project\Reference Data\Full_SlideRule_ICESat"
+#     folder_to_process = r"B:\Thesis Project\Reference Data\Full_SlideRule_ICESat"
 
-    if folder_to_process == "your_csv_folder_path_here":
-        print("Please update the 'folder_to_process' variable in the script with the actual path to your CSV folder.")
-    else:
-        filter_csvs_by_confidence(folder_to_process)
+#     if folder_to_process == "your_csv_folder_path_here":
+#         print("Please update the 'folder_to_process' variable in the script with the actual path to your CSV folder.")
+#     else:
+#         filter_csvs_by_confidence(folder_to_process)
 
 
 #################################################################################################################
@@ -122,206 +137,184 @@ if __name__ == "__main__":
 
 #output_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results\Flagged Results"
 
-import pandas as pd
-import os
-import glob
-import numpy as np
 
-def process_r2_with_indicator_fallback(input_folder_path, output_csv_path,
-                                       r2_threshold=0.6,
-                                       indicator_col="Indicator",
-                                       r2_col="R2 Value",
-                                       image_name_col="Image Name",
-                                       flag_col_name="R2_Threshold_Outcome_Flag"):
-    """
-    Processes CSV files to evaluate R2 values based on an 'Indicator' column.
-    Prioritizes Indicator=2 rows. If an Indicator=2 row's R2 (rounded) meets
-    the threshold, its R2 is used and flag is 1.
-    If Indicator=2 row's R2 fails, it checks the corresponding Indicator=1 row.
-    If Indicator=1 row's R2 (rounded) meets threshold, its R2 is used and flag is 1.
-    Otherwise, the Indicator=2 row's R2 is used and flag is 0 (if R2 was valid) or NaN.
-    Only outputs data for Image Names that have an Indicator=2 row.
+# def process_r2_with_indicator_fallback(input_folder_path, output_csv_path,
+#                                        r2_threshold=0.6,
+#                                        indicator_col="Indicator",
+#                                        r2_col="R2 Value",
+#                                        image_name_col="Image Name",
+#                                        flag_col_name="R2_Threshold_Outcome_Flag"):
+#     """
+#     Processes CSV files to evaluate R2 values based on an 'Indicator' column.
+#     Prioritizes Indicator=2 rows. If an Indicator=2 row's R2 (rounded) meets
+#     the threshold, its R2 is used and flag is 1.
+#     If Indicator=2 row's R2 fails, it checks the corresponding Indicator=1 row.
+#     If Indicator=1 row's R2 (rounded) meets threshold, its R2 is used and flag is 1.
+#     Otherwise, the Indicator=2 row's R2 is used and flag is 0 (if R2 was valid) or NaN.
+#     Only outputs data for Image Names that have an Indicator=2 row.
 
-    Args:
-        input_folder_path (str): Path to the folder containing input CSV files.
-        output_csv_path (str): Full path for the output CSV file.
-        r2_threshold (float, optional): R2 threshold. Defaults to 0.6.
-        indicator_col (str, optional): Name of the Indicator column. Defaults to "Indicator".
-        r2_col (str, optional): Name of the R2 Value column. Defaults to "R2 Value".
-        image_name_col (str, optional): Name of the Image Name column. Defaults to "Image Name".
-        flag_col_name (str, optional): Name for the new flag column.
-                                        Defaults to "R2_Threshold_Outcome_Flag".
+#     Args:
+#         input_folder_path (str): Path to the folder containing input CSV files.
+#         output_csv_path (str): Full path for the output CSV file.
+#         r2_threshold (float, optional): R2 threshold. Defaults to 0.6.
+#         indicator_col (str, optional): Name of the Indicator column. Defaults to "Indicator".
+#         r2_col (str, optional): Name of the R2 Value column. Defaults to "R2 Value".
+#         image_name_col (str, optional): Name of the Image Name column. Defaults to "Image Name".
+#         flag_col_name (str, optional): Name for the new flag column.
+#                                         Defaults to "R2_Threshold_Outcome_Flag".
 
-    Returns:
-        bool: True if successful, False otherwise.
-    """
-    results_to_save = []
-    output_column_names = [image_name_col, r2_col, flag_col_name]
+#     Returns:
+#         bool: True if successful, False otherwise.
+#     """
+#     results_to_save = []
+#     output_column_names = [image_name_col, r2_col, flag_col_name]
 
-    if not os.path.isdir(input_folder_path):
-        print(f"Error: Input folder not found at '{input_folder_path}'")
-        return False
+#     if not os.path.isdir(input_folder_path):
+#         print(f"Error: Input folder not found at '{input_folder_path}'")
+#         return False
 
-    csv_files = glob.glob(os.path.join(input_folder_path, "*.csv"))
+#     csv_files = glob.glob(os.path.join(input_folder_path, "*.csv"))
 
-    if not csv_files:
-        print(f"No CSV files found in '{input_folder_path}'.")
-        if output_csv_path:
-            output_dir = os.path.dirname(output_csv_path)
-            if output_dir and not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-            pd.DataFrame(columns=output_column_names).to_csv(output_csv_path, index=False)
-            print(f"No input CSVs, empty output file with headers created at '{output_csv_path}'")
-        return True
+#     if not csv_files:
+#         print(f"No CSV files found in '{input_folder_path}'.")
+#         if output_csv_path:
+#             output_dir = os.path.dirname(output_csv_path)
+#             if output_dir and not os.path.exists(output_dir):
+#                 os.makedirs(output_dir)
+#             pd.DataFrame(columns=output_column_names).to_csv(output_csv_path, index=False)
+#             print(f"No input CSVs, empty output file with headers created at '{output_csv_path}'")
+#         return True
 
-    print(f"Found {len(csv_files)} CSV files to process in '{input_folder_path}'.")
+#     print(f"Found {len(csv_files)} CSV files to process in '{input_folder_path}'.")
 
-    for file_path in csv_files:
-        print(f"\nProcessing '{os.path.basename(file_path)}'...")
-        try:
-            df = pd.read_csv(file_path)
-            if df.empty:
-                print(f"  Warning: File '{os.path.basename(file_path)}' is empty. Skipping.")
-                continue
+#     for file_path in csv_files:
+#         print(f"\nProcessing '{os.path.basename(file_path)}'...")
+#         try:
+#             df = pd.read_csv(file_path)
+#             if df.empty:
+#                 print(f"  Warning: File '{os.path.basename(file_path)}' is empty. Skipping.")
+#                 continue
 
-            required_cols = [indicator_col, r2_col, image_name_col]
-            if not all(col in df.columns for col in required_cols):
-                print(f"  Warning: File '{os.path.basename(file_path)}' is missing one or more required columns: {required_cols}. Skipping.")
-                continue
+#             required_cols = [indicator_col, r2_col, image_name_col]
+#             if not all(col in df.columns for col in required_cols):
+#                 print(f"  Warning: File '{os.path.basename(file_path)}' is missing one or more required columns: {required_cols}. Skipping.")
+#                 continue
 
-            df[indicator_col] = pd.to_numeric(df[indicator_col], errors='coerce')
-            df[r2_col] = pd.to_numeric(df[r2_col], errors='coerce')
-            df.dropna(subset=[indicator_col], inplace=True)
+#             df[indicator_col] = pd.to_numeric(df[indicator_col], errors='coerce')
+#             df[r2_col] = pd.to_numeric(df[r2_col], errors='coerce')
+#             df.dropna(subset=[indicator_col], inplace=True)
 
-            for name_of_image, group in df.groupby(image_name_col):
-                row_ind2 = group[group[indicator_col] == 2].copy()
-                row_ind1 = group[group[indicator_col] == 1].copy()
+#             for name_of_image, group in df.groupby(image_name_col):
+#                 row_ind2 = group[group[indicator_col] == 2].copy()
+#                 row_ind1 = group[group[indicator_col] == 1].copy()
 
-                r2_to_report = np.nan
-                flag_for_report = np.nan
-                image_name_for_report = name_of_image
+#                 r2_to_report = np.nan
+#                 flag_for_report = np.nan
+#                 image_name_for_report = name_of_image
 
-                if not row_ind2.empty:
-                    ind2_data = row_ind2.iloc[0]
-                    r2_original_ind2 = ind2_data[r2_col]
-                    r2_check_ind2 = round(r2_original_ind2, 2) if pd.notna(r2_original_ind2) else np.nan
+#                 if not row_ind2.empty:
+#                     ind2_data = row_ind2.iloc[0]
+#                     r2_original_ind2 = ind2_data[r2_col]
+#                     r2_check_ind2 = round(r2_original_ind2, 2) if pd.notna(r2_original_ind2) else np.nan
                     
-                    ind2_passes_threshold = pd.notna(r2_check_ind2) and r2_check_ind2 >= r2_threshold
+#                     ind2_passes_threshold = pd.notna(r2_check_ind2) and r2_check_ind2 >= r2_threshold
 
-                    if ind2_passes_threshold:
-                        r2_to_report = r2_original_ind2
-                        flag_for_report = 1
-                    else: 
-                        if not row_ind1.empty:
-                            ind1_data = row_ind1.iloc[0]
-                            r2_original_ind1 = ind1_data[r2_col]
-                            r2_check_ind1 = round(r2_original_ind1, 2) if pd.notna(r2_original_ind1) else np.nan
+#                     if ind2_passes_threshold:
+#                         r2_to_report = r2_original_ind2
+#                         flag_for_report = 1
+#                     else: 
+#                         if not row_ind1.empty:
+#                             ind1_data = row_ind1.iloc[0]
+#                             r2_original_ind1 = ind1_data[r2_col]
+#                             r2_check_ind1 = round(r2_original_ind1, 2) if pd.notna(r2_original_ind1) else np.nan
                             
-                            ind1_passes_threshold = pd.notna(r2_check_ind1) and r2_check_ind1 >= r2_threshold
+#                             ind1_passes_threshold = pd.notna(r2_check_ind1) and r2_check_ind1 >= r2_threshold
 
-                            if ind1_passes_threshold:
-                                r2_to_report = r2_original_ind1
-                                flag_for_report = 1
-                            else: 
-                                r2_to_report = r2_original_ind2 
-                                flag_for_report = 0 if pd.notna(r2_check_ind2) else np.nan
-                        else: 
-                            r2_to_report = r2_original_ind2
-                            flag_for_report = 0 if pd.notna(r2_check_ind2) else np.nan
+#                             if ind1_passes_threshold:
+#                                 r2_to_report = r2_original_ind1
+#                                 flag_for_report = 1
+#                             else: 
+#                                 r2_to_report = r2_original_ind2 
+#                                 flag_for_report = 0 if pd.notna(r2_check_ind2) else np.nan
+#                         else: 
+#                             r2_to_report = r2_original_ind2
+#                             flag_for_report = 0 if pd.notna(r2_check_ind2) else np.nan
                     
-                    results_to_save.append({
-                        image_name_col: image_name_for_report,
-                        r2_col: r2_to_report,
-                        flag_col_name: flag_for_report
-                    })
+#                     results_to_save.append({
+#                         image_name_col: image_name_for_report,
+#                         r2_col: r2_to_report,
+#                         flag_col_name: flag_for_report
+#                     })
 
-        except pd.errors.EmptyDataError:
-            print(f"  Warning: File '{os.path.basename(file_path)}' became empty after initial processing. Skipping.")
-        except Exception as e:
-            print(f"  Error processing file '{os.path.basename(file_path)}': {e}. Skipping.")
+#         except pd.errors.EmptyDataError:
+#             print(f"  Warning: File '{os.path.basename(file_path)}' became empty after initial processing. Skipping.")
+#         except Exception as e:
+#             print(f"  Error processing file '{os.path.basename(file_path)}': {e}. Skipping.")
 
-    if results_to_save:
-        output_df = pd.DataFrame(results_to_save, columns=output_column_names)
-        try:
-            output_dir = os.path.dirname(output_csv_path)
-            if output_dir and not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-            output_df.to_csv(output_csv_path, index=False, float_format='%.4f')
-            print(f"\nSuccessfully saved {len(output_df)} entries to '{output_csv_path}'.")
-        except Exception as e:
-            print(f"\nError saving output CSV to '{output_csv_path}': {e}")
-            return False
-    else:
-        print("\nNo Image Names with an Indicator 2 row were found, or no data to report based on logic.")
-        try:
-            output_dir = os.path.dirname(output_csv_path)
-            if output_dir and not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-            pd.DataFrame(columns=output_column_names).to_csv(output_csv_path, index=False)
-            print(f"Empty results file with headers created at '{output_csv_path}'.")
-        except Exception as e:
-            print(f"\nError saving empty output CSV to '{output_csv_path}': {e}")
-            return False
-    return True
+#     if results_to_save:
+#         output_df = pd.DataFrame(results_to_save, columns=output_column_names)
+#         try:
+#             output_dir = os.path.dirname(output_csv_path)
+#             if output_dir and not os.path.exists(output_dir):
+#                 os.makedirs(output_dir)
+#             output_df.to_csv(output_csv_path, index=False, float_format='%.4f')
+#             print(f"\nSuccessfully saved {len(output_df)} entries to '{output_csv_path}'.")
+#         except Exception as e:
+#             print(f"\nError saving output CSV to '{output_csv_path}': {e}")
+#             return False
+#     else:
+#         print("\nNo Image Names with an Indicator 2 row were found, or no data to report based on logic.")
+#         try:
+#             output_dir = os.path.dirname(output_csv_path)
+#             if output_dir and not os.path.exists(output_dir):
+#                 os.makedirs(output_dir)
+#             pd.DataFrame(columns=output_column_names).to_csv(output_csv_path, index=False)
+#             print(f"Empty results file with headers created at '{output_csv_path}'.")
+#         except Exception as e:
+#             print(f"\nError saving empty output CSV to '{output_csv_path}': {e}")
+#             return False
+#     return True
 
-# --- How to use with your specific paths ---
-if __name__ == "__main__":
-    # Your provided paths
-    input_data_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results"
-    output_save_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results\Flagged Results"
+# # --- How to use with your specific paths ---
+# if __name__ == "__main__":
+#     # Your provided paths
+#     input_data_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results"
+#     output_save_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results\Flagged Results"
 
-    # Define the full path for the output CSV file
-    output_filename = "Flagged R^2 Summary.csv" # You can change this name
-    full_output_csv_path = os.path.join(output_save_folder, output_filename)
+#     # Define the full path for the output CSV file
+#     output_filename = "Flagged R^2 Summary.csv" # You can change this name
+#     full_output_csv_path = os.path.join(output_save_folder, output_filename)
 
-    # Make sure the output directory exists
-    if not os.path.exists(output_save_folder):
-        os.makedirs(output_save_folder)
-        print(f"Created output directory: {output_save_folder}")
+#     # Make sure the output directory exists
+#     if not os.path.exists(output_save_folder):
+#         os.makedirs(output_save_folder)
+#         print(f"Created output directory: {output_save_folder}")
 
-    # Call the function
-    success = process_r2_with_indicator_fallback(
-        input_folder_path=input_data_folder,
-        output_csv_path=full_output_csv_path,
-        r2_threshold=0.7,   # R2 >= 0.7 is considered "meeting threshold"
-    )
+#     # Call the function
+#     success = process_r2_with_indicator_fallback(
+#         input_folder_path=input_data_folder,
+#         output_csv_path=full_output_csv_path,
+#         r2_threshold=0.7,   # R2 >= 0.7 is considered "meeting threshold"
+#     )
 
-    if success:
-        print("\nProcess completed successfully.")
-        if os.path.exists(full_output_csv_path):
-            try:
-                summary_df = pd.read_csv(full_output_csv_path)
-                if not summary_df.empty:
-                    print(f"\nFirst 5 rows of the output file ('{full_output_csv_path}'):")
-                    print(summary_df.head())
-                    print(f"\nValue counts for '{summary_df.columns[-1]}' (the flag column):") # Assumes flag is last
-                    print(summary_df[summary_df.columns[-1]].value_counts(dropna=False))
-                else:
-                    print(f"\nOutput file '{full_output_csv_path}' is empty.")
-            except pd.errors.EmptyDataError:
-                 print(f"\nOutput file '{full_output_csv_path}' is empty (pd.errors.EmptyDataError).")
-            except Exception as e:
-                print(f"Could not read or display output CSV: {e}")
-    else:
-        print("\nProcess encountered an error.")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#     if success:
+#         print("\nProcess completed successfully.")
+#         if os.path.exists(full_output_csv_path):
+#             try:
+#                 summary_df = pd.read_csv(full_output_csv_path)
+#                 if not summary_df.empty:
+#                     print(f"\nFirst 5 rows of the output file ('{full_output_csv_path}'):")
+#                     print(summary_df.head())
+#                     print(f"\nValue counts for '{summary_df.columns[-1]}' (the flag column):") # Assumes flag is last
+#                     print(summary_df[summary_df.columns[-1]].value_counts(dropna=False))
+#                 else:
+#                     print(f"\nOutput file '{full_output_csv_path}' is empty.")
+#             except pd.errors.EmptyDataError:
+#                  print(f"\nOutput file '{full_output_csv_path}' is empty (pd.errors.EmptyDataError).")
+#             except Exception as e:
+#                 print(f"Could not read or display output CSV: {e}")
+#     else:
+#         print("\nProcess encountered an error.")
 
 
 
@@ -331,6 +324,8 @@ if __name__ == "__main__":
 #################################################################################################################
 
 # # --- Helper function to extract Rrs wavelength ---
+
+
 # def extract_rrs_number(file_name):
 #     """Extract the number after 'Rrs_' or 'Rrs' in the file name."""
 #     match = re.search(r'Rrs_(\d+)', file_name)
@@ -513,19 +508,22 @@ if __name__ == "__main__":
 
 """Takes ICESat files from Slide Rule and prepares them for SDB_Time (Changes to UTM, reorganizes)"""
 
-# import os
-# import pandas as pd
-# from pyproj import CRS, Transformer
-# from glob import glob
-# from difflib import get_close_matches
 
-# def process_and_transform_csvs(input_folder, 
-#                                 epsg_csv_path, # This argument needs to be here
-#                                 lat_col_in='lat_ph', lon_col_in='lon_ph', ortho_col_in='ortho_h',
-#                                 new_northing_col='Northing', new_easting_col='Easting', new_ortho_col='Geoid_Corrected_Ortho_Height',
-#                                 epsg_aoi_col='Name', epsg_code_col='EPSG code',
-#                                 new_file_suffix='_processed'): # New parameter for suffix
-   
+# def process_and_transform_csvs(input_folder,
+#                                  epsg_csv_path,
+#                                  lat_col_in='lat_ph', lon_col_in='lon_ph', ortho_col_in='ortho_h',
+#                                  new_northing_col='Northing', new_easting_col='Easting', new_ortho_col='Geoid_Corrected_Ortho_Height',
+#                                  epsg_aoi_col='Name', epsg_code_col='EPSG code',
+#                                  new_file_suffix='_processed'):
+#     """
+#     Processes CSV files:
+#     1. Reads latitude, longitude, and orthometric height.
+#     2. Matches filename to an EPSG code from a reference CSV using a multi-step logic.
+#     3. Transforms coordinates to the matched UTM projection.
+#     4. Renames columns for Northing, Easting, and corrected Ortho Height.
+#     5. Reorganizes columns to place these three first.
+#     6. Saves the processed data to a new CSV file with a specified suffix.
+#     """
 #     print("--- Starting CSV Processing and Transformation ---")
 #     print(f"Input/Output Folder: {input_folder}")
 #     print(f"EPSG CSV Path: {epsg_csv_path}")
@@ -550,33 +548,28 @@ if __name__ == "__main__":
 
 #         simplified_epsg_names_for_matching = {}
 #         for full_name_key in epsg_map_full_names.keys():
-#             simplified_name_base = full_name_key.split('_ATL03_')[0] 
+#             # Extract the part before "_ATL03_"
+#             simplified_name_base = full_name_key.split('_ATL03_')[0]
+#             # Normalize: replace underscores/hyphens with spaces, strip whitespace
 #             temp_name = simplified_name_base.replace('_', ' ').replace('-', ' ').strip()
-#             words = [word for word in temp_name.split(' ') if word]
-
-#             clean_for_matching_candidate = ""
             
-#             if words:
-#                 clean_for_matching_candidate = words[0]
+#             clean_for_matching_candidate = temp_name # Start with the fully normalized base
 
-#             if len(words) > 1 and len(words[1]) > 1:
-#                 two_word_candidate = f"{words[0]} {words[1]}"
-#                 if 'portoscuso' in two_word_candidate.lower() or 'spigolo' in two_word_candidate.lower() \
-#                    or 'fuerteventura' in two_word_candidate.lower() or 'norway' in two_word_candidate.lower():
-#                     clean_for_matching_candidate = two_word_candidate
-            
+#             # Handle specific multi-word or uniquely formatted names as overrides
 #             if "North_Fuerteventura" in full_name_key:
 #                 clean_for_matching_candidate = "NorthFeut"
 #             elif "St_Catherines_Bay" in full_name_key:
 #                 clean_for_matching_candidate = "St Catherines"
 #             elif "Bum_Bum_Island" in full_name_key:
-#                  clean_for_matching_candidate = "Bum Bum"
+#                 clean_for_matching_candidate = "Bum Bum"
+#             # Add more elif conditions here for other specific names as needed
+#             # Example: if "South_Portoscuso" in simplified_name_base: clean_for_matching_candidate = "South Portoscuso"
 
 #             if clean_for_matching_candidate:
-#                  simplified_epsg_names_for_matching[clean_for_matching_candidate] = full_name_key 
+#                 simplified_epsg_names_for_matching[clean_for_matching_candidate] = full_name_key 
 #             else:
-#                  print(f"Warning: Could not simplify EPSG name '{full_name_key}'. Skipping for matching.")
-#                  continue
+#                 print(f"Warning: Could not reliably simplify EPSG name '{full_name_key}'. Skipping for matching.")
+#                 continue
             
 #         print(f"First 5 Simplified EPSG Names for Matching (Keys): {list(simplified_epsg_names_for_matching.keys())[:5]}")
 #         print(f"First 5 Original Full EPSG Map Keys: {list(epsg_map_full_names.keys())[:5]}")
@@ -585,16 +578,15 @@ if __name__ == "__main__":
 #         print(f"Error loading EPSG codes CSV: {e}")
 #         return
 
-#     csv_files = glob(os.path.join(input_folder, "*.csv"))
+#     csv_files = glob.glob(os.path.join(input_folder, "*_filtered.csv"))
 
 #     if not csv_files:
-#         print(f"No CSV files found in: {input_folder}")
+#         print(f"No files ending with '_filtered.csv' found in: {input_folder}")
 #         return
 
 #     print(f"Found {len(csv_files)} CSV files to process.")
 
 #     crs_wgs84 = CRS("EPSG:4326") 
-
 #     matching_cutoff = 0.5 
 
 #     for file_path in csv_files:
@@ -604,38 +596,65 @@ if __name__ == "__main__":
 #         aoi_name_from_file = os.path.splitext(file_name)[0]
         
 #         if aoi_name_from_file.lower().endswith('_sr_cal'):
-#             aoi_name_from_file = aoi_name_from_file[:-7]
+#             aoi_name_from_file = aoi_name_from_file[:-len('_sr_cal')]
 #         elif aoi_name_from_file.lower().endswith('_sr_acc'):
-#             aoi_name_from_file = aoi_name_from_file[:-7]
+#             aoi_name_from_file = aoi_name_from_file[:-len('_sr_acc')]
 #         elif aoi_name_from_file.lower().endswith('_sr'):
-#             aoi_name_from_file = aoi_name_from_file[:-3]
+#             aoi_name_from_file = aoi_name_from_file[:-len('_sr')]
+        
+#         if aoi_name_from_file.lower().endswith('_filtered'):
+#             aoi_name_from_file = aoi_name_from_file[:-len('_filtered')]
         
 #         aoi_name_for_match_normalized = aoi_name_from_file.replace('_', ' ').strip()
         
 #         print(f"  Cleaned input filename AOI for matching: '{aoi_name_from_file}' (Normalized for match: '{aoi_name_for_match_normalized}')")
 
 #         target_epsg_code = None
-        
+#         best_match_original_full_key = None # To store the original key from epsg_map_full_names
+
+#         # Attempt 1: Direct match with aoi_name_for_match_normalized (e.g., "Nait 1")
 #         if aoi_name_for_match_normalized in simplified_epsg_names_for_matching:
 #             best_match_original_full_key = simplified_epsg_names_for_matching[aoi_name_for_match_normalized]
 #             target_epsg_code = epsg_map_full_names[best_match_original_full_key]
-#             print(f"  Directly matched normalized file AOI to simplified EPSG name: '{aoi_name_for_match_normalized}' -> '{best_match_original_full_key}'. Code: {target_epsg_code}.")
+#             print(f"  Directly matched: Normalized Filename AOI '{aoi_name_for_match_normalized}' to Simplified EPSG Key '{aoi_name_for_match_normalized}'. Original EPSG Name: '{best_match_original_full_key}'. Code: {target_epsg_code}.")
 #         else:
-#             fuzzy_matches = get_close_matches(aoi_name_for_match_normalized, 
-#                                               list(simplified_epsg_names_for_matching.keys()), 
-#                                               n=1, cutoff=matching_cutoff)
+#             # Attempt 2: Try matching base name if aoi_name_for_match_normalized is like "Name 1", "Name 2"
+#             parts = aoi_name_for_match_normalized.split(' ')
+#             base_name_candidate = None
+#             if len(parts) > 1 and parts[-1].isdigit():
+#                 base_name_candidate = ' '.join(parts[:-1]) 
             
-#             if fuzzy_matches:
-#                 simplified_matched_key = fuzzy_matches[0]
-#                 best_match_original_full_key = simplified_epsg_names_for_matching[simplified_matched_key]
+#             if base_name_candidate and base_name_candidate in simplified_epsg_names_for_matching:
+#                 best_match_original_full_key = simplified_epsg_names_for_matching[base_name_candidate]
 #                 target_epsg_code = epsg_map_full_names[best_match_original_full_key]
-#                 print(f"  Fuzzy matched normalized input AOI '{aoi_name_for_match_normalized}' to simplified EPSG name '{simplified_matched_key}' (Original full: '{best_match_original_full_key}'). Code: {target_epsg_code}.")
+#                 print(f"  Directly matched: Base Name '{base_name_candidate}' (from '{aoi_name_for_match_normalized}') to Simplified EPSG Key '{base_name_candidate}'. Original EPSG Name: '{best_match_original_full_key}'. Code: {target_epsg_code}.")
 #             else:
-#                 print(f"  Warning: No close matching EPSG code found for AOI '{aoi_name_from_file}' (normalized: '{aoi_name_for_match_normalized}') in {file_name} with cutoff {matching_cutoff}. Skipping.")
-#                 continue 
+#                 # Attempt 3: Fuzzy matching with aoi_name_for_match_normalized
+#                 fuzzy_matches = get_close_matches(aoi_name_for_match_normalized,
+#                                                   list(simplified_epsg_names_for_matching.keys()),
+#                                                   n=1, cutoff=matching_cutoff)
+#                 if fuzzy_matches:
+#                     simplified_matched_key = fuzzy_matches[0]
+#                     best_match_original_full_key = simplified_epsg_names_for_matching[simplified_matched_key]
+#                     target_epsg_code = epsg_map_full_names[best_match_original_full_key]
+#                     print(f"  Fuzzy matched: Normalized Filename AOI '{aoi_name_for_match_normalized}' to Simplified EPSG Key '{simplified_matched_key}'. Original EPSG Name: '{best_match_original_full_key}'. Code: {target_epsg_code}.")
+#                 # Attempt 4: Fuzzy matching with base_name_candidate (if it exists and previous fuzzy failed)
+#                 elif base_name_candidate:
+#                     fuzzy_matches_base = get_close_matches(base_name_candidate,
+#                                                        list(simplified_epsg_names_for_matching.keys()),
+#                                                        n=1, cutoff=matching_cutoff)
+#                     if fuzzy_matches_base:
+#                         simplified_matched_key_base = fuzzy_matches_base[0]
+#                         best_match_original_full_key = simplified_epsg_names_for_matching[simplified_matched_key_base]
+#                         target_epsg_code = epsg_map_full_names[best_match_original_full_key]
+#                         print(f"  Fuzzy matched: Base Name '{base_name_candidate}' (from '{aoi_name_for_match_normalized}') to Simplified EPSG Key '{simplified_matched_key_base}'. Original EPSG Name: '{best_match_original_full_key}'. Code: {target_epsg_code}.")
+        
+#         if not target_epsg_code:
+#             print(f"  Warning: No matching EPSG code found for AOI '{aoi_name_from_file}' (normalized: '{aoi_name_for_match_normalized}', base candidate: '{base_name_candidate if 'base_name_candidate' in locals() else 'N/A'}') in {file_name}. Skipping.")
+#             continue
         
 #         try:
-#             target_epsg_code = int(target_epsg_code)
+#             target_epsg_code = int(target_epsg_code) 
 #             crs_utm = CRS(f"EPSG:{target_epsg_code}")
 #             transformer = Transformer.from_crs(crs_wgs84, crs_utm, always_xy=True)
 #         except Exception as e:
@@ -644,41 +663,35 @@ if __name__ == "__main__":
 
 #         try:
 #             df = pd.read_csv(file_path)
-
-#             # This is the line that was problematic in your error message!
-#             # Ensure these are the actual column names from your input CSVs.
 #             required_input_cols = [lon_col_in, lat_col_in, ortho_col_in] 
 #             if not all(col in df.columns for col in required_input_cols):
 #                 print(f"  Error: Missing one or more required input columns ({required_input_cols}) in {file_name}. Skipping.")
-#                 print(f"  Available columns in {file_name}: {df.columns.tolist()}") # Add this to debug available columns
+#                 print(f"  Available columns in {file_name}: {df.columns.tolist()}")
 #                 continue
 
 #             easting, northing = transformer.transform(df[lon_col_in].values, df[lat_col_in].values)
-            
-#             df[lon_col_in] = easting
+#             df[lon_col_in] = easting 
 #             df[lat_col_in] = northing
-
 #             print(f"  Coordinates in '{lon_col_in}' and '{lat_col_in}' transformed to UTM (EPSG:{target_epsg_code}).")
 
-#             # --- RENAME COLUMNS ---
 #             df = df.rename(columns={lon_col_in: new_easting_col, 
 #                                     lat_col_in: new_northing_col, 
 #                                     ortho_col_in: new_ortho_col})
 #             print(f"  Columns renamed: '{lon_col_in}' to '{new_easting_col}', '{lat_col_in}' to '{new_northing_col}', '{ortho_col_in}' to '{new_ortho_col}'.")
 
-#             # --- REORGANIZE COLUMNS ---
 #             fixed_order_cols = [new_easting_col, new_northing_col, new_ortho_col]
 #             other_cols = [col for col in df.columns if col not in fixed_order_cols]
 #             new_column_order = fixed_order_cols + other_cols
 #             df = df[new_column_order]
 #             print(f"  Columns reordered with {fixed_order_cols} placed first.")
 
-#             # --- GENERATE NEW FILENAME ---
-#             base_name, ext = os.path.splitext(file_name)
-#             new_file_name = f"{base_name}{new_file_suffix}{ext}"
+#             base_name_for_output, ext = os.path.splitext(file_name) 
+#             if base_name_for_output.lower().endswith('_filtered'):
+#                 base_name_for_output = base_name_for_output[:-len('_filtered')]
+
+#             new_file_name = f"{base_name_for_output}{new_file_suffix}{ext}"
 #             output_file_path = os.path.join(input_folder, new_file_name)
 
-#             # Save to the new file
 #             df.to_csv(output_file_path, index=False)
 #             print(f"  Processed and saved to new file: {output_file_path}")
 
@@ -689,131 +702,112 @@ if __name__ == "__main__":
 #     print("\n--- All specified CSV files processed. ---")
 
 # # --- Example Usage ---
-# # Define your input folder (which will also be the output folder)
-# # and the path to your EPSG codes CSV.
-# input_folder = r"B:\Thesis Project\Reference Data\SlideRule_ICESat" # Replace with your actual input folder path
-# epsg_csv_path = r"B:\Thesis Project\Reference Data\Refraction Correction\UTM_epsg_codes.csv" # Replace with your actual EPSG codes CSV path
+# input_folder = r"B:\Thesis Project\Reference Data\Full_SlideRule_ICESat\New folder" 
+# epsg_csv_path = r"B:\Thesis Project\Reference Data\Refraction Correction\UTM_epsg_codes.csv"
 
-# # Call the function to process your files
 # process_and_transform_csvs(
 #     input_folder,
 #     epsg_csv_path,
-#     # You can customize input/output column names and the new file suffix here:
-#     # lat_col_in='Original_Latitude', 
-#     # lon_col_in='Original_Longitude', 
-#     # ortho_col_in='Original_Height',
-#     # new_northing_col='UTM_Northing', 
-#     # new_easting_col='UTM_Easting', 
-#     # new_ortho_col='Adjusted_Height',
-#     # new_file_suffix='_UTM' # Example: Anegada_sr_UTM.csv
 # )
 
 
-
 #################################################################################################################
 #################################################################################################################
-
-import os
-import pandas as pd
-import glob
 
 
 """ More reference data csv filtering"""
 
-# def filter_csv_columns(input_folder, output_folder, columns_to_keep):
-#     """
-#     Reads CSV files from an input folder, keeps only specified columns,
-#     and saves the modified CSVs to an output folder.
+def filter_csv_columns(input_folder, output_folder, columns_to_keep):
+    """
+    Reads CSV files from an input folder, keeps only specified columns,
+    and saves the modified CSVs to an output folder.
 
-#     Args:
-#         input_folder (str): Path to the folder containing the input CSV files.
-#         output_folder (str): Path to the folder where processed CSV files will be saved.
-#         columns_to_keep (list): A list of column names to keep.
-#     """
-#     if not os.path.exists(input_folder): # Checks input_folder
-#         print(f"Error: Input folder not found: {input_folder}")
-#         return
+    Args:
+        input_folder (str): Path to the folder containing the input CSV files.
+        output_folder (str): Path to the folder where processed CSV files will be saved.
+        columns_to_keep (list): A list of column names to keep.
+    """
+    if not os.path.exists(input_folder): # Checks input_folder
+        print(f"Error: Input folder not found: {input_folder}")
+        return
 
-#     # If input_folder and output_folder are the same, this check is fine.
-#     # The folder will already exist. If it's a new output_folder, it will be created.
-#     if not os.path.exists(output_folder):
-#         os.makedirs(output_folder)
-#         print(f"Created output folder: {output_folder}")
+    # If input_folder and output_folder are the same, this check is fine.
+    # The folder will already exist. If it's a new output_folder, it will be created.
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+        print(f"Created output folder: {output_folder}")
 
-#     csv_files = glob.glob(os.path.join(input_folder, "*.csv"))
+    csv_files = glob.glob(os.path.join(input_folder, "*.csv"))
 
-#     if not csv_files:
-#         print(f"No CSV files found in: {input_folder}")
-#         return
+    if not csv_files:
+        print(f"No CSV files found in: {input_folder}")
+        return
 
-#     print(f"Found {len(csv_files)} CSV files to process.")
+    print(f"Found {len(csv_files)} CSV files to process.")
 
-#     for file_path in csv_files:
-#         file_name = os.path.basename(file_path)
-#         print(f"\n--- Processing file: {file_name} ---")
+    for file_path in csv_files:
+        file_name = os.path.basename(file_path)
+        print(f"\n--- Processing file: {file_name} ---")
 
-#         # Avoid re-processing already filtered files if script is run multiple times
-#         if file_name.endswith("_filtered.csv"):
-#             print(f"  Skipping already filtered file: {file_name}")
-#             continue
+        # Avoid re-processing already filtered files if script is run multiple times
+        if file_name.endswith("_filtered.csv"):
+            print(f"  Skipping already filtered file: {file_name}")
+            continue
 
-#         try:
-#             df = pd.read_csv(file_path)
-#             print(f"  Original columns: {df.columns.tolist()}")
+        try:
+            df = pd.read_csv(file_path)
+            print(f"  Original columns: {df.columns.tolist()}")
 
-#             existing_cols_to_keep = [col for col in columns_to_keep if col in df.columns]
+            existing_cols_to_keep = [col for col in columns_to_keep if col in df.columns]
 
-#             if not existing_cols_to_keep:
-#                 print(f"  Warning: None of the specified columns to keep {columns_to_keep} were found in {file_name}. Skipping file.")
-#                 continue
+            if not existing_cols_to_keep:
+                print(f"  Warning: None of the specified columns to keep {columns_to_keep} were found in {file_name}. Skipping file.")
+                continue
             
-#             # Check if all desired columns are already the only columns
-#             if len(existing_cols_to_keep) == len(df.columns) and all(col in df.columns for col in existing_cols_to_keep):
-#                 print(f"  File {file_name} already contains only the specified columns. No changes needed, but saving with new name for consistency if output differs from input or to mark as processed.")
-#                 # Decide if you still want to save a copy with "_filtered.csv" 
-#                 # or skip saving entirely in this case. For now, it will save a copy.
+            # Check if all desired columns are already the only columns
+            if len(existing_cols_to_keep) == len(df.columns) and all(col in df.columns for col in existing_cols_to_keep):
+                print(f"  File {file_name} already contains only the specified columns. No changes needed, but saving with new name for consistency if output differs from input or to mark as processed.")
+                # Decide if you still want to save a copy with "_filtered.csv" 
+                # or skip saving entirely in this case. For now, it will save a copy.
 
-#             df_filtered = df[existing_cols_to_keep]
-#             print(f"  Columns kept: {df_filtered.columns.tolist()}")
+            df_filtered = df[existing_cols_to_keep]
+            print(f"  Columns kept: {df_filtered.columns.tolist()}")
 
-#             output_file_name = f"{os.path.splitext(file_name)[0]}_filtered.csv"
-#             output_file_path = os.path.join(output_folder, output_file_name)
+            output_file_name = f"{os.path.splitext(file_name)[0]}_filtered.csv"
+            output_file_path = os.path.join(output_folder, output_file_name)
 
-#             # Safety check if input and output filenames become identical
-#             # This shouldn't happen with "_filtered.csv" suffix unless original already had it
-#             if os.path.abspath(file_path) == os.path.abspath(output_file_path):
-#                 print(f"  Warning: Input and output file paths are identical ('{output_file_path}').") 
-#                 # Add further logic here if you want to prevent this, e.g., by adding another suffix
-#                 # or by having a separate output folder as originally designed.
-#                 # For now, it will overwrite if the names somehow became identical.
-#                 # However, the "_filtered.csv" suffix should prevent this.
+            # Safety check if input and output filenames become identical
+            # This shouldn't happen with "_filtered.csv" suffix unless original already had it
+            if os.path.abspath(file_path) == os.path.abspath(output_file_path):
+                print(f"  Warning: Input and output file paths are identical ('{output_file_path}').") 
+                # Add further logic here if you want to prevent this, e.g., by adding another suffix
+                # or by having a separate output folder as originally designed.
+                # For now, it will overwrite if the names somehow became identical.
+                # However, the "_filtered.csv" suffix should prevent this.
 
-#             df_filtered.to_csv(output_file_path, index=False)
-#             print(f"  Saved filtered file to: {output_file_path}")
+            df_filtered.to_csv(output_file_path, index=False)
+            print(f"  Saved filtered file to: {output_file_path}")
 
-#         except pd.errors.EmptyDataError:
-#             print(f"  Warning: File {file_name} is empty. Skipping.")
-#         except Exception as e:
-#             print(f"  Error processing {file_name}: {e}")
+        except pd.errors.EmptyDataError:
+            print(f"  Warning: File {file_name} is empty. Skipping.")
+        except Exception as e:
+            print(f"  Error processing {file_name}: {e}")
 
-#     print("\n--- All CSV files processed. ---")
+    print("\n--- All CSV files processed. ---")
 
-# # --- Configuration ---
-# # Specify the folder containing your input CSV files AND where outputs will go
-# shared_folder_path = r"B:\Thesis Project\Reference Data\Processed_ICESat" # <--- !!! REPLACE THIS !!!
-
-
-# # Define the exact column names you want to keep
-# columns_to_keep = ["Easting", "Northing", "Geoid_Corrected_Ortho_Height"]
+# --- Configuration ---
+# Specify the folder containing your input CSV files AND where outputs will go
+shared_folder_path = r"B:\Thesis Project\Reference Data\Full_SlideRule_ICESat\New folder" # <--- !!! REPLACE THIS !!!
 
 
-# # --- Run the script ---
-# if __name__ == "__main__":
-#     if shared_folder_path != r"B:\Thesis Project\Reference Data\Processed_ICESat":
-#         print("Please update 'shared_folder_path' variable with your actual path.")
-#     else:
-#         # Pass the same path for both input and output
-#         filter_csv_columns(shared_folder_path, shared_folder_path, columns_to_keep)
+# Define the exact column names you want to keep
+columns_to_keep = ["Easting", "Northing", "Geoid_Corrected_Ortho_Height"]
+
+
+# --- Run the script ---
+if __name__ == "__main__":
+    
+    filter_csv_columns(shared_folder_path, shared_folder_path, columns_to_keep)
 
 
 

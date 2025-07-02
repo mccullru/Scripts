@@ -15,10 +15,8 @@ import matplotlib.pyplot as plt
 
 from glob import glob
 from pathlib import Path
-from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 from difflib import get_close_matches
-from rasterio.sample import sample_gen
 from shapely.geometry import box
 
 ##############################################################################
@@ -140,7 +138,7 @@ def mask_optically_deep_water(input_rgb_folder, output_masked_folder, output_bin
                                                     If None, binary masks are not saved.
         threshold (float): Reflectance threshold to identify ODW pixels.
     """
-    # --- CHANGE 1: Unpack threshold from the config dictionary ---
+    # --- Unpack threshold from the config dictionary ---
     threshold = config['odw_threshold']
     
     if not os.path.exists(output_masked_folder):
@@ -351,7 +349,7 @@ def process_rgb_geotiffs(input_folder, output_folder, config):
 """Extract pSDB/SDB values at reference point locations"""
 
 
-def extract_raster_values_optimized(points_csv_file, raster_folder, output_folder, points_type='Reference'):
+def extract_raster_values_optimized(points_csv_file, raster_folder, output_folder, points_type='Reference', apply_min_depth_filter=False):
     """
     Extracts raster values at specified locations.
     (Corrected version to filter out nodata values)
@@ -396,7 +394,6 @@ def extract_raster_values_optimized(points_csv_file, raster_folder, output_folde
                     gdf_in_bounds = gdf_in_bounds.copy()
                     gdf_in_bounds.loc[:, 'Raster_Value'] = raster_values
                     
-                    # --- THIS IS THE FIX ---
                     # 1. Get the nodata value directly from the raster file's metadata.
                     nodata_val_from_raster = src.nodata
 
@@ -411,7 +408,7 @@ def extract_raster_values_optimized(points_csv_file, raster_folder, output_folde
                     gdf_in_bounds.dropna(subset=['Raster_Value'], inplace=True)
 
 
-                    # --- NEW: Filter by depth < 40m ---
+                    # --- Filter by depth < 40m ---
                     print("Applying depth filter (SDB & Reference < 40m)...")
                     initial_count_depth = len(gdf_in_bounds)
                     
@@ -420,13 +417,18 @@ def extract_raster_values_optimized(points_csv_file, raster_folder, output_folde
                         (gdf_in_bounds['Raster_Value'] < 40) & (gdf_in_bounds[elev_col] < 40)
                     ]
                     
-                    removed_count = initial_count_depth - len(gdf_in_bounds)
-                    print(f"Removed {removed_count} points with depths >= 40m.")
-                    # --- END OF NEW FILTER ---
+                    # Only apply the minimum depth filter if explicitly told to do so
+                    if apply_min_depth_filter:
+                        print("Applying minimum depth filter (>= 0m) for SDB points...")
+                        gdf_in_bounds = gdf_in_bounds[
+                            (gdf_in_bounds['Raster_Value'] >= 0) & (gdf_in_bounds[elev_col] >= 0)
+                        ]
                     
+                    removed_count = initial_count_depth - len(gdf_in_bounds)
+                    print(f"Removed {removed_count} points with depths >= 40m.") 
 
                     if gdf_in_bounds.empty:
-                        print(f"No valid data points remain after filtering. Skipping save.")
+                        print("No valid data points remain after filtering. Skipping save.")
                         continue
 
                     output_filename = os.path.splitext(raster_file)[0] + "_extracted.csv"
@@ -436,6 +438,7 @@ def extract_raster_values_optimized(points_csv_file, raster_folder, output_folde
             except Exception as e:
                 print(f"ERROR processing {raster_file}: {e}")
 
+
 ##############################################################################################################
 ##############################################################################################################
 
@@ -443,8 +446,6 @@ def extract_raster_values_optimized(points_csv_file, raster_folder, output_folde
    with the highest R^2 value """
 
 
-
-# In SDB_Time_Copy.py
 
 def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, xlabel, is_validation=False):
     """
@@ -520,7 +521,15 @@ def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, 
                         if r2 < 0: r2 = 0.0
                         rmse = np.sqrt(mean_squared_error(y_iter, y_fit))
                         equation = f"y = {m:.4f}x + {b:.4f}"
-                    current_file_iterations_data.append({'Image Name': current_file_name_for_output, 'Min Depth Range': depth_min_limit_regr, 'Max Depth Range': current_depth_max_limit, 'R2 Value': r2, 'RMSE': rmse, 'Line of Best Fit': equation, 'm1': m, 'm0': b, 'Pt Count': num_points, 'Indicator': 0, 'params': params})
+                    current_file_iterations_data.append({'Image Name': current_file_name_for_output, 
+                                                         'Min Depth Range': depth_min_limit_regr, 
+                                                         'Max Depth Range': current_depth_max_limit, 
+                                                         'R2 Value': r2, 'RMSE': rmse, 
+                                                         'Line of Best Fit': equation, 
+                                                         'm1': m, 'm0': b, 
+                                                         'Pt Count': num_points, 
+                                                         'Indicator': 0, 
+                                                         'params': params})
 
             summary_df = pd.DataFrame(current_file_iterations_data)
             
@@ -534,15 +543,28 @@ def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, 
             
             # --- Find Best-Fit Lines & Set Indicators ---
             positive_slope_df = summary_df[summary_df['m1'] > 0].copy()
-            if not positive_slope_df.empty and not positive_slope_df['R2 Value'].isna().all():
-                peak_idx = positive_slope_df['R2 Value'].idxmax()
-                peak_R2_details = positive_slope_df.loc[peak_idx]
+            
+            # **NEW FILTERING STEP**
+            # Create a new DataFrame of only the eligible models for best-fit selection.
+            # Exclude models where R2 is 1 (often an artifact of too few points) or point count is too low.
+            eligible_fits_df = positive_slope_df[
+                (positive_slope_df['R2 Value'] != 1.0) &
+                (positive_slope_df['Pt Count'] > 10)
+            ].copy()
+            print(f"  Found {len(positive_slope_df)} positive slope models. {len(eligible_fits_df)} are eligible for selection.")
+
+            
+            # Peak R^2 fit will be indicated by a 1
+            if not eligible_fits_df.empty and not eligible_fits_df['R2 Value'].isna().all():
+                peak_idx = eligible_fits_df['R2 Value'].idxmax()
+                peak_R2_details = eligible_fits_df.loc[peak_idx]
                 summary_df.loc[peak_idx, 'Indicator'] = 1
                 
                 
                 r2_threshold = peak_R2_details['R2 Value'] * threshold_percent
-                tolerable_fits = positive_slope_df[positive_slope_df['R2 Value'] >= r2_threshold]
+                tolerable_fits = eligible_fits_df[eligible_fits_df['R2 Value'] >= r2_threshold]
                 
+                # Deepest tolerable fit will be indicated by a 2
                 if not tolerable_fits.empty:
                     deepest_idx = tolerable_fits['Max Depth Range'].idxmax()
                     deepest_details = tolerable_fits.loc[deepest_idx]
@@ -631,20 +653,19 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, config):
     if apply_r2_filter:
         print(f"R2 filter is ON. Threshold for SDB creation: {r2_col} >= {r2_filter_threshold}")
     else:
-        print("R2 filter is OFF. Using first 'Indicator == 2' row if available from matched stats CSV.")
+        print("R2 filter is OFF. Using Deepest Tolerable fit (where Indicator=2) from matched stats CSV.")
 
     stats_csv_filenames_in_folder = [f for f in os.listdir(csv_folder) if f.lower().endswith('.csv')]
     if not stats_csv_filenames_in_folder:
-        print(f"CRITICAL DEBUG: No CSV files found in stats folder {csv_folder}. Cannot proceed.")
+        print(f"No CSV files found in stats folder {csv_folder}. Cannot proceed.")
         return
 
-    print(f"DEBUG: Found {len(stats_csv_filenames_in_folder)} CSV files in stats folder: {csv_folder}")
+    print(f"Found {len(stats_csv_filenames_in_folder)} CSV files in stats folder: {csv_folder}")
     processed_rasters_count = 0
     processed_at_all_count = 0 # To see if any raster even starts processing
 
     for pSDB_raster_filename in os.listdir(raster_folder):
         processed_at_all_count +=1
-        print(f"\nDEBUG: Checking input raster file [{processed_at_all_count}]: {pSDB_raster_filename}")
         pSDB_raster_filename_lower = pSDB_raster_filename.lower()
         
         current_raster_path = os.path.join(raster_folder, pSDB_raster_filename) # Defined early
@@ -677,7 +698,6 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, config):
         for name_in_list in stats_csv_filenames_in_folder:
             if name_in_list.lower() == expected_stats_csv_name.lower():
                 matched_stats_csv_name = name_in_list
-                print(f"  DEBUG: Exact match found for stats CSV: {matched_stats_csv_name}")
                 break
         
         if not matched_stats_csv_name:
@@ -703,7 +723,6 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, config):
             if stats_df.empty:
                 print(f"  DEBUG FAIL (Stage 2b): Stats CSV {matched_stats_csv_name} is empty. Skipping pSDB raster {pSDB_raster_filename}.")
                 continue
-            # print(f"    DEBUG: Stats CSV head:\n{stats_df.head()}") # For deep debugging
             
             essential_cols = [indicator_col, m1_col, m0_col]
             if apply_r2_filter:
@@ -764,7 +783,6 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, config):
                         if r2_col in temp_row_ind1 and pd.notna(temp_row_ind1[r2_col]):
                             r2_val_ind1 = temp_row_ind1[r2_col]
                             r2_check_ind1 = round(r2_val_ind1, 2)
-                            print(f"        DEBUG: Ind1 candidate R2={r2_check_ind1:.2f} (Original: {r2_val_ind1})")
                             if r2_check_ind1 >= r2_filter_threshold:
                                 selected_row_from_stats = temp_row_ind1
                                 chosen_coeffs_description = f"Indicator 1 (Fallback, R2={r2_check_ind1:.2f})"
@@ -775,26 +793,25 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, config):
                     elif selected_row_from_stats is None: # Ind2 failed and no Ind1 rows
                          print("      No Indicator 1 rows found for fallback.")
                 else:
-                     print(f"    DEBUG: No Indicator 2 rows found in {matched_stats_csv_name} for R2 check.")
+                     print(f"    No Indicator 2 rows found in {matched_stats_csv_name} for R2 check.")
 
                 if selected_row_from_stats is not None:
                     m1_to_use = selected_row_from_stats[m1_col]
                     m0_to_use = selected_row_from_stats[m0_col]
                     coeffs_were_selected = True
                 else:
-                    print(f"  DEBUG FAIL (Stage 5a - R2 Filter ON): No coefficients passed threshold for {pSDB_raster_filename}.")
+                    print(f"  No coefficients passed threshold for {pSDB_raster_filename}.")
             
             else: # R2 filter is OFF
-                print(f"    DEBUG: R2 filter OFF for {pSDB_raster_filename}")
                 rows_ind2_no_filter = cleaned_stats_df[cleaned_stats_df[indicator_col] == 2]
                 if not rows_ind2_no_filter.empty:
                     best_fit_row_no_filter = rows_ind2_no_filter.iloc[0]
                     m1_to_use = best_fit_row_no_filter[m1_col]
                     m0_to_use = best_fit_row_no_filter[m0_col]
                     coeffs_were_selected = True
-                    chosen_coeffs_description = "Indicator 2 (R2 filter OFF)"
+                    chosen_coeffs_description = "Indicator 2"
                 else:
-                    print(f"  DEBUG FAIL (Stage 5b - R2 Filter OFF): No Indicator 2 coefficients found in {matched_stats_csv_name}.")
+                    print(f"  No Indicator 2 coefficients found in {matched_stats_csv_name}.")
 
             if not coeffs_were_selected:
                 print(f"  Final decision: Skipping SDB creation for {pSDB_raster_filename} as no suitable coefficients were selected.")
@@ -809,7 +826,10 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, config):
                 if src_nodata is not None: pSDB_for_calc[pSDB_for_calc == src_nodata] = np.nan
                 result = m1_to_use * pSDB_for_calc + m0_to_use
                 result = result.astype(np.float32)
+                
+                # !!! Should I add an upper limit too? Like 40m? !!!
                 result_filled = np.where(np.isnan(result) | (result < 0), nodata_value, result)
+                
                 result_filled[np.isnan(pSDB_for_calc)] = nodata_value
                 
                 # Construct output name by replacing the pSDB part with SDB
@@ -844,7 +864,7 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, config):
 # ############## CHECK DIRECTORIES/INPUTS ###########################
 raster_folder = r"E:\Thesis Stuff\pSDB"
 csv_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results" 
-output_folder = r"E:\Thesis Stuff\SDB" # Use a fresh, distinct output folder for this test
+output_folder = r"E:\Thesis Stuff\SDB" 
 
 
 
@@ -953,9 +973,8 @@ def process_sdb_folder(input_folder, config):
         print(f"Saved merged SDB raster: {output_path}")
 
 
-
 ### Workspace Path ###
-input_folder = r"E:\Thesis Stuff\SDB"  # Folder with input rasters
+input_folder = r"E:\Thesis Stuff\SDB"  
 
 
 
@@ -975,16 +994,26 @@ def run_full_pipeline(config):
 
     # Execute Pipeline
     print("\n\n[Step 1/8] Combining single bands into RGB TIFFs...\n")
-    combine_bands_to_rgb(config['raw_bands_folder'], folders['rgb_composites'], config)
+    combine_bands_to_rgb(config['raw_bands_folder'], 
+                         folders['rgb_composites'], 
+                         config)
 
     print("\n\n[Step 2/8] Masking Optically Deep Water...\n")
-    mask_optically_deep_water(folders['rgb_composites'], folders['masked_odw'], None, config)
+    mask_optically_deep_water(folders['rgb_composites'], 
+                              folders['masked_odw'], 
+                              None, 
+                              config)
 
     print("\n\n[Step 3/8] Creating pSDB rasters...\n")
-    process_rgb_geotiffs(folders['masked_odw'], folders['psdb_rasters'], config)
+    process_rgb_geotiffs(folders['masked_odw'], 
+                         folders['psdb_rasters'], 
+                         config)
 
     print("\n\n[Step 4/8] Extracting pSDB values at Calibration points...\n")
-    extract_raster_values_optimized(config['cal_points_csv'], folders['psdb_rasters'], folders['cal_extract'], 'Calibration')
+    extract_raster_values_optimized(config['cal_points_csv'], 
+                                    folders['psdb_rasters'], 
+                                    folders['cal_extract'], 
+                                    'Calibration')
     
     print("\n\n[Step 5/9] Performing pSDB regression for coefficients...\n")
     perform_regression_analysis(
@@ -996,13 +1025,20 @@ def run_full_pipeline(config):
     )
 
     print("\n\n[Step 6/9] Applying coefficients to create final SDB rasters...\n")
-    create_sdb_rasters(folders['psdb_rasters'], folders['regr_results'], folders['sdb_final'], config)
+    create_sdb_rasters(folders['psdb_rasters'], 
+                       folders['regr_results'], 
+                       folders['sdb_final'], 
+                       config)
 
     print("\n\n[Step 7/9] Merging SDB Red and Green rasters...\n")
     process_sdb_folder(folders['sdb_final'], config)
 
     print("\n\n[Step 8/9] Extracting final SDB values at Validation points...\n")
-    extract_raster_values_optimized(config['val_points_csv'], folders['sdb_final'], folders['val_extract'], 'Validation')
+    extract_raster_values_optimized(config['val_points_csv'], 
+                                    folders['sdb_final'], 
+                                    folders['val_extract'], 
+                                    'Validation', 
+                                    apply_min_depth_filter=True)
 
     print("\n\n[Step 9/9] Performing final SDB regression analysis...\n")
     perform_regression_analysis(
@@ -1013,7 +1049,7 @@ def run_full_pipeline(config):
         is_validation=True  # This will use the special 0,0 axis rules
     )
 
-    print("\n--- ✅ PIPELINE FINISHED ---")
+    print("\n--- SDB_TIME FINISHED ---")
 
 
 

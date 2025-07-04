@@ -5,12 +5,12 @@ Created on Tue Jul  1 11:40:13 2025
 @author: mccullru
 """
 
-
 import os
 import pandas as pd
+import numpy as np
+import glob
 
-
-from scipy.stats import ttest_ind
+from statsmodels.stats.weightstats import CompareMeans
 
 # =============================================================================
 # --- CONFIGURATION ---
@@ -28,7 +28,7 @@ AOIS = [
 SDB_TYPES = ['SDB_red', 'SDB_green', 'SDB_merged']
 
 # 3. Define the path for the final summary output file
-OUTPUT_FILE = r"B:\Thesis Project\StatsAndFigures\Summary Stats\Overall_Sensor_SDB_Type_Summary.csv"
+OUTPUT_FILE = r"B:\Thesis Project\Stats_Figures_Results\Summary Stats\Overall_Sensor_SDB_Type_Summary.csv"
 
 # =============================================================================
 # --- SCRIPT EXECUTION ---
@@ -38,7 +38,7 @@ def main():
     """Finds, combines, and averages summary statistics for all sensors, AOIs, and SDB types."""
     final_summary_list = []
 
-    # --- CHANGE 1: Add a dictionary to store the MSE lists for the t-test ---
+    # --- Add a dictionary to store the MSE lists for the t-test ---
     mse_data_for_ttest = {
         'SuperDove': {'SDB_red': [], 'SDB_green': [], 'SDB_merged': []},
         'Sentinel2': {'SDB_red': [], 'SDB_green': [], 'SDB_merged': []}
@@ -96,14 +96,14 @@ def main():
             # Calculate the sum of the counts
             sum_stats = combined_df[cols_to_sum].sum()
 
-            # Create a dictionary for the final results row
-            final_stat_row = {
-                'Sensor': sensor,
-                'SDB_Type': sdb_type,
-                **avg_stats.to_dict(),  # Unpack the averaged stats
-                **sum_stats.to_dict()   # Unpack the summed stats
-            }
+            # Create a base dictionary first
+            final_stat_row = {'Sensor': sensor, 'SDB_Type': sdb_type}
+            
+            # Then update it with the other dictionaries
+            final_stat_row.update(avg_stats.to_dict())
+            final_stat_row.update(sum_stats.to_dict())
             final_summary_list.append(final_stat_row)
+            
             print(f"  -> Finished aggregation for {sensor} - {sdb_type}. Used data from {len(dfs_to_combine)} AOIs.")
 
     # --- Save the final results to a single CSV file ---
@@ -113,9 +113,11 @@ def main():
 
     final_df = pd.DataFrame(final_summary_list)
     
-    # --- Perform t-test and add p-value column ---
-    final_df['p-value (MSE vs other sensor)'] = pd.NA # Initialize new column
- 
+    # --- Perform t-test and add p-value, t-statistic, and dof to columns ---
+    final_df['p-value (MSE vs other sensor)'] = pd.NA 
+    final_df['t-statistic (MSE vs other sensor)'] = pd.NA
+    final_df['Degrees of Freedom'] = pd.NA
+    
     for sdb_type in SDB_TYPES:
         # Get the MSE data for both sensors for the current SDB type
         sd_mses = mse_data_for_ttest['SuperDove'][sdb_type]
@@ -123,12 +125,27 @@ def main():
         
         # Perform the t-test only if both have enough data
         if len(sd_mses) >= 2 and len(s2_mses) >= 2:
+            
+            # --- CORRECTED T-TEST LOGIC ---
+            # Create the CompareMeans object from your two data lists
+            cm = CompareMeans.from_data(sd_mses, s2_mses)
+            
+            # Use the object's ttest_ind method to get all three results at once
+            # usevar='unequal' performs Welch's t-test
+            t_stat, p_value, df = cm.ttest_ind(usevar='unequal')
+            # --- END OF CORRECTION ---
+            
+            # Define a filter to find the correct rows in the DataFrame
+            row_filter = (final_df['SDB_Type'] == sdb_type)
             # ttest_ind performs a two-sided t-test for two independent samples
-            t_stat, p_value = ttest_ind(sd_mses, s2_mses, equal_var=False) # Welch's t-test
+            #t_stat, p_value = ttest_ind(sd_mses, s2_mses, equal_var=False) # Welch's t-test
             
             # Add the calculated p-value to the correct rows in the final DataFrame
             final_df.loc[final_df['SDB_Type'] == sdb_type, 'p-value (MSE vs other sensor)'] = p_value
-            print(f"\nCalculated t-test for {sdb_type}: p-value = {p_value:.4f}")
+            final_df.loc[final_df['SDB_Type'] == sdb_type, 't-statistic (MSE vs other sensor)'] = t_stat
+            final_df.loc[row_filter, 'Degrees of Freedom'] = df
+            
+            print(f"\nCalculated t-test for {sdb_type}: p-value = {p_value:.4f}, t-statistic = {t_stat:.2f}")
         else:
             print(f"\nNot enough data to perform t-test for {sdb_type}.")
     

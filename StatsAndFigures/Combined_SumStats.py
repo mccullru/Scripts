@@ -8,7 +8,6 @@ Created on Tue Jul  1 11:40:13 2025
 import os
 import pandas as pd
 import numpy as np
-import glob
 
 from statsmodels.stats.weightstats import CompareMeans
 
@@ -88,7 +87,7 @@ def main():
 
             # --- Calculate the final averaged and summed statistics ---
             # Define which columns get averaged and which get summed
-            cols_to_average = ['Mean', 'Std Dev', 'Min', 'Max', 'MAE', 'MSE', 'RMSE', 'Kurtosis', 'Skewness']
+            cols_to_average = ['Mean', 'Std Dev', 'Min', 'Max', 'MAE', 'MSE', 'Kurtosis', 'Skewness']
             cols_to_sum = ['Total Pts', 'Files Used']
 
             # Calculate the average of the stat metrics
@@ -102,6 +101,10 @@ def main():
             # Then update it with the other dictionaries
             final_stat_row.update(avg_stats.to_dict())
             final_stat_row.update(sum_stats.to_dict())
+            
+            #    This ensures the mathematical relationship is correct.
+            final_stat_row['RMSE'] = np.sqrt(final_stat_row['MSE'])
+            
             final_summary_list.append(final_stat_row)
             
             print(f"  -> Finished aggregation for {sensor} - {sdb_type}. Used data from {len(dfs_to_combine)} AOIs.")

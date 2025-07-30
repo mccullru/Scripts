@@ -19,13 +19,17 @@ from sklearn.metrics import mean_squared_error, r2_score
 from difflib import get_close_matches
 from shapely.geometry import box
 
-##############################################################################
-##############################################################################
+##############################################################################################################
+##############################################################################################################
 
-"""Composite R, G, B tiffs into one RGB tiff"""
+"""Composite R, G, B tiffs from Acolite into one RGB tiff"""
+
+"""Inputs: Acolite R,G, and B tiffs
+   Outputs: RGB composites in RGBCompositOutput folder"""
+
 
 def extract_rrs_number(file_name):
-    """Extract the number after 'Rrs_' in the file name."""
+    """Extract the band number after 'Rrs_' in the file name."""
     match = re.search(r'Rrs_(\d+)', file_name)
     if match:
         return int(match.group(1))
@@ -37,15 +41,6 @@ def is_close_to(value, target, tolerance):
 
 
 def combine_bands_to_rgb(input_folder, output_folder, config):
-    """
-    Combines separate red, green, and blue TIFF files into a single GeoTIFF.
-    Only processes the .tif files.
-
-    Args:
-        input_folder (str): Path to the folder containing the band TIFFs.
-        output_folder (str): Path to save the combined RGB GeoTIFFs.
-    """
-    
     
     target_wavelengths = config['target_wavelengths']
     tolerance = config['wavelength_tolerance']
@@ -117,10 +112,14 @@ def combine_bands_to_rgb(input_folder, output_folder, config):
             print(f"Error processing {r}, {g}, {b}: {e}")
 
 
-##############################################################################
-##############################################################################
+##############################################################################################################
+##############################################################################################################
 
-"""First Optically Deep Finder (ODF) where blue/green values < 0.003 sr^-1 are omitted"""
+"""Optically Deep Finder (ODF) where blue/green values < 0.003 sr^-1 are omitted. Mostly effective with very clear
+   and deep waters, sometimes doesn't remove any pixels"""
+
+"""Inputs: RGB composites from RGBCompositOutput folder
+   Outputs: optically deep masked RGB tiffs with _m1 suffix in RGBCompositOutput folder"""
 
 
 def mask_optically_deep_water(input_rgb_folder, output_masked_folder, output_binary_mask_folder, config):
@@ -131,12 +130,6 @@ def mask_optically_deep_water(input_rgb_folder, output_masked_folder, output_bin
     Saves the masked RGB to a NEW FILE in output_masked_folder.
     Optionally saves a separate binary mask of the changed pixels.
 
-    Args:
-        input_rgb_folder (str): Path to the folder containing RGB GeoTIFF files.
-        output_masked_folder (str): Path to save the processed GeoTIFFs with ODW masked.
-        output_binary_mask_folder (str, optional): Path to save binary masks of ODW areas.
-                                                    If None, binary masks are not saved.
-        threshold (float): Reflectance threshold to identify ODW pixels.
     """
     # --- Unpack threshold from the config dictionary ---
     threshold = config['odw_threshold']
@@ -200,7 +193,7 @@ def mask_optically_deep_water(input_rgb_folder, output_masked_folder, output_bin
                     print(f"Saved ODW masked RGB to: {output_masked_file_path}")
 
                     if output_binary_mask_folder:
-                        # ... (binary mask saving logic as before) ...
+                        
                         binary_odw_mask = np.zeros_like(red_band, dtype=rasterio.uint8)
                         binary_odw_mask[odw_condition] = 1
                         
@@ -230,25 +223,18 @@ def mask_optically_deep_water(input_rgb_folder, output_masked_folder, output_bin
     print("\nFunction mask_optically_deep_water finished.")
 
 
-##############################################################################
-##############################################################################
+##############################################################################################################
+##############################################################################################################
 
 """Create pSDB red and green"""
 
-" !!! IF you want to keep the RGB outputs, change delete_input_files to FALSE !!!"
+"""Inputs: optically deep masked RGB tiffs with _m1 suffix in RGBCompositOutput folder
+   Outputs: pSDBred and pSDBgreen in the pSDB folder"""
 
 
 def process_rgb_geotiffs(input_folder, output_folder, config):
-    """
-    Processes a folder of RGB GeoTIFF files to compute the pSDBgreen index
-    and saves the results as new GeoTIFF files.
-
-    Args:
-        input_folder (str): Path to the folder containing RGB GeoTIFF files.
-        output_folder (str): Path to save the processed GeoTIFF files.
-    """
     
-    # --- CHANGE 1: Get file deletion setting from the config dictionary ---
+    # Get file deletion setting from the config dictionary (should be false if you want to keep input files)
     delete_input_files = config['delete_intermediate_files']
     
     if not os.path.exists(output_folder):
@@ -319,7 +305,7 @@ def process_rgb_geotiffs(input_folder, output_folder, config):
                 print(f"Error processing {file_name}: {e}")
 
 
-     # Optional deletion block
+    # Optional deletion block (only runs if delete_intermediate_files = TRUE in main script)
     if delete_input_files:
         print("\n--- Deleting Input Files ---")
         print(f"WARNING: Attempting to delete FILES from input folder: {input_folder}")
@@ -344,9 +330,14 @@ def process_rgb_geotiffs(input_folder, output_folder, config):
     print("\nFunction process_rgb_geotiffs finished.")
 
 
-##############################################################################
-##############################################################################
+##############################################################################################################
+##############################################################################################################
 """Extract pSDB/SDB values at reference point locations"""
+
+"""Inputs: pSDBred/SDBred, pSDBgreen/SDBgreen, and SDBmerged in the pSDB or SDB folder, AND reference data in 
+           point form with the columns: easting, northing, and depth
+   Outputs: pSDBred/SDBred, pSDBgreen/SDBgreen, and SDBmerged extracted points in either the pSDB_ExtratedPts 
+            or SDB_extracted points folder"""
 
 
 def extract_raster_values_optimized(points_csv_file, raster_folder, output_folder, points_type='Reference', apply_min_depth_filter=False):
@@ -361,7 +352,7 @@ def extract_raster_values_optimized(points_csv_file, raster_folder, output_folde
     df = pd.read_csv(points_csv_file)
     easting_col, northing_col, elev_col = df.columns[0], df.columns[1], df.columns[2]
     
-    # This logic for preparing the points GeoDataFrame is unchanged
+    # Ensures that all values in the elevation/depth column are positive
     df[elev_col] = pd.to_numeric(df[elev_col], errors='coerce')
     if (df[elev_col] < 0).any():
         df.loc[df[elev_col] < 0, elev_col] *= -1
@@ -442,22 +433,25 @@ def extract_raster_values_optimized(points_csv_file, raster_folder, output_folde
 ##############################################################################################################
 ##############################################################################################################
 
-"""Better Optically Deep finder: Perform another linear regression but this time find the best line of fit 
-   with the highest R^2 value """
+"""Performs linear regressions to find two regression lines: 1) the line with the peak R^2 fit, and 2) the line
+that has an R^2 value within 10% of the peak line, but includes the maximum number of points possible. It is
+an iterative process that tries many different depth ranges until those two lines are found. """
 
 
+"""Inputs: pSDBred/SDBred, pSDBgreen/SDBgreen, and SDBmerged extracted points in either the pSDB_ExtratedPts 
+           or SDB_ExtractedPts folder
+   Outputs: pngs of linear regression plots, and csv files with all linear regression iterations where the "Indicator"
+            column has a 1 for peak R^2 line, and a 2 for maximum depth range with line within 10% of peak line
+            in the pSDB_ExtractedPts_maxR2_results or SDB_ExtractedPts_maxR2_results"""
 
-def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, xlabel, is_validation=False):
-    """
-    Performs the user's original, full iterative regression analysis. This function
-    is used for both pSDB and SDB analysis steps. It finds best-fit models, plots
-    them, and saves a detailed statistics CSV with correct 'Indicator' flags.
-    The plotting behavior is adjusted based on the 'is_validation' flag.
-    (Final, complete, and definitive version)
-    """
+
+def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, xlabel, is_validation_data=False):
+
+    
     data_folder_path = input_folder
     output_save_folder_path = output_folder
 
+    # the tolerable R^2 threshold that the second regression line is within from the peak R^2 threshold
     threshold_percent = 0.90
     print(f"\nR2 Tolerable threshold is within {threshold_percent*100}% of peak threshold")
 
@@ -484,7 +478,7 @@ def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, 
             if x_original.size < 2:
                 print("Fewer than 2 valid data points. Skipping analysis."); continue
 
-            # --- Full Iterative Regression from your original script ---
+            # Full Iterative Regression
             current_file_iterations_data = []
             depth_min_regr_sets = [1.0, 1.25, 1.5, 1.75, 2.0]
             step = 0.25
@@ -498,11 +492,12 @@ def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, 
                 
                 else:
                     depth_max_limits_to_test = np.arange(initial_depth_max, overall_max_depth_data, step)
-                    # ADDED CHECK HERE: Ensure array is not empty before attempting to access [-1]
+                    
+                    # Ensure array is not empty before attempting to access [-1]
                     if depth_max_limits_to_test.size > 0 and not np.isclose(depth_max_limits_to_test[-1], overall_max_depth_data):
                         depth_max_limits_to_test = np.append(depth_max_limits_to_test, overall_max_depth_data)
                 
-                # IMPORTANT: This check is still necessary if the above logic results in an empty array
+                # This check is still necessary if the above logic results in an empty array
                 # (e.g., if overall_max_depth_data is very small or equal to depth_min_limit_regr)
                 depth_max_limits_to_test = np.unique(depth_max_limits_to_test[depth_max_limits_to_test >= depth_min_limit_regr])
                 
@@ -533,7 +528,7 @@ def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, 
 
             summary_df = pd.DataFrame(current_file_iterations_data)
             
-            # --- Plotting Setup ---
+            # Plotting Setup
             fig, ax = plt.subplots(figsize=(10, 7))
             ax.scatter(x_original, y_original, s=36, c='k', alpha=0.3, label='Data Points')
             ax.set_xlabel(xlabel)
@@ -541,12 +536,11 @@ def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, 
             ax.set_title(f'{plot_title_prefix}: {just_the_filename_for_output_csv.replace("_", " ")}')
             ax.grid(True)
             
-            # --- Find Best-Fit Lines & Set Indicators ---
+            # Find Best-Fit Lines & Set Indicators
             positive_slope_df = summary_df[summary_df['m1'] > 0].copy()
             
-            # **NEW FILTERING STEP**
             # Create a new DataFrame of only the eligible models for best-fit selection.
-            # Exclude models where R2 is 1 (often an artifact of too few points) or point count is too low.
+            # Exclude models where R^2 is 1, often an artifact of too few points
             eligible_fits_df = positive_slope_df[
                 (positive_slope_df['R2 Value'] != 1.0) &
                 (positive_slope_df['Pt Count'] > 10)
@@ -578,7 +572,7 @@ def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, 
                         ax.plot(x_fit_domain, np.polyval(deepest_details['params'], x_fit_domain), 'b--', label="Deepest Fit")
 
             # --- Apply Special Formatting ONLY for SDB Validation Plot ---
-            if is_validation:
+            if is_validation_data:
                 line_max = max(np.max(x_original), np.max(y_original)) * 1.1
                 ax.plot([0, line_max], [0, line_max], color='gray', linestyle=':', linewidth=1.5, zorder=0)
                 ax.set_aspect('equal', adjustable='box')
@@ -629,13 +623,20 @@ def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, 
 ##############################################################################################################
 ##############################################################################################################
 
+"""Create SDB red and green with constants from linear regression lines"""
 
-"""Create SDB red and green with constants from linear regression"""
+
+"""Inputs: csv files with all linear regression iterations where the "Indicator" column has a 1 for peak R^2 line, 
+           and a 2 for maximum depth range with line within 10% of peak line in the pSDB_ExtractedPts_maxR2_results 
+           or SDB_ExtractedPts_maxR2_results folder
+   Outputs: SDBred and SDBgreen in SDB folder"""
+
 
 def create_sdb_rasters(raster_folder, csv_folder, output_folder, config):
     
-    # --- CHANGE 1: Get parameters from the config dictionary ---
+    # Get parameters from the config dictionary
     r2_filter_threshold = config['r2_threshold']
+    
     # Define column names and nodata value from config for consistency, if needed,
     # or keep them as defaults like the original function. We'll use defaults for now.
     indicator_col = "Indicator"
@@ -774,6 +775,7 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, config):
                             chosen_coeffs_description = f"Indicator 2 (R2={r2_check_ind2:.2f})"
                         else:
                             print(f"      Indicator 2 R2 ({r2_check_ind2:.2f}) < {r2_filter_threshold}. Checking Ind1.")
+                    
                     else: # R2 value is NaN or R2 column missing for this Ind2 row
                         r2_check_ind2 = np.nan # Ensure it's marked as NaN for print
                         print("      Indicator 2 R2 is NaN/missing. Checking Ind1.")
@@ -827,7 +829,6 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, config):
                 result = m1_to_use * pSDB_for_calc + m0_to_use
                 result = result.astype(np.float32)
                 
-                # !!! Should I add an upper limit too? Like 40m? !!!
                 result_filled = np.where(np.isnan(result) | (result < 0), nodata_value, result)
                 
                 result_filled[np.isnan(pSDB_for_calc)] = nodata_value
@@ -861,17 +862,13 @@ def create_sdb_rasters(raster_folder, csv_folder, output_folder, config):
         print(f"\n--- SDB Raster Creation Finished --- Successfully generated {processed_rasters_count} SDB rasters.")
 
 
-# ############## CHECK DIRECTORIES/INPUTS ###########################
-raster_folder = r"E:\Thesis Stuff\pSDB"
-csv_folder = r"E:\Thesis Stuff\pSDB_ExtractedPts_maxR2_results" 
-output_folder = r"E:\Thesis Stuff\SDB" 
-
-
-
 ##############################################################################################################
 ##############################################################################################################
 
 """Merge SDB red and green together"""
+
+"""Inputs: SDBred and SDBgreen in SDB folder
+   Outputs: SDBmerged in SDB folder """
 
 
 def merge_sdb_raster(sdb_red, sdb_green, config):
@@ -883,7 +880,7 @@ def merge_sdb_raster(sdb_red, sdb_green, config):
     """
     
     
-    # --- CHANGE 1: Get merge limits from the config dictionary ---
+    # Get merge limits from the config dictionary
     lower_limit = config['merge_lower_limit']
     upper_limit = config['merge_upper_limit']
     
@@ -973,11 +970,6 @@ def process_sdb_folder(input_folder, config):
         print(f"Saved merged SDB raster: {output_path}")
 
 
-### Workspace Path ###
-input_folder = r"E:\Thesis Stuff\SDB"  
-
-
-
 ##############################################################################################################
 ##############################################################################################################
 
@@ -1021,7 +1013,7 @@ def run_full_pipeline(config):
         output_folder=folders['regr_results'],
         plot_title_prefix="pSDB Regression",
         xlabel="pSDB Value",
-        is_validation=False  # This will use auto-scaled axes
+        is_validation_data=False  # This will use auto-scaled axes
     )
 
     print("\n\n[Step 6/9] Applying coefficients to create final SDB rasters...\n")
@@ -1046,24 +1038,10 @@ def run_full_pipeline(config):
         output_folder=folders['val_analysis'],
         plot_title_prefix="SDB Validation",
         xlabel="SDB Derived Depth (m)",
-        is_validation=True  # This will use the special 0,0 axis rules
+        is_validation_data=True  # This will use the special 0,0 axis rules
     )
 
     print("\n--- SDB_TIME FINISHED ---")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

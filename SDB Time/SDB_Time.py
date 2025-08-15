@@ -434,14 +434,14 @@ def extract_raster_values_optimized(points_csv_file, raster_folder, output_folde
 ##############################################################################################################
 
 """Performs linear regressions to find two regression lines: 1) the line with the peak R^2 fit, and 2) the line
-that has an R^2 value within 10% of the peak line, but includes the maximum number of points possible. It is
+that has an R^2 value within 5% of the peak line, but includes the maximum number of points possible. It is
 an iterative process that tries many different depth ranges until those two lines are found. """
 
 
 """Inputs: pSDBred/SDBred, pSDBgreen/SDBgreen, and SDBmerged extracted points in either the pSDB_ExtratedPts 
            or SDB_ExtractedPts folder
    Outputs: pngs of linear regression plots, and csv files with all linear regression iterations where the "Indicator"
-            column has a 1 for peak R^2 line, and a 2 for maximum depth range with line within 10% of peak line
+            column has a 1 for peak R^2 line, and a 2 for maximum depth range with line within 5% of peak line
             in the pSDB_ExtractedPts_maxR2_results or SDB_ExtractedPts_maxR2_results"""
 
 
@@ -452,7 +452,7 @@ def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, 
     output_save_folder_path = output_folder
 
     # the tolerable R^2 threshold that the second regression line is within from the peak R^2 threshold
-    threshold_percent = 0.90
+    threshold_percent = 0.95
     print(f"\nR2 Tolerable threshold is within {threshold_percent*100}% of peak threshold")
 
     if not os.path.exists(output_save_folder_path):
@@ -540,7 +540,8 @@ def perform_regression_analysis(input_folder, output_folder, plot_title_prefix, 
             positive_slope_df = summary_df[summary_df['m1'] > 0].copy()
             
             # Create a new DataFrame of only the eligible models for best-fit selection.
-            # Exclude models where R^2 is 1, often an artifact of too few points
+            # Exclude models where R^2 is 1, often an artifact of too few points which is why a 10 point minimum
+            # is another condition
             eligible_fits_df = positive_slope_df[
                 (positive_slope_df['R2 Value'] != 1.0) &
                 (positive_slope_df['Pt Count'] > 10)

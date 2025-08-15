@@ -15,6 +15,95 @@ import pandas as pd
 from pyproj import CRS, Transformer
 from difflib import get_close_matches
 
+
+
+#################################################################################################################
+#################################################################################################################
+""" paired t-test for max depth analysis"""
+
+
+import pandas as pd
+from scipy.stats import ttest_rel
+
+# =============================================================================
+# --- Configuration ---
+# =============================================================================
+
+# 1. Define the full path to your two data files
+# This script assumes you have two separate CSVs, one for SDBred and one for SDBgreen
+sdb_red_file = r"B:\Thesis Project\Stats_Figures_Results\Max Depth Analysis\statistical_analysis\analysis_summary_SDBred.csv"   # <-- IMPORTANT: UPDATE THIS PATH
+sdb_green_file = r"B:\Thesis Project\Stats_Figures_Results\Max Depth Analysis\statistical_analysis\analysis_summary_SDBgreen.csv" # <-- IMPORTANT: UPDATE THIS PATH
+
+# 2. Set the significance level (alpha)
+alpha = 0.05
+
+def perform_sensor_comparison_test(filepath, sdb_type):
+    """
+    Reads a CSV and performs a paired t-test between the Sentinel-2 and SuperDove
+    depth retrieval columns to see if their means are significantly different.
+    """
+    print(f"--- Comparing SD vs S2 for {sdb_type} ---")
+    
+    try:
+        df = pd.read_csv(filepath)
+        
+        required_columns = ['mean_Sentinel2', 'mean_SuperDove']
+        if not all(col in df.columns for col in required_columns):
+            print(f"Error: Required columns not found in {filepath}.")
+            return
+
+        # Drop rows where a NaN value exists in EITHER column to keep pairs aligned
+        df_cleaned = df[required_columns].dropna()
+        
+        if len(df_cleaned) < 2:
+             print("Fewer than 2 complete data pairs remain. Cannot perform test.")
+             return
+
+        # Extract the two columns to be compared
+        sentinel2_depths = df_cleaned['mean_Sentinel2']
+        superdove_depths = df_cleaned['mean_SuperDove']
+        
+        # --- ADDED: Calculate average depth differences ---
+        differences = superdove_depths - sentinel2_depths
+        avg_difference = differences.mean()
+        std_dev_difference = differences.std()
+        min_difference = differences.min()
+        max_difference = differences.max()
+        
+        
+        # --- Run the paired t-test ---
+        t_statistic, p_value = ttest_rel(sentinel2_depths, superdove_depths)
+
+        # --- Print the results and interpretation ---
+        print(f"Number of paired AOIs: {len(df_cleaned)}")
+        # --- ADDED: Print the difference stats ---
+        print(f"Average Difference (SuperDove - Sentinel-2): {avg_difference:.4f} m")
+        print(f"Std Dev of Differences: {std_dev_difference:.4f} m")
+        print(f"Min of Differences: {min_difference:.2f} m")
+        print(f"Max of Differences: {max_difference:.2f} m")
+        print("\n--- Paired T-Test Results ---")
+        print(f"T-statistic: {t_statistic:.4f}")
+        print(f"P-value: {p_value:.4f}")
+
+        if p_value < alpha:
+            print("Conclusion: There is a statistically significant difference between the sensors for this SDB type.")
+        else:
+            print("Conclusion: There is NOT a statistically significant difference between the sensors for this SDB type.")
+
+    except FileNotFoundError:
+        print(f"Error: Data file not found at '{filepath}'")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
+# --- Run the analysis for both SDBred and SDBgreen files ---
+if __name__ == "__main__":
+    perform_sensor_comparison_test(sdb_red_file, "SDBred")
+    print("-" * 60)
+    perform_sensor_comparison_test(sdb_green_file, "SDBgreen")
+
+
+
 #################################################################################################################
 #################################################################################################################
 
@@ -717,97 +806,97 @@ from difflib import get_close_matches
 
 """ More reference data csv filtering"""
 
-def filter_csv_columns(input_folder, output_folder, columns_to_keep):
-    """
-    Reads CSV files from an input folder, keeps only specified columns,
-    and saves the modified CSVs to an output folder.
+# def filter_csv_columns(input_folder, output_folder, columns_to_keep):
+#     """
+#     Reads CSV files from an input folder, keeps only specified columns,
+#     and saves the modified CSVs to an output folder.
 
-    Args:
-        input_folder (str): Path to the folder containing the input CSV files.
-        output_folder (str): Path to the folder where processed CSV files will be saved.
-        columns_to_keep (list): A list of column names to keep.
-    """
-    if not os.path.exists(input_folder): # Checks input_folder
-        print(f"Error: Input folder not found: {input_folder}")
-        return
+#     Args:
+#         input_folder (str): Path to the folder containing the input CSV files.
+#         output_folder (str): Path to the folder where processed CSV files will be saved.
+#         columns_to_keep (list): A list of column names to keep.
+#     """
+#     if not os.path.exists(input_folder): # Checks input_folder
+#         print(f"Error: Input folder not found: {input_folder}")
+#         return
 
-    # If input_folder and output_folder are the same, this check is fine.
-    # The folder will already exist. If it's a new output_folder, it will be created.
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-        print(f"Created output folder: {output_folder}")
+#     # If input_folder and output_folder are the same, this check is fine.
+#     # The folder will already exist. If it's a new output_folder, it will be created.
+#     if not os.path.exists(output_folder):
+#         os.makedirs(output_folder)
+#         print(f"Created output folder: {output_folder}")
 
-    csv_files = glob.glob(os.path.join(input_folder, "*.csv"))
+#     csv_files = glob.glob(os.path.join(input_folder, "*.csv"))
 
-    if not csv_files:
-        print(f"No CSV files found in: {input_folder}")
-        return
+#     if not csv_files:
+#         print(f"No CSV files found in: {input_folder}")
+#         return
 
-    print(f"Found {len(csv_files)} CSV files to process.")
+#     print(f"Found {len(csv_files)} CSV files to process.")
 
-    for file_path in csv_files:
-        file_name = os.path.basename(file_path)
-        print(f"\n--- Processing file: {file_name} ---")
+#     for file_path in csv_files:
+#         file_name = os.path.basename(file_path)
+#         print(f"\n--- Processing file: {file_name} ---")
 
-        # Avoid re-processing already filtered files if script is run multiple times
-        if file_name.endswith("_filtered.csv"):
-            print(f"  Skipping already filtered file: {file_name}")
-            continue
+#         # Avoid re-processing already filtered files if script is run multiple times
+#         if file_name.endswith("_filtered.csv"):
+#             print(f"  Skipping already filtered file: {file_name}")
+#             continue
 
-        try:
-            df = pd.read_csv(file_path)
-            print(f"  Original columns: {df.columns.tolist()}")
+#         try:
+#             df = pd.read_csv(file_path)
+#             print(f"  Original columns: {df.columns.tolist()}")
 
-            existing_cols_to_keep = [col for col in columns_to_keep if col in df.columns]
+#             existing_cols_to_keep = [col for col in columns_to_keep if col in df.columns]
 
-            if not existing_cols_to_keep:
-                print(f"  Warning: None of the specified columns to keep {columns_to_keep} were found in {file_name}. Skipping file.")
-                continue
+#             if not existing_cols_to_keep:
+#                 print(f"  Warning: None of the specified columns to keep {columns_to_keep} were found in {file_name}. Skipping file.")
+#                 continue
             
-            # Check if all desired columns are already the only columns
-            if len(existing_cols_to_keep) == len(df.columns) and all(col in df.columns for col in existing_cols_to_keep):
-                print(f"  File {file_name} already contains only the specified columns. No changes needed, but saving with new name for consistency if output differs from input or to mark as processed.")
-                # Decide if you still want to save a copy with "_filtered.csv" 
-                # or skip saving entirely in this case. For now, it will save a copy.
+#             # Check if all desired columns are already the only columns
+#             if len(existing_cols_to_keep) == len(df.columns) and all(col in df.columns for col in existing_cols_to_keep):
+#                 print(f"  File {file_name} already contains only the specified columns. No changes needed, but saving with new name for consistency if output differs from input or to mark as processed.")
+#                 # Decide if you still want to save a copy with "_filtered.csv" 
+#                 # or skip saving entirely in this case. For now, it will save a copy.
 
-            df_filtered = df[existing_cols_to_keep]
-            print(f"  Columns kept: {df_filtered.columns.tolist()}")
+#             df_filtered = df[existing_cols_to_keep]
+#             print(f"  Columns kept: {df_filtered.columns.tolist()}")
 
-            output_file_name = f"{os.path.splitext(file_name)[0]}_filtered.csv"
-            output_file_path = os.path.join(output_folder, output_file_name)
+#             output_file_name = f"{os.path.splitext(file_name)[0]}_filtered.csv"
+#             output_file_path = os.path.join(output_folder, output_file_name)
 
-            # Safety check if input and output filenames become identical
-            # This shouldn't happen with "_filtered.csv" suffix unless original already had it
-            if os.path.abspath(file_path) == os.path.abspath(output_file_path):
-                print(f"  Warning: Input and output file paths are identical ('{output_file_path}').") 
-                # Add further logic here if you want to prevent this, e.g., by adding another suffix
-                # or by having a separate output folder as originally designed.
-                # For now, it will overwrite if the names somehow became identical.
-                # However, the "_filtered.csv" suffix should prevent this.
+#             # Safety check if input and output filenames become identical
+#             # This shouldn't happen with "_filtered.csv" suffix unless original already had it
+#             if os.path.abspath(file_path) == os.path.abspath(output_file_path):
+#                 print(f"  Warning: Input and output file paths are identical ('{output_file_path}').") 
+#                 # Add further logic here if you want to prevent this, e.g., by adding another suffix
+#                 # or by having a separate output folder as originally designed.
+#                 # For now, it will overwrite if the names somehow became identical.
+#                 # However, the "_filtered.csv" suffix should prevent this.
 
-            df_filtered.to_csv(output_file_path, index=False)
-            print(f"  Saved filtered file to: {output_file_path}")
+#             df_filtered.to_csv(output_file_path, index=False)
+#             print(f"  Saved filtered file to: {output_file_path}")
 
-        except pd.errors.EmptyDataError:
-            print(f"  Warning: File {file_name} is empty. Skipping.")
-        except Exception as e:
-            print(f"  Error processing {file_name}: {e}")
+#         except pd.errors.EmptyDataError:
+#             print(f"  Warning: File {file_name} is empty. Skipping.")
+#         except Exception as e:
+#             print(f"  Error processing {file_name}: {e}")
 
-    print("\n--- All CSV files processed. ---")
+#     print("\n--- All CSV files processed. ---")
 
-# --- Configuration ---
-# Specify the folder containing your input CSV files AND where outputs will go
-shared_folder_path = r"B:\Thesis Project\Reference Data\Full_SlideRule_ICESat\New folder" # <--- !!! REPLACE THIS !!!
-
-
-# Define the exact column names you want to keep
-columns_to_keep = ["Easting", "Northing", "Geoid_Corrected_Ortho_Height"]
+# # --- Configuration ---
+# # Specify the folder containing your input CSV files AND where outputs will go
+# shared_folder_path = r"B:\Thesis Project\Reference Data\Full_SlideRule_ICESat\New folder" # <--- !!! REPLACE THIS !!!
 
 
-# --- Run the script ---
-if __name__ == "__main__":
+# # Define the exact column names you want to keep
+# columns_to_keep = ["Easting", "Northing", "Geoid_Corrected_Ortho_Height"]
+
+
+# # --- Run the script ---
+# if __name__ == "__main__":
     
-    filter_csv_columns(shared_folder_path, shared_folder_path, columns_to_keep)
+#     filter_csv_columns(shared_folder_path, shared_folder_path, columns_to_keep)
 
 
 
